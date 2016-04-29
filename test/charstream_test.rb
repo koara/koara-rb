@@ -1,11 +1,12 @@
 require_relative '../lib/charstream'
 require "test/unit"
+require "stringio"
 
 class CharStreamTest < Test::Unit::TestCase
   
 
   def test_begin_token
-    cs = CharStream.new
+    cs = CharStream.new(StringIO.new("abcd"))
     
     #      $this->cs = new CharStre am(new StringReader('abcd'));
     assert_equal('a', cs.beginToken())

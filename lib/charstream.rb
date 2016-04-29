@@ -1,23 +1,123 @@
 class CharStream
-  
+  def initialize(reader)
+    @available = 4096;
+    @bufsize = 4096;
+    #    private int bufcolumn[] = new int[4096];;
+    @bufpos = -1;
+    #    private int bufline[] = new int[4096];
+    @column = 0;
+    @line = 1;
+    @prevCharIsLF = false;
+    #    private char[] buffer = new char[4096];
+    @max_next_char_ind = 0
+    @reader = reader
+    @inBuf = 0
+    @tabSize = 4
+  end
+
   def beginToken
-    "a"
+    @tokenBegin = -1;
+    c = readChar();
+    tokenBegin = @bufpos;
+    return c;
   end
 
-  def getBeginColumn
-    1
+  def readChar()
+    if (@inBuf > 0)
+      --@inBuf;
+      if (++@bufpos == @bufsize)
+        @bufpos = 0;
+      end
+      return @buffer[@bufpos];
+    end
+    if (++@bufpos >= @maxNextCharInd)
+      fillBuff();
+    end
+    c = @buffer[@bufpos];
+    updateLineColumn(c);
+    return c;
   end
 
-  def getBeginLine
-    1
+  def fillBuff()
+    if (@maxNextCharInd == @available)
+      if (@available == @bufsize)
+        @bufpos = 0;
+        @maxNextCharInd = 0;
+        if (@tokenBegin > 2048)
+          @available = @tokenBegin;
+        else
+          @available = @bufsize;
+        end
+      end
+    end
+    #        int i;
+    #
+    #        try {
+    #            if ((i = reader.read(buffer, maxNextCharInd, available - maxNextCharInd)) == -1) {
+    #              reader.close();
+    #                throw new IOException();
+    #            } else {
+    #                maxNextCharInd += i;
+    #            }
+    #        } catch (IOException e) {
+    #            --bufpos;
+    #            backup(0);
+    #            if (tokenBegin == -1) {
+    #                tokenBegin = bufpos;
+    #            }
+    #            throw e;
+    #        }
   end
 
-  def getEndColumn
-    1
+  def backup(amount)
+    @inBuf += amount;
+    if ((bufpos -= amount) < 0)
+      @bufpos += @bufsize;
+    end
   end
 
-  def getEndLine
-    1
+  def updateLineColumn(c)
+    @column++
+    if (@prevCharIsLF)
+      @prevCharIsLF = false;
+      @column = 1;
+      @line +=@column;
+    end
+
+    #        switch (c) {
+    #        case '\n':
+    #            prevCharIsLF = true;
+    #            break;
+    #        case '\t':
+    #            column--;
+    #            column += (tabSize - (column % tabSize));
+    #            break;
+    #        }
+    @bufline[@bufpos] = @line;
+    @bufcolumn[@bufpos] = @column;
+  end
+
+  def getImage()
+    if (bufpos >= tokenBegin)
+      #            return new String(buffer, tokenBegin, bufpos - tokenBegin + 1);
+    end
+    #        return new String(buffer, tokenBegin, bufsize - tokenBegin) + new String(buffer, 0, bufpos + 1);
+  end
+
+  def getEndColumn()
+    return @bufcolumn[@bufpos];
+  end
+
+  def getEndLine()
+    return @bufline[@bufpos];
+  end
+
+  def getBeginColumn()
+    return @bufcolumn[@tokenBegin];
+  end
+
+  def getBeginLine()
+    return @bufline[@tokenBegin];
   end
 
 end
