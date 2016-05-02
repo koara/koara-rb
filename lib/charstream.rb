@@ -8,7 +8,7 @@ class CharStream
     @column = 0;
     @line = 1;
     @prevCharIsLF = false;
-    #    private char[] buffer = new char[4096];
+    @buffer = Array.new
     @max_next_char_ind = 0
     @reader = reader
     @inBuf = 0
@@ -30,7 +30,10 @@ class CharStream
       end
       return @buffer[@bufpos];
     end
-    if (++@bufpos >= @maxNextCharInd)
+    
+  
+    
+    if (++@bufpos >= @max_next_char_ind)
       fillBuff();
     end
     c = @buffer[@bufpos];
@@ -50,8 +53,9 @@ class CharStream
         end
       end
     end
-    #        int i;
-    #
+    i = 0;
+    
+
     #        try {
     #            if ((i = reader.read(buffer, maxNextCharInd, available - maxNextCharInd)) == -1) {
     #              reader.close();
@@ -79,9 +83,9 @@ class CharStream
   def updateLineColumn(c)
     @column++
     if (@prevCharIsLF)
-      @prevCharIsLF = false;
-      @column = 1;
-      @line +=@column;
+      @prevCharIsLF = false
+      @column = 1
+      @line += @column
     end
 
     #        switch (c) {
