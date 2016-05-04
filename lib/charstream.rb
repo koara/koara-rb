@@ -1,13 +1,13 @@
 class CharStream
   def initialize(reader)
-    @available = 4096;
-    @bufsize = 4096;
-    #    private int bufcolumn[] = new int[4096];;
-    @bufpos = -1;
-    #    private int bufline[] = new int[4096];
-    @column = 0;
-    @line = 1;
-    @prevCharIsLF = false;
+    @available = 4096
+    @bufsize = 4096
+    @bufcolumn = Array.new
+    @bufpos = -1
+    @bufline = Array.new
+    @column = 0
+    @line = 1
+    @prev_char_is_lf = false
     @buffer = Array.new
     @max_next_char_ind = 0
     @reader = reader
@@ -16,24 +16,22 @@ class CharStream
   end
 
   def beginToken
-    @tokenBegin = -1;
-    c = readChar();
-    tokenBegin = @bufpos;
-    return c;
+    @tokenBegin = -1
+    c = readChar()
+    tokenBegin = @bufpos
+    c
   end
 
   def readChar()
     if (@inBuf > 0)
-      --@inBuf;
-      if (++@bufpos == @bufsize)
-        @bufpos = 0;
+      @inBuf -= 1;
+      if ((@bufpos += 1) == @bufsize)
+        @bufpos = 0
       end
-      return @buffer[@bufpos];
+      return @buffer[@bufpos]
     end
     
-  
-    
-    if (++@bufpos >= @max_next_char_ind)
+    if ((@bufpos += 1) >= @max_next_char_ind)
       fillBuff();
     end
     c = @buffer[@bufpos];
@@ -54,6 +52,11 @@ class CharStream
       end
     end
     i = 0;
+    
+    xbuffer = ""
+    @reader.read(5, xbuffer)
+    
+    puts "////" + xbuffer
     
 
     #        try {
@@ -81,22 +84,22 @@ class CharStream
   end
 
   def updateLineColumn(c)
-    @column++
-    if (@prevCharIsLF)
-      @prevCharIsLF = false
+    @column += 1;
+
+    if (@prev_char_is_lf)
+      @prev_char_is_lf = false
       @column = 1
       @line += @column
     end
 
-    #        switch (c) {
-    #        case '\n':
-    #            prevCharIsLF = true;
-    #            break;
-    #        case '\t':
-    #            column--;
-    #            column += (tabSize - (column % tabSize));
-    #            break;
-    #        }
+    case c
+      when '\n'
+        @prev_char_is_lf = true
+      when '\t'
+        @column -= 1
+        @column += (@tabSize - (@column % @tabSize)) 
+    end
+    
     @bufline[@bufpos] = @line;
     @bufcolumn[@bufpos] = @column;
   end
