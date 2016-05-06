@@ -15,7 +15,7 @@ class Parser
 #    private LookaheadSuccess lookAheadSuccess;
 #    private List<String> modules = Arrays.asList("paragraphs", "headings", "lists", "links", "images", "formatting", "blockquotes", "code");
 #
-     def initialize()
+     def initialize
        @lookAheadSuccess = LookaheadSuccess.new
      end
   
