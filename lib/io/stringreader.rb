@@ -9,14 +9,12 @@ class StringReader
 
     if @text != '' && slice && slice.length > 0
       characters_read = 0
-      i = 0
-      while(i < length)
+      0.upto(length - 1) do |i|
         c = @text.slice(@index + i)
         if c
           buffer[offset + i] = c;
           characters_read += 1
         end
-        i += 1
       end
       @index += length
       return characters_read

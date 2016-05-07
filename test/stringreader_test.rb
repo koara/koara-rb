@@ -1,4 +1,4 @@
-require_relative '../lib/stringreader'
+require_relative '../lib/io/stringreader'
 require "test/unit"
 
 class StringReaderTest < Test::Unit::TestCase
