@@ -5,13 +5,8 @@ class FileReader
   end
 
   def read(buffer, offset, length)
-    f = File.open(@file_name,'r:UTF-8')
     
-    filecontent = f.read(2)
-    puts "///#{filecontent}"
-    f.close
-    
-    puts "///" + filecontent
+
     
     if filecontent && filecontent.length
       characters_read = 0
