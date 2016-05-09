@@ -22,14 +22,14 @@ class Parser
     #        return parseReader(new StringReader(text));
   end
 
-  def parseFile(file)
+  def parse_file(file)
     #      if(!file.getName().toLowerCase().endsWith(".kd")) {
     #        throw new IllegalArgumentException("Can only parse files with extension .kd");
     #      }
     #        return parseReader(new FileReader(file));
   end
 
-  def parseReader(reader)
+  def parse_reader(reader)
     #        cs = new CharStream(reader);
     #        tm = new TokenManager(cs);
     #        token = new Token();
@@ -63,7 +63,7 @@ class Parser
   end
 
   #
-  def blockElement()
+  def block_element()
     @currentBlockLevel += 1
     #        if (modules.contains("headings") && headingAhead(1)) {
     #            heading();
@@ -112,7 +112,7 @@ class Parser
     #        tree.closeScope(heading);
   end
 
-  def blockQuote()
+  def block_quote()
     #        BlockQuote blockQuote = new BlockQuote();
     #        tree.openScope();
     #        currentQuoteLevel++;
@@ -139,7 +139,7 @@ class Parser
     #        tree.closeScope(blockQuote);
   end
 
-  def blockQuotePrefix()
+  def block_quote_prefix()
     #        int i = 0;
     #        do {
     #            consumeToken(GT);
@@ -147,7 +147,7 @@ class Parser
     #        } while (++i < currentQuoteLevel);
   end
 
-  def blockQuoteEmptyLine()
+  def block_quote_empty_line()
     #        consumeToken(EOL);
     #        whiteSpace();
     #        do {
@@ -156,7 +156,7 @@ class Parser
     #        } while (getNextTokenKind() == GT);
   end
 
-  def unorderedList()
+  def unordered_list()
     #        ListBlock list = new ListBlock(false);
     #        tree.openScope();
     #        int listBeginColumn = unorderedListItem();
@@ -173,7 +173,7 @@ class Parser
     #        tree.closeScope(list);
   end
 
-  def unorderedListItem()
+  def unordered_list_item()
     #        ListItem listItem = new ListItem();
     #        tree.openScope();
     #
@@ -196,7 +196,7 @@ class Parser
     #        return t.beginColumn;
   end
 
-  def orderedList()
+  def ordered_list()
     #        ListBlock list = new ListBlock(true);
     #        tree.openScope();
     #        int listBeginColumn = orderedListItem();
@@ -213,7 +213,7 @@ class Parser
     #        tree.closeScope(list);
   end
 
-  def orderedListItem()
+  def ordered_list_item()
     #        ListItem listItem = new ListItem();
     #        tree.openScope();
     #        Token t = consumeToken(DIGITS);
@@ -237,7 +237,7 @@ class Parser
     #        return t.beginColumn;
   end
 
-  def fencedCodeBlock()
+  def fenced_code_block()
     #        CodeBlock codeBlock = new CodeBlock();
     #        tree.openScope();
     #        StringBuilder s = new StringBuilder();
@@ -554,7 +554,7 @@ class Parser
     #        tree.closeScope(code);
   end
 
-  def codeText()
+  def code_text()
     #        Text text = new Text();
     #        tree.openScope();
     #        StringBuffer s = new StringBuffer();
@@ -629,7 +629,7 @@ class Parser
     #        tree.closeScope(text);
   end
 
-  def looseChar()
+  def loose_char()
     #        Text text = new Text();
     #        tree.openScope();
     #        switch (getNextTokenKind()) {
@@ -649,7 +649,7 @@ class Parser
     #        tree.closeScope(text);
   end
 
-  def lineBreak()
+  def line_break()
     #        LineBreak linebreak = new LineBreak();
     #        tree.openScope();
     #        while (getNextTokenKind() == SPACE || getNextTokenKind() == TAB) {
@@ -659,7 +659,7 @@ class Parser
     #        tree.closeScope(linebreak);
   end
 
-  def levelWhiteSpace(threshold)
+  def level_white_space(threshold)
     #        int currentPos = 1;
     #        while (getNextTokenKind() == GT) {
     #            consumeToken(getNextTokenKind());
@@ -669,7 +669,7 @@ class Parser
     #        }
   end
 
-  def codeLanguage()
+  def code_language()
     #        StringBuilder s = new StringBuilder();
     #        do {
     #            switch (getNextTokenKind()) {
@@ -760,7 +760,7 @@ class Parser
     #        } while (hasInlineElementAhead());
   end
 
-  def resourceText()
+  def resource_text()
     #        Text text = new Text();
     #        tree.openScope();
     #        StringBuilder s = new StringBuilder();
@@ -823,7 +823,7 @@ class Parser
     #        tree.closeScope(text);
   end
 
-  def resourceUrl()
+  def resource_url()
     #        consumeToken(LPAREN);
     #        whiteSpace();
     #        String ref = resourceUrlText();
@@ -832,7 +832,7 @@ class Parser
     #        return ref;
   end
 
-  def resourceUrlText()
+  def resource_url_text()
     #        StringBuilder s = new StringBuilder();
     #        while (resourceTextHasElementsAhead()) {
     #            switch (getNextTokenKind()) {
@@ -904,7 +904,7 @@ class Parser
     #        return s.toString();
   end
 
-  def strongMultiline()
+  def strong_multiline()
     #        Strong strong = new Strong();
     #        tree.openScope();
     #        consumeToken(ASTERISK);
@@ -918,7 +918,7 @@ class Parser
     #        tree.closeScope(strong);
   end
 
-  def strongMultilineContent()
+  def strong_multiline_content()
     #        do {
     #            if (hasTextAhead()) {
     #                text();
@@ -946,7 +946,7 @@ class Parser
     #        } while (strongMultilineHasElementsAhead());
   end
 
-  def strongWithinEmMultiline()
+  def strong_within_em_multiline()
     #        Strong strong = new Strong();
     #        tree.openScope();
     #        consumeToken(ASTERISK);
@@ -959,7 +959,7 @@ class Parser
     #        tree.closeScope(strong);
   end
 
-  def strongWithinEmMultilineContent()
+  def strong_within_em_multiline_content()
     #        do {
     #            if (hasTextAhead()) {
     #                text();
@@ -985,7 +985,7 @@ class Parser
     #        } while (strongWithinEmMultilineHasElementsAhead());
   end
 
-  def strongWithinEm()
+  def strong_within_em()
     #        Strong strong = new Strong();
     #        tree.openScope();
     #        consumeToken(ASTERISK);
@@ -1016,7 +1016,7 @@ class Parser
     #        tree.closeScope(strong);
   end
 
-  def emMultiline()
+  def em_multiline()
     #        Em em = new Em();
     #        tree.openScope();
     #        consumeToken(UNDERSCORE);
@@ -1030,7 +1030,7 @@ class Parser
     #        tree.closeScope(em);
   end
 
-  def emMultilineContent()
+  def em_multiline_content()
     #        do {
     #            if (hasTextAhead()) {
     #                text();
@@ -1058,7 +1058,7 @@ class Parser
     #        } while (emMultilineContentHasElementsAhead());
   end
 
-  def emWithinStrongMultiline()
+  def em_within_strong_multiline()
     #        Em em = new Em();
     #        tree.openScope();
     #        consumeToken(UNDERSCORE);
@@ -1071,7 +1071,7 @@ class Parser
     #        tree.closeScope(em);
   end
 
-  def emWithinStrongMultilineContent()
+  def em_within_strong_multiline_content()
     #        do {
     #            if (hasTextAhead()) {
     #                text();
@@ -1097,7 +1097,7 @@ class Parser
     #        } while (emWithinStrongMultilineContentHasElementsAhead());
   end
 
-  def emWithinStrong()
+  def em_within_strong()
     #        Em em = new Em();
     #        tree.openScope();
     #        consumeToken(UNDERSCORE);
@@ -1128,7 +1128,7 @@ class Parser
     #        tree.closeScope(em);
   end
 
-  def codeMultiline()
+  def code_multiline()
     #        Code code = new Code();
     #        tree.openScope();
     #        consumeToken(BACKTICK);
@@ -1146,13 +1146,13 @@ class Parser
     #        tree.closeScope(code);
   end
 
-  def whiteSpace()
+  def white_space()
     #        while (getNextTokenKind() == SPACE || getNextTokenKind() == TAB) {
     #            consumeToken(getNextTokenKind());
     #        }
   end
 
-  def hasAnyBlockElementsAhead()
+  def has_any_block_elements_ahead()
     #        try {
     #            lookAhead = 1;
     #            lastPosition = scanPosition = token;
@@ -1162,7 +1162,7 @@ class Parser
     #        }
   end
 
-  def blockAhead(blockBeginColumn)
+  def block_ahead(blockBeginColumn)
     #        int quoteLevel;
     #
     #        if (getNextTokenKind() == EOL) {
@@ -1192,7 +1192,7 @@ class Parser
     #        return false;
   end
 
-  def multilineAhead(token)
+  def multiline_ahead(token)
     #        if (getNextTokenKind() == token && getToken(2).kind != token && getToken(2).kind != EOL) {
     #
     #            for (int i = 2;; i++) {
@@ -1222,7 +1222,7 @@ class Parser
     #        return false;
   end
 
-  def fencesAhead()
+  def fences_ahead()
     #        int i = skip(2, SPACE, TAB, GT);
     #        if (getToken(i).kind == BACKTICK && getToken(i + 1).kind == BACKTICK && getToken(i + 2).kind == BACKTICK) {
     #            i = skip(i + 3, SPACE, TAB);
@@ -1231,7 +1231,7 @@ class Parser
     #        return false;
   end
 
-  def headingAhead(offset)
+  def heading_ahead(offset)
     #        if (getToken(offset).kind == EQ) {
     #            int heading = 1;
     #            for (int i = (offset + 1);; i++) {
@@ -1246,7 +1246,7 @@ class Parser
     #        return false;
   end
 
-  def listItemAhead(listBeginColumn, ordered)
+  def list_item_ahead(listBeginColumn, ordered)
     #        if (getNextTokenKind() == EOL) {
     #            for (int i = 2, eol = 1;; i++) {
     #                Token t = getToken(i);
@@ -1264,7 +1264,7 @@ class Parser
     #        return false;
   end
 
-  def textAhead()
+  def text_ahead()
     #        if (getNextTokenKind() == EOL && getToken(2).kind != EOL) {
     #            int i = skip(2, SPACE, TAB);
     #            int quoteLevel = newQuoteLevel(i);
@@ -1282,12 +1282,12 @@ class Parser
     #        return false;
   end
 
-  def nextAfterSpace(tokens)
+  def next_after_space(tokens)
     #        int i = skip(1, SPACE, TAB);
     #        return Arrays.asList(tokens).contains(getToken(i).kind);
   end
 
-  def newQuoteLevel(offset)
+  def new_quote_level(offset)
     #        int quoteLevel = 0;
     #        for (int i = offset;; i++) {
     #            Token t = getToken(i);
@@ -1310,7 +1310,7 @@ class Parser
     #        }
   end
 
-  def hasOrderedListAhead()
+  def has_ordered_list_ahead()
     #        lookAhead = 2;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1320,7 +1320,7 @@ class Parser
     #        }
   end
 
-  def hasFencedCodeBlockAhead()
+  def has_fenced_code_block_ahead()
     #        lookAhead = 3;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1330,7 +1330,7 @@ class Parser
     #        }
   end
 
-  def headingHasInlineElementsAhead()
+  def heading_has_inline_elements_ahead()
     #        lookAhead = 1;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1362,7 +1362,7 @@ class Parser
     #        }
   end
 
-  def hasTextAhead()
+  def has_text_ahead()
     #        lookAhead = 1;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1372,7 +1372,7 @@ class Parser
     #        }
   end
 
-  def hasImageAhead()
+  def has_image_ahead()
     #        lookAhead = 2147483647;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1382,7 +1382,7 @@ class Parser
     #        }
   end
 
-  def blockQuoteHasEmptyLineAhead()
+  def block_quote_has_empty_line_ahead()
     #        lookAhead = 2147483647;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1392,7 +1392,7 @@ class Parser
     #        }
   end
 
-  def hasStrongAhead()
+  def has_strong_ahead()
     #        lookAhead = 2147483647;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1402,7 +1402,7 @@ class Parser
     #        }
   end
 
-  def hasEmAhead()
+  def has_em_ahead()
     #        lookAhead = 2147483647;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1412,7 +1412,7 @@ class Parser
     #        }
   end
 
-  def hasCodeAhead()
+  def has_code_ahead()
     #        lookAhead = 2147483647;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1422,7 +1422,7 @@ class Parser
     #        }
   end
 
-  def blockQuoteHasAnyBlockElementseAhead()
+  def block_quote_has_any_block_elementseAhead()
     #        lookAhead = 1;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1432,7 +1432,7 @@ class Parser
     #        }
   end
 
-  def hasBlockQuoteEmptyLinesAhead()
+  def has_block_quote_empty_lines_ahead()
     #        lookAhead = 2147483647;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1442,7 +1442,7 @@ class Parser
     #        }
   end
 
-  def listItemHasInlineElements()
+  def list_item_has_inline_elements()
     #        lookAhead = 1;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1452,7 +1452,7 @@ class Parser
     #        }
   end
 
-  def hasInlineTextAhead()
+  def has_inline_text_ahead()
     #        lookAhead = 1;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1462,7 +1462,7 @@ class Parser
     #        }
   end
 
-  def hasInlineElementAhead()
+  def has_inline_element_ahead()
     #        lookAhead = 1;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1472,7 +1472,7 @@ class Parser
     #        }
   end
 
-  def imageHasAnyElements()
+  def image_has_any_elements()
     #        lookAhead = 1;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1482,7 +1482,7 @@ class Parser
     #        }
   end
 
-  def hasResourceTextAhead()
+  def has_resource_text_ahead()
     #        lookAhead = 1;
     #        lastPosition = scanPosition = token;
     #        try {
@@ -1492,7 +1492,7 @@ class Parser
     #        }
   end
 
-  def linkHasAnyElements()
+  def link_has_any_elements()
     #        lookAhead = 1;
     #        lastPosition = scanPosition = token;
     #        try {
