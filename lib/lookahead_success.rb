@@ -1,0 +1,3 @@
+class LookaheadSuccess
+
+end

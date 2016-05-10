@@ -1,5 +1,5 @@
 class Node
-  def initialize(name)
+  def initialize()
     @children = Array.new
   end
 
