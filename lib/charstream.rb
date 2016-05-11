@@ -19,7 +19,7 @@ class CharStream
     @tokenBegin = -1
     c = readChar()
     tokenBegin = @bufpos
-    c
+    return c
   end
 
   def readChar()

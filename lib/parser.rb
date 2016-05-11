@@ -20,14 +20,14 @@ class Parser
   end
 
   def parse(text)
-    parse_reader(text);
+    return parse_reader(text);
   end
 
   def parse_file(file)
     #      if(!file.getName().toLowerCase().endsWith(".kd")) {
     #        throw new IllegalArgumentException("Can only parse files with extension .kd");
     #      }
-    #        return parseReader(new FileReader(file));
+    #      return parse_reader(new FileReader(file));
   end
 
   def parse_reader(reader)
@@ -83,7 +83,7 @@ class Parser
 
   def heading
     heading =  Heading.new()
-    tree.open_scope()
+    @tree.open_scope()
     headingLevel = 0
     #
     #        while (getNextTokenKind() == EQ) {
@@ -109,7 +109,7 @@ class Parser
     #            }
     #        }
     heading.value = headingLevel
-    tree.close_scope(heading);
+    @tree.close_scope(heading);
   end
 
   def block_quote
@@ -136,7 +136,7 @@ class Parser
     #            blockQuoteEmptyLine();
     #        }
     current_quote_level -= 1
-    tree.close_scope(blockquote)
+    @tree.close_scope(blockquote)
   end
 
   def block_quote_prefix()
@@ -170,7 +170,7 @@ class Parser
     #            }
     #            unorderedListItem();
     #        }
-    tree.close_scope(list);
+    @tree.close_scope(list);
   end
 
   def unordered_list_item()
@@ -547,16 +547,16 @@ class Parser
 
   def code()
     code = Code.new
-    tree.open_scope()
+    @tree.open_scope()
     consume_token(BACKTICK)
     code_text()
     consumetToken(BACKTICK)
-    tree.close_scope(code)
+    @tree.close_scope(code)
   end
 
   def code_text()
     text = Text.new()
-    tree.open_scope()
+    @tree.open_scope()
     #        StringBuffer s = new StringBuffer();
     #        do {
     #            switch (getNextTokenKind()) {
@@ -948,7 +948,7 @@ class Parser
 
   def strong_within_em_multiline
     Strong strong = Strong.new
-    tree.open_scope()
+    @tree.open_scope()
     consume_token(ASTERISK)
     strong_within_em_eultilineContent()
     #        while (textAhead()) {
@@ -956,7 +956,7 @@ class Parser
     #            strongWithinEmMultilineContent();
     #        }
     consume_token(ASTERISK)
-    tree.close_scope(strong)
+    @tree.close_scope(strong)
   end
 
   def strong_within_em_multiline_content
@@ -1243,7 +1243,7 @@ class Parser
     #                }
     #            }
     #        }
-    #        return false;
+            return false
   end
 
   def list_item_ahead(listBeginColumn, ordered)
@@ -1832,7 +1832,7 @@ class Parser
     #                }
     #            }
     #        }
-    #        return false;
+            return false
   end
 
   def scan_code
@@ -2185,13 +2185,13 @@ class Parser
     #                break;
     #            }
     #        }
-            return false
+    return false
   end
 
   def scan_strong_within_em_multiline
-            if (scan_token(ASTERISK) || scan_for_more_strong_within_em_multiline_elements())
-                return true;
-            end
+    if (scan_token(ASTERISK) || scan_for_more_strong_within_em_multiline_elements())
+      return true;
+    end
     #        Token xsp;
     #        while (true) {
     #            xsp = scanPosition;
@@ -2204,7 +2204,7 @@ class Parser
   end
 
   def scan_strong_multiline_elements
-    #        Token xsp = scanPosition;
+    xsp = @scanPosition;
     #        if (scanTextTokens()) {
     #            scanPosition = xsp;
     #            if (scanImage()) {
@@ -2227,11 +2227,11 @@ class Parser
     #                }
     #            }
     #        }
-    #        return false;
+    return false
   end
 
   def scan_resource_text_element
-    #        Token xsp = scanPosition;
+    xsp = @scanPosition;
     #        if (scanToken(ASTERISK)) {
     #            scanPosition = xsp;
     #            if (scanToken(BACKSLASH)) {
@@ -2288,21 +2288,21 @@ class Parser
     #                }
     #            }
     #        }
-    #        return false;
+    return false
   end
 
-  def scan_image_element
-    #        Token xsp = scanPosition;
+  def scan_image_element()
+    xsp = @scanPosition;
     #        if (scanResourceElements()) {
     #            scanPosition = xsp;
     #            if (scanLooseChar()) {
     #                return true;
     #            }
     #        }
-    #        return false;
+    return false
   end
 
-  def scan_resource_text_elements
+  def scan_resource_text_elements()
     #        Token xsp;
     #        while (true) {
     #            xsp = scanPosition;
@@ -2311,12 +2311,11 @@ class Parser
     #                break;
     #            }
     #        }
-    #        return false;
+    return false
   end
 
-  def scan_resource_url
-    #        return scanToken(LPAREN) || scanWhitspaceTokens() || scanResourceTextElements() || scanWhitspaceTokens()
-    #                || scanToken(RPAREN);
+  def scan_resource_url()
+    return scan_token(LPAREN) || scan_whitspace_tokens() || scan_resource_text_elements() || scan_whitspace_tokens() || scan_token(RPAREN);
   end
 
   def scan_link_element
@@ -2337,7 +2336,7 @@ class Parser
     #                }
     #            }
     #        }
-    #        return false;
+    return false
   end
 
   def scan_resource_element
@@ -2385,13 +2384,13 @@ class Parser
     #                }
     #            }
     #        }
-    #        return false;
+    return false
   end
 
   def scan_resource_elements
-    #        if (scanResourceElement()) {
-    #            return true;
-    #        }
+    if (scan_resource_element())
+      return true
+    end
     #        Token xsp;
     #        while (true) {
     #            xsp = scanPosition;
@@ -2403,10 +2402,10 @@ class Parser
     #        return false;
   end
 
-  def scan_link
-    #        if (scanToken(LBRACK) || scanWhitspaceTokens() || scanLinkElement()) {
-    #            return true;
-    #        }
+  def scan_link()
+    if (scan_token(LBRACK) || scan_whitspace_tokens() || scan_link_element())
+      return true
+    end
     #        Token xsp;
     #        while (true) {
     #            xsp = scanPosition;
@@ -2422,13 +2421,13 @@ class Parser
     #        if (scanResourceUrl()) {
     #            scanPosition = xsp;
     #        }
-    #        return false;
+    return false
   end
 
-  def scan_image
-    #        if (scanToken(LBRACK) || scanWhitspaceTokens() || scanToken(IMAGE_LABEL) || scanImageElement()) {
-    #            return true;
-    #        }
+  def scan_image()
+    if (scan_token(LBRACK) || scan_whitspace_tokens() || scan_token(IMAGE_LABEL) || scan_image_element())
+      return true
+    end
     #        Token xsp;
     #        while (true) {
     #            xsp = scanPosition;
@@ -2444,11 +2443,11 @@ class Parser
     #        if (scanResourceUrl()) {
     #            scanPosition = xsp;
     #        }
-    #        return false;
+    return false
   end
 
-  def scan_inline_element
-    #        Token xsp = scanPosition;
+  def scan_inline_element()
+    xsp = @scanPosition;
     #        if (scanTextTokens()) {
     #            scanPosition = xsp;
     #            if (scanImage()) {
@@ -2477,14 +2476,14 @@ class Parser
     #                }
     #            }
     #        }
-    #        return false;
+    return false
   end
 
-  def scan_paragraph
+  def scan_paragraph()
     #        Token xsp;
-    #        if (scanInlineElement()) {
-    #            return true;
-    #        }
+    if (scan_inline_element())
+      return true
+    end
     #        while (true) {
     #            xsp = scanPosition;
     #            if (scanInlineElement()) {
@@ -2492,10 +2491,10 @@ class Parser
     #                break;
     #            }
     #        }
-    #        return false;
+    return false
   end
 
-  def scan_whitspace_token
+  def scan_whitspace_token()
     #        Token xsp = scanPosition;
     #        if (scanToken(SPACE)) {
     #            scanPosition = xsp;
@@ -2503,21 +2502,21 @@ class Parser
     #                return true;
     #            }
     #        }
-    #        return false;
+    return false
   end
 
-  def scan_fenced_code_block
-    #        return scanToken(BACKTICK) || scanToken(BACKTICK) || scanToken(BACKTICK);
+  def scan_fenced_code_block()
+    return scan_token(BACKTICK) || scan_token(BACKTICK) || scan_token(BACKTICK);
   end
 
-  def scan_block_quote_empty_lines
-    #        return scanBlockQuoteEmptyLine() || scanToken(EOL);
+  def scan_block_quote_empty_lines()
+    return scan_block_quote_empty_line() || scanToken(EOL)
   end
 
-  def scan_block_quote_empty_line
-    #        if (scanToken(EOL) || scanWhitspaceTokens() || scanToken(GT) || scanWhitspaceTokens()) {
-    #            return true;
-    #        }
+  def scan_block_quote_empty_line()
+    if (scan_token(EOL) || scan_whitspace_tokens() || scan_token(GT) || scan_whitspace_tokens())
+      return true
+    end
     #        Token xsp;
     #        while (true) {
     #            xsp = scanPosition;
@@ -2526,13 +2525,13 @@ class Parser
     #                break;
     #            }
     #        }
-    #        return false;
+    return false
   end
 
-  def scan_for_headersigns
-    #        if (scanToken(EQ)) {
-    #            return true;
-    #        }
+  def scan_for_headersigns()
+    if (scan_token(EQ))
+      return true
+    end
     #        Token xsp;
     #        while (true) {
     #            xsp = scanPosition;
@@ -2545,26 +2544,26 @@ class Parser
   end
 
   def scan_more_block_elements
-    #        Token xsp = scanPosition;
-    #        lookingAhead = true;
-    #        semanticLookAhead = headingAhead(1);
-    #        lookingAhead = false;
-    #        if (!semanticLookAhead || scanForHeadersigns()) {
-    #            scanPosition = xsp;
-    #            if (scanToken(GT)) {
-    #                scanPosition = xsp;
-    #                if (scanToken(DASH)) {
-    #                    scanPosition = xsp;
-    #                    if (scanToken(DIGITS) || scanToken(DOT)) {
-    #                        scanPosition = xsp;
-    #                        if (scanFencedCodeBlock()) {
-    #                            scanPosition = xsp;
-    #                            return scanParagraph();
-    #                        }
-    #                    }
-    #                }
-    #            }
-    #        }
+    xsp = @scanPosition
+    @lookingAhead = true
+    @semanticLookAhead = heading_ahead(1)
+    @lookingAhead = false
+    if (!semantic_lookAhead || scan_for_headersigns())
+      #            scanPosition = xsp;
+      #            if (scanToken(GT)) {
+      #                scanPosition = xsp;
+      #                if (scanToken(DASH)) {
+      #                    scanPosition = xsp;
+      #                    if (scanToken(DIGITS) || scanToken(DOT)) {
+      #                        scanPosition = xsp;
+      #                        if (scanFencedCodeBlock()) {
+      #                            scanPosition = xsp;
+      #                            return scanParagraph();
+      #                        }
+      #                    }
+      #                }
+      #            }
+    end
     #        return false;
   end
 
@@ -2585,7 +2584,7 @@ class Parser
     #        if (lookAhead == 0 && scanPosition == lastPosition) {
     #            throw lookAheadSuccess;
     #        }
-    #        return false;
+    return false
   end
 
   def get_next_token_kind
@@ -2610,7 +2609,7 @@ class Parser
     #            return token;
     #        }
     #        token = old;
-    #        return token;
+    return token
   end
 
   def get_token(index)
@@ -2622,13 +2621,11 @@ class Parser
     #                t = t.next = tm.getNextToken();
     #            }
     #        }
-    #        return t;
+    return t
   end
 
   def setModules(modules)
     this.modules = Arrays.asList(modules);
-    #    }
-    #
   end
 
 end
