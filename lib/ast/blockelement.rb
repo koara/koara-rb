@@ -5,29 +5,29 @@ class BlockElement < Node
   end
   
   def isFirstChild()
-   # return getParent().getChildren()[0] == this;
+   # return getParent().getChildren()[0] == this
   end
   
   def isLastChild()
-    #   Node[] children = getParent().getChildren();
-    #   return children[children.length - 1] == this;
+    #   Node[] children = getParent().getChildren()
+    #   return children[children.length - 1] == this
   end
   
   def isNested()
-    #        return !(getParent() instanceof Document);
+    #        return !(getParent() instanceof Document)
   end
   
   def isSingleChild()
-    #        return ((Node) this.getParent()).getChildren().length == 1;
+    #        return ((Node) this.getParent()).getChildren().length == 1
   end
   
   def next()
-    #     for(int i = 0; i < getParent().getChildren().length - 1; i++) {
+    #     for(int i = 0 i < getParent().getChildren().length - 1 i++) {
     #       if(getParent().getChildren()[i] == this) {
-    #         return getParent().getChildren()[i + 1];
+    #         return getParent().getChildren()[i + 1]
     #       }
     #     }
-    #     return null;
+    #     return null
   end
   
   def accept(renderer)

@@ -12,7 +12,7 @@ class Node
 
     i = 0
     while(i < @children.length)
-      @children[i].accept(renderer);
+      @children[i].accept(renderer)
       i += 1
     end
 

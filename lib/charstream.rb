@@ -24,7 +24,7 @@ class CharStream
 
   def readChar()
     if (@inBuf > 0)
-      @inBuf -= 1;
+      @inBuf -= 1
       if ((@bufpos += 1) == @bufsize)
         @bufpos = 0
       end
@@ -32,26 +32,26 @@ class CharStream
     end
     
     if ((@bufpos += 1) >= @max_next_char_ind)
-      fillBuff();
+      fillBuff()
     end
-    c = @buffer[@bufpos];
-    updateLineColumn(c);
-    return c;
+    c = @buffer[@bufpos]
+    updateLineColumn(c)
+    return c
   end
 
   def fillBuff()
     if (@maxNextCharInd == @available)
       if (@available == @bufsize)
-        @bufpos = 0;
-        @maxNextCharInd = 0;
+        @bufpos = 0
+        @maxNextCharInd = 0
         if (@tokenBegin > 2048)
-          @available = @tokenBegin;
+          @available = @tokenBegin
         else
-          @available = @bufsize;
+          @available = @bufsize
         end
       end
     end
-    i = 0;
+    i = 0
     
     xbuffer = ""
     @reader.read(5, xbuffer)
@@ -61,30 +61,30 @@ class CharStream
 
     #        try {
     #            if ((i = reader.read(buffer, maxNextCharInd, available - maxNextCharInd)) == -1) {
-    #              reader.close();
-    #                throw new IOException();
+    #              reader.close()
+    #                throw new IOException()
     #            } else {
-    #                maxNextCharInd += i;
+    #                maxNextCharInd += i
     #            }
     #        } catch (IOException e) {
-    #            --bufpos;
-    #            backup(0);
+    #            --bufpos
+    #            backup(0)
     #            if (tokenBegin == -1) {
-    #                tokenBegin = bufpos;
+    #                tokenBegin = bufpos
     #            }
-    #            throw e;
+    #            throw e
     #        }
   end
 
   def backup(amount)
-    @inBuf += amount;
+    @inBuf += amount
     if ((bufpos -= amount) < 0)
-      @bufpos += @bufsize;
+      @bufpos += @bufsize
     end
   end
 
   def updateLineColumn(c)
-    @column += 1;
+    @column += 1
 
     if (@prev_char_is_lf)
       @prev_char_is_lf = false
@@ -100,31 +100,31 @@ class CharStream
         @column += (@tabSize - (@column % @tabSize)) 
     end
     
-    @bufline[@bufpos] = @line;
-    @bufcolumn[@bufpos] = @column;
+    @bufline[@bufpos] = @line
+    @bufcolumn[@bufpos] = @column
   end
 
   def getImage()
     if (bufpos >= tokenBegin)
-      #            return new String(buffer, tokenBegin, bufpos - tokenBegin + 1);
+      #            return new String(buffer, tokenBegin, bufpos - tokenBegin + 1)
     end
-    #        return new String(buffer, tokenBegin, bufsize - tokenBegin) + new String(buffer, 0, bufpos + 1);
+    #        return new String(buffer, tokenBegin, bufsize - tokenBegin) + new String(buffer, 0, bufpos + 1)
   end
 
   def getEndColumn()
-    return @bufcolumn[@bufpos];
+    return @bufcolumn[@bufpos]
   end
 
   def getEndLine()
-    return @bufline[@bufpos];
+    return @bufline[@bufpos]
   end
 
   def getBeginColumn()
-    return @bufcolumn[@tokenBegin];
+    return @bufcolumn[@tokenBegin]
   end
 
   def getBeginLine()
-    return @bufline[@tokenBegin];
+    return @bufline[@tokenBegin]
   end
 
 end
