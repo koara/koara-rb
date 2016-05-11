@@ -15,7 +15,7 @@ class CharStream
     @tabSize = 4
   end
 
-  def beginToken
+  def beginToken()
     @tokenBegin = -1
     c = readChar()
     tokenBegin = @bufpos

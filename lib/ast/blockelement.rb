@@ -1,27 +1,27 @@
 class BlockElement < Node
   
-  def hasChildren
+  def hasChildren()
     self.children && self.children.length > 0
   end
   
-  def isFirstChild
+  def isFirstChild()
    # return getParent().getChildren()[0] == this;
   end
   
-  def isLastChild
+  def isLastChild()
     #   Node[] children = getParent().getChildren();
     #   return children[children.length - 1] == this;
   end
   
-  def isNested
+  def isNested()
     #        return !(getParent() instanceof Document);
   end
   
-  def isSingleChild
+  def isSingleChild()
     #        return ((Node) this.getParent()).getChildren().length == 1;
   end
   
-  def next
+  def next()
     #     for(int i = 0; i < getParent().getChildren().length - 1; i++) {
     #       if(getParent().getChildren()[i] == this) {
     #         return getParent().getChildren()[i + 1];
