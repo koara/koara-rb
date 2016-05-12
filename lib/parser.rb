@@ -1,4 +1,8 @@
+require_relative 'charstream'
 require_relative 'lookahead_success'
+require_relative 'token'
+require_relative 'token_manager'
+require_relative 'tree_state'
 
 class Parser
   attr_reader :modules
@@ -32,32 +36,32 @@ class Parser
 
   def parse_reader(reader)
     @cs =  CharStream.new(reader)
-    @tm =  TokenManager.new(cs)
+    @tm =  TokenManager.new(@cs)
     @token =  Token.new
     @tree = TreeState.new()
     @nextTokenKind = -1
     document = Document.new()
-    tree.open_scope()
-    #        while (getNextTokenKind() == EOL) {
-    #            consumeToken(EOL)
-    #        }
-    #
+    @tree.open_scope()
+
+    while(get_next_token_kind() == TokenManager::EOL)
+      consume_token(TokenManager::EOL)
+    end
     white_space()
-    #        if (hasAnyBlockElementsAhead()) {
-    #            blockElement()
-    #            while (blockAhead(0)) {
-    #                while (getNextTokenKind() == EOL) {
-    #                    consumeToken(EOL)
-    #                    whiteSpace()
-    #                }
-    #                blockElement()
-    #            }
-    #            while (getNextTokenKind() == EOL) {
-    #                consumeToken(EOL)
-    #            }
-    #            whiteSpace()
-    #        }
-    consume_token(EOF)
+    if (has_any_block_elements_ahead())
+      block_element()
+      while (block_ahead(0))
+        while (get_next_token_kind() == TokenManager::EOL)
+          consume_token(TokenManager::EOL)
+          white_space()
+        end
+        block_element()
+      end
+      while (get_next_token_kind() == TokenManager::EOL)
+        consume_token(TokenManager::EOL)
+      end
+      white_space()
+    end
+    consume_token(TokenManager::EOF)
     @tree.close_scope(document)
     return document
   end
@@ -65,49 +69,49 @@ class Parser
   #
   def block_element()
     @current_block_level += 1
-    #        if (modules.contains("headings") && headingAhead(1)) {
-    #            heading()
-    #        } else if (modules.contains("blockquotes") && getNextTokenKind() == GT) {
-    #            blockQuote()
-    #        } else if (modules.contains("lists") && getNextTokenKind() == DASH) {
-    #            unorderedList()
-    #        } else if (modules.contains("lists") && hasOrderedListAhead()) {
-    #            orderedList()
-    #        } else if (modules.contains("code") && hasFencedCodeBlockAhead()) {
-    #            fencedCodeBlock()
-    #        } else {
-    #            paragraph()
-    #        }
+    if (modules.include?("headings") && heading_ahead(1))
+      heading()
+    elsif (modules.include?("blockquotes") && get_next_token_kind() == TokenManager::GT)
+      block_quote()
+    elsif (modules.include?("lists") && get_next_token_kind() == TokenManager::DASH)
+      unordered_list()
+    elsif (modules.include?("lists") && has_ordered_list_ahead())
+      ordered_list()
+    elsif (modules.contains("code") && has_fenced_code_block_ahead())
+      fenced_code_block()
+    else
+      paragraph()
+    end
     @current_block_level -= 1
   end
 
   def heading()
     heading =  Heading.new()
     @tree.open_scope()
-    headingLevel = 0
-    #
-    #        while (getNextTokenKind() == EQ) {
-    #            consumeToken(EQ)
-    #            headingLevel++
-    #        }
+    heading_level = 0
+
+    while (get_next_token_kind() == TokenManager::EQ)
+      consume_token(TokenManager::EQ)
+      heading_level += 1
+    end
     white_space()
-    #        while (headingHasInlineElementsAhead()) {
-    #            if (hasTextAhead()) {
-    #                text()
-    #            } else if (modules.contains("images") && hasImageAhead()) {
-    #                image()
-    #            } else if (modules.contains("links") && hasLinkAhead()) {
-    #                link()
-    #            } else if (modules.contains("formatting") && hasStrongAhead()) {
-    #                strong()
-    #            } else if (modules.contains("formatting") && hasEmAhead()) {
-    #                em()
-    #            } else if (modules.contains("code") && hasCodeAhead()) {
-    #                code()
-    #            } else {
-    #                looseChar()
-    #            }
-    #        }
+    while (heading_has_inline_elementsAhead())
+      if (has_text_ahead())
+        text()
+      elsif (modules.contains("images") && has_image_ahead())
+        image()
+      elsif (modules.contains("links") && has_link_ahead())
+        link()
+      elsif (modules.contains("formatting") && has_strong_ahead())
+        strong()
+      elsif (modules.contains("formatting") && has_em_ahead())
+        em()
+      elsif (modules.contains("code") && has_code_ahead())
+        code()
+      else
+        loose_char()
+      end
+    end
     heading.value = headingLevel
     @tree.close_scope(heading)
   end
@@ -116,25 +120,25 @@ class Parser
     blockquote = BlockQuote.new()
     @tree.open_scope()
     @current_quote_Level += 1
-    consume_token(GT)
-    #        while (blockQuoteHasEmptyLineAhead()) {
-    #            blockQuoteEmptyLine()
-    #        }
-    #        whiteSpace()
-    #        if (blockQuoteHasAnyBlockElementseAhead()) {
-    #            blockElement()
-    #            while (blockAhead(0)) {
-    #                while (getNextTokenKind() == EOL) {
-    #                    consumeToken(EOL)
-    #                    whiteSpace()
-    #                    blockQuotePrefix()
-    #                }
-    #                blockElement()
-    #            }
-    #        }
-    #        while (hasBlockQuoteEmptyLinesAhead()) {
-    #            blockQuoteEmptyLine()
-    #        }
+    consume_token(TokenManager::GT)
+    while (block_quote_has_empty_line_ahead())
+      block_quote_empty_line()
+    end
+    white_space()
+    if (block_quote_has_any_block_elements_ahead())
+      block_element()
+      while (block_ahead(0))
+        while (getNextTokenKind() == TokenManager::EOL)
+          consume_token(TokenManager::EOL)
+          white_space()
+          block_quote_prefix()
+        end
+        block_element()
+      end
+    end
+    while (hasBlockQuoteEmptyLinesAhead())
+      block_quote_empty_line()
+    end
     current_quote_level -= 1
     @tree.close_scope(blockquote)
   end
@@ -142,34 +146,34 @@ class Parser
   def block_quote_prefix()
     i = 0
     #        do {
-    #            consumeToken(GT)
-    #            whiteSpace()
+    consume_token(TokenManager::GT)
+    white_space()
     #        } while (++i < currentQuoteLevel)
   end
 
   def block_quote_empty_line()
-    consume_token(EOL)
+    consume_token(TokenManager::TokenManager::EOL)
     white_space()
     #        do {
-    #            consumeToken(GT)
-    #            whiteSpace()
-    #        } while (getNextTokenKind() == GT)
+    consume_token(TokenManager::GT)
+    white_space()
+    #        } while (getNextTokenKind() == TokenManager::GT)
   end
 
   def unordered_list()
     list =  ListBlock.new(false)
     @tree.open_scope()
     listBeginColumn = unordered_list_item()
-    #        while (listItemAhead(listBeginColumn, false)) {
-    #            while (getNextTokenKind() == EOL) {
-    #                consumeToken(EOL)
-    #            }
-    #            whiteSpace()
-    #            if (currentQuoteLevel > 0) {
-    #                blockQuotePrefix()
-    #            }
-    #            unorderedListItem()
-    #        }
+    while (list_item_ahead(list_begin_column, false))
+      while (get_next_token_kind() == TokenManager::EOL)
+        consume_token(TokenManager::EOL)
+      end
+      white_space()
+      if (currentQuoteLevel > 0)
+        block_quote_prefix()
+      end
+      unordered_list_item()
+    end
     @tree.close_scope(list)
   end
 
@@ -177,21 +181,21 @@ class Parser
     listItem = ListItem.new()
     @tree.open_scope()
 
-    t = consumeToken(DASH)
+    t = consumeToken(TokenManager::DASH)
     white_space()
-    #        if (listItemHasInlineElements()) {
-    #            blockElement()
-    #            while (blockAhead(t.beginColumn)) {
-    #                while (getNextTokenKind() == EOL) {
-    #                    consumeToken(EOL)
-    #                    whiteSpace()
-    #                    if (currentQuoteLevel > 0) {
-    #                        blockQuotePrefix()
-    #                    }
-    #                }
-    #                blockElement()
-    #            }
-    #        }
+    if (list_item_has_inline_elements())
+      block_element()
+      while (block_ahead(t.beginColumn))
+        while (get_next_token_kind() == TokenManager::EOL)
+          consume_token(TTokenManager::EOL)
+          white_space()
+          if (currentQuoteLevel > 0)
+            block_quote_prefix()
+          end
+        end
+        block_element()
+      end
+    end
     @tree.close_scope(list_item)
     return t.beginColumn
   end
@@ -200,37 +204,37 @@ class Parser
     list = ListBlock.new(true)
     @tree.open_scope()
     listBeginColumn = ordered_list_item()
-    #        while (listItemAhead(listBeginColumn, true)) {
-    #            while (getNextTokenKind() == EOL) {
-    #                consumeToken(EOL)
-    #            }
-    #            whiteSpace()
-    #            if (currentQuoteLevel > 0) {
-    #                blockQuotePrefix()
-    #            }
-    #            orderedListItem()
-    #        }
+    while (listItemAhead(listBeginColumn, true))
+      while (get_next_token_kind() == TokenManager::EOL)
+        consume_token(TokenManager::EOL)
+      end
+      white_space()
+      if (currentQuoteLevel > 0)
+        block_quote_prefix()
+      end
+      ordered_list_item()
+    end
     @tree.closeScope(list)
   end
 
   def ordered_list_item()
     list_item = ListItem.new()
     @tree.open_scope()
-    t = consume_token(DIGITS)
-    consume_token(DOT)
+    t = consume_token(TokenManager::DIGITS)
+    consume_token(TokenManager::DOT)
     white_space()
     if (list_item_has_inline_elements())
       block_element()
-      #            while (blockAhead(t.beginColumn)) {
-      #                while (getNextTokenKind() == EOL) {
-      #                    consumeToken(EOL)
-      #                    whiteSpace()
-      #                    if (currentQuoteLevel > 0) {
-      #                        blockQuotePrefix()
-      #                    }
-      #                }
-      #                blockElement()
-      #            }
+      while (block_ahead(t.begin_column))
+        while (get_next_token_kind() == TokenManager::EOL)
+          consume_token(TokenManager::EOL)
+          white_space()
+          if (current_quote_level > 0)
+            block_quote_prefix()
+          end
+        end
+        block_element()
+      end
     end
     list_item.number = t.image
     @tree.close_scope(list_item)
@@ -238,124 +242,124 @@ class Parser
   end
 
   def fenced_code_block()
-    codeBlock = CodeBlock.new()
+    code_block = CodeBlock.new()
     @tree.open_scope()
     #        StringBuilder s = new StringBuilder()
-    beginColumn = consume_token(BACKTICK).begin_column
+    begin_column = consume_token(TokenManager::BACKTICK).begin_column
     #        do {
-    #            consumeToken(BACKTICK)
-    #        } while (getNextTokenKind() == BACKTICK)
-    #        whiteSpace()
-    #        if (getNextTokenKind() == CHAR_SEQUENCE) {
-    #            codeBlock.setLanguage(codeLanguage())
-    #        }
-    #        if (getNextTokenKind() != EOF && !fencesAhead()) {
-    #            consumeToken(EOL)
-    #            levelWhiteSpace(beginColumn)
-    #        }
-    #
+    #            consumeToken(TokenManager::BACKTICK)
+    #        } while (getNextTokenKind() == TokenManager::BACKTICK)
+    white_space()
+    if (get_next_token_kind() == TokenManager::CHAR_SEQUENCE)
+      code_block.language = code_language()
+    end
+    if (get_next_token_kind() != TokenManager::EOF && !fences_ahead())
+      consume_token(TokenManager::EOL)
+      level_white_space(begin_column)
+    end
+
     kind = get_next_token_kind()
-    #        while (kind != EOF && ((kind != EOL && kind != BACKTICK) || !fencesAhead())) {
-    #            switch (kind) {
-    #          case CHAR_SEQUENCE:
-    #            s.append(consumeToken(CHAR_SEQUENCE).image)
-    #            break
-    #            case ASTERISK:
-    #                s.append(consumeToken(ASTERISK).image)
-    #                break
-    #            case BACKSLASH:
-    #                s.append(consumeToken(BACKSLASH).image)
-    #                break
-    #            case COLON:
-    #                s.append(consumeToken(COLON).image)
-    #                break
-    #            case DASH:
-    #                s.append(consumeToken(DASH).image)
-    #                break
-    #            case DIGITS:
-    #                s.append(consumeToken(DIGITS).image)
-    #                break
-    #            case DOT:
-    #                s.append(consumeToken(DOT).image)
-    #                break
-    #            case EQ:
-    #                s.append(consumeToken(EQ).image)
-    #                break
-    #            case ESCAPED_CHAR:
-    #                s.append(consumeToken(ESCAPED_CHAR).image)
-    #                break
-    #            case IMAGE_LABEL:
-    #                s.append(consumeToken(IMAGE_LABEL).image)
-    #                break
-    #            case LT:
-    #                s.append(consumeToken(LT).image)
-    #                break
-    #            case GT:
-    #                s.append(consumeToken(GT).image)
-    #                break
-    #            case LBRACK:
-    #                s.append(consumeToken(LBRACK).image)
-    #                break
-    #            case RBRACK:
-    #                s.append(consumeToken(RBRACK).image)
-    #                break
-    #            case LPAREN:
-    #                s.append(consumeToken(LPAREN).image)
-    #                break
-    #            case RPAREN:
-    #                s.append(consumeToken(RPAREN).image)
-    #                break
-    #            case UNDERSCORE:
-    #                s.append(consumeToken(UNDERSCORE).image)
-    #                break
-    #            case BACKTICK:
-    #                s.append(consumeToken(BACKTICK).image)
-    #                break
-    #            default:
-    #                if (!nextAfterSpace(EOL, EOF)) {
-    #                    switch (kind) {
-    #                    case SPACE:
-    #                        s.append(consumeToken(SPACE).image)
-    #                        break
-    #                    case TAB:
-    #                        consumeToken(TAB)
-    #                        s.append("    ")
-    #                        break
-    #                    }
-    #                } else if (!fencesAhead()) {
-    #                    consumeToken(EOL)
-    #                    s.append("\n")
-    #                    levelWhiteSpace(beginColumn)
-    #                }
-    #            }
-    #            kind = getNextTokenKind()
-    #        }
-    if (fences_ahead())
-      consume_token(EOL)
-      white_space()
-      #            while (getNextTokenKind() == BACKTICK) {
-      #                consumeToken(BACKTICK)
+    while (kind != TokenManager::EOF && ((kind != TokenManager::EOL && kind != TokenManager::BACKTICK) || !fences_ahead()))
+      #            switch (kind) {
+      #          case TokenManager::CHAR_STokenManager::EQUENCE:
+      #            s.append(consumeToken(TokenManager::CHAR_STokenManager::EQUENCE).image)
+      #            break
+      #            case TokenManager::ASTERISK:
+      #                s.append(consumeToken(TokenManager::ASTERISK).image)
+      #                break
+      #            case TokenManager::BACKSLASH:
+      #                s.append(consumeToken(TokenManager::BACKSLASH).image)
+      #                break
+      #            case TokenManager::COLON:
+      #                s.append(consumeToken(TokenManager::COLON).image)
+      #                break
+      #            case TokenManager::DASH:
+      #                s.append(consumeToken(TokenManager::DASH).image)
+      #                break
+      #            case TokenManager::DIGITS:
+      #                s.append(consumeToken(TokenManager::DIGITS).image)
+      #                break
+      #            case TokenManager::DOT:
+      #                s.append(consumeToken(TokenManager::DOT).image)
+      #                break
+      #            case TokenManager::EQ:
+      #                s.append(consumeToken(TokenManager::EQ).image)
+      #                break
+      #            case TokenManager::ESCAPED_CHAR:
+      #                s.append(consumeToken(TokenManager::ESCAPED_CHAR).image)
+      #                break
+      #            case TokenManager::IMAGE_LABEL:
+      #                s.append(consumeToken(TokenManager::IMAGE_LABEL).image)
+      #                break
+      #            case TokenManager::LT:
+      #                s.append(consumeToken(TokenManager::LT).image)
+      #                break
+      #            case TokenManager::GT:
+      #                s.append(consumeToken(TokenManager::GT).image)
+      #                break
+      #            case TokenManager::LBRACK:
+      #                s.append(consumeToken(TokenManager::LBRACK).image)
+      #                break
+      #            case TokenManager::RBRACK:
+      #                s.append(consumeToken(TokenManager::RBRACK).image)
+      #                break
+      #            case TokenManager::LPAREN:
+      #                s.append(consumeToken(TokenManager::LPAREN).image)
+      #                break
+      #            case TokenManager::RPAREN:
+      #                s.append(consumeToken(TokenManager::RPAREN).image)
+      #                break
+      #            case TokenManager::UNDERSCORE:
+      #                s.append(consumeToken(TokenManager::UNDERSCORE).image)
+      #                break
+      #            case TokenManager::BACKTICK:
+      #                s.append(consumeToken(TokenManager::BACKTICK).image)
+      #                break
+      #            default:
+      #                if (!nextAfterspace(TokenManager::TokenManager::EOL, EOF)) {
+      #                    switch (kind) {
+      #                    case TokenManager::SPACE:
+      #                        s.append(consumeToken(TokenManager::SPACE).image)
+      #                        break
+      #                    case TokenManager::TAB:
+      #                        consumeToken(TokenManager::TAB)
+      #                        s.append("    ")
+      #                        break
+      #                    }
+      #                } else if (!fencesAhead()) {
+      #                    consumeToken(TokenManager::TokenManager::EOL)
+      #                    s.append("\n")
+      #                    levelWhitespace(beginColumn)
+      #                }
       #            }
+      #            kind = getNextTokenKind()
+    end
+    if (fences_ahead())
+      consume_token(TokenManager::TokenManager::EOL)
+      white_space()
+      while (get_next_token_kind() == TokenManager::BACKTICK)
+        consume_token(TokenManager::BACKTICK)
+      end
     end
     #        codeBlock.setValue(s.toString())
     @tree.close_scope(code_block)
   end
 
   def paragraph()
-    #        BlockElement paragraph = modules.contains("paragraphs") ? new Paragraph() : new BlockElement()
+    paragraph = modules.includes?("paragraphs") ? Paragraph.new() : BlockElement.new()
     @tree.open_scope()
     inline()
-    #        while (textAhead()) {
-    #            lineBreak()
-    #            whiteSpace()
-    #            if (modules.contains("blockquotes")) {
-    #                while (getNextTokenKind() == GT) {
-    #                    consumeToken(GT)
-    #                    whiteSpace()
-    #                }
-    #            }
-    #            inline()
-    #        }
+    while (textAhead())
+      line_break()
+      white_space()
+      if (modules.includes?("blockquotes"))
+        while (get_next_token_kind() == TokenManager::GT)
+          consume_token(TokenManager::GT)
+          white_space()
+        end
+      end
+      inline()
+    end
     @tree.close_scope(paragraph)
   end
 
@@ -363,64 +367,64 @@ class Parser
     text = Text.new()
     @tree.open_scope()
     #        StringBuffer s = new StringBuffer()
-    #        while (textHasTokensAhead()) {
-    #            switch (getNextTokenKind()) {
-    #          case CHAR_SEQUENCE:
-    #            s.append(consumeToken(CHAR_SEQUENCE).image)
-    #            break
-    #            case BACKSLASH:
-    #                s.append(consumeToken(BACKSLASH).image)
-    #                break
-    #            case COLON:
-    #                s.append(consumeToken(COLON).image)
-    #                break
-    #            case DASH:
-    #                s.append(consumeToken(DASH).image)
-    #                break
-    #            case DIGITS:
-    #                s.append(consumeToken(DIGITS).image)
-    #                break
-    #            case DOT:
-    #                s.append(consumeToken(DOT).image)
-    #                break
-    #            case EQ:
-    #                s.append(consumeToken(EQ).image)
-    #                break
-    #            case ESCAPED_CHAR:
-    #                s.append(consumeToken(ESCAPED_CHAR).image.substring(1))
-    #                break
-    #            case GT:
-    #                s.append(consumeToken(GT).image)
-    #                break
-    #            case IMAGE_LABEL:
-    #                s.append(consumeToken(IMAGE_LABEL).image)
-    #                break
-    #            case LPAREN:
-    #                s.append(consumeToken(LPAREN).image)
-    #                break
-    #            case LT:
-    #                s.append(consumeToken(LT).image)
-    #                break
-    #            case RBRACK:
-    #                s.append(consumeToken(RBRACK).image)
-    #                break
-    #            case RPAREN:
-    #                s.append(consumeToken(RPAREN).image)
-    #                break
-    #            default:
-    #                if (!nextAfterSpace(EOL, EOF)) {
-    #                    switch (getNextTokenKind()) {
-    #                    case SPACE:
-    #                        s.append(consumeToken(SPACE).image)
-    #                        break
-    #                    case TAB:
-    #                        consumeToken(TAB)
-    #                        s.append("    ")
-    #                        break
-    #                    }
-    #                }
-    #            }
-    #        }
+    while (text_has_tokens_ahead())
+      #            switch (getNextTokenKind()) {
+      #          case TokenManager::CHAR_STokenManager::EQUENCE:
+      #            s.append(consumeToken(TokenManager::CHAR_STokenManager::EQUENCE).image)
+      #            break
+      #            case TokenManager::BACKSLASH:
+      #                s.append(consumeToken(TokenManager::BACKSLASH).image)
+      #                break
+      #            case TokenManager::COLON:
+      #                s.append(consumeToken(TokenManager::COLON).image)
+      #                break
+      #            case TokenManager::DASH:
+      #                s.append(consumeToken(TokenManager::DASH).image)
+      #                break
+      #            case TokenManager::DIGITS:
+      #                s.append(consumeToken(TokenManager::DIGITS).image)
+      #                break
+      #            case TokenManager::DOT:
+      #                s.append(consumeToken(TokenManager::DOT).image)
+      #                break
+      #            case TokenManager::EQ:
+      #                s.append(consumeToken(TokenManager::EQ).image)
+      #                break
+      #            case TokenManager::ESCAPED_CHAR:
+      #                s.append(consumeToken(TokenManager::ESCAPED_CHAR).image.substring(1))
+      #                break
+      #            case TokenManager::GT:
+      #                s.append(consumeToken(TokenManager::GT).image)
+      #                break
+      #            case TokenManager::IMAGE_LABEL:
+      #                s.append(consumeToken(TokenManager::IMAGE_LABEL).image)
+      #                break
+      #            case TokenManager::LPAREN:
+      #                s.append(consumeToken(TokenManager::LPAREN).image)
+      #                break
+      #            case TokenManager::LT:
+      #                s.append(consumeToken(TokenManager::LT).image)
+      #                break
+      #            case TokenManager::RBRACK:
+      #                s.append(consumeToken(TokenManager::RBRACK).image)
+      #                break
+      #            case TokenManager::RPAREN:
+      #                s.append(consumeToken(TokenManager::RPAREN).image)
+      #                break
+      #            default:
+      #                if (!nextAfterspace(TokenManager::TokenManager::EOL, EOF)) {
+      #                    switch (getNextTokenKind()) {
+      #                    case TokenManager::SPACE:
+      #                        s.append(consumeToken(TokenManager::SPACE).image)
+      #                        break
+      #                    case TokenManager::TAB:
+      #                        consumeToken(TokenManager::TAB)
+      #                        s.append("    ")
+      #                        break
+      #                    }
+      #                }
+      #            }
+    end
     #        text.setValue(s.toString())
     @tree.close_scope(text)
   end
@@ -428,22 +432,22 @@ class Parser
   def image()
     image = Image.new()
     @tree.open_scope()
-    #        String ref = ""
-    consume_token(LBRACK)
+    ref = ""
+    consume_token(TokenManager::LBRACK)
     white_space()
-    consume_token(IMAGE_LABEL)
+    consume_token(TokenManager::IMAGE_LABEL)
     white_space()
-    #        while (imageHasAnyElements()) {
-    #            if (hasTextAhead()) {
-    #                resourceText()
-    #            } else {
-    #                looseChar()
-    #            }
-    #        }
+    while (imageHasAnyElements())
+      if (hasTextAhead())
+        resource_text()
+      else
+        loose_char()
+      end
+    end
     white_space()
-    consume_token(RBRACK)
+    consume_token(TokenManager::RBRACK)
     if (has_resource_url_ahead())
-      #            ref = resourceUrl()
+      ref = resource_url()
     end
     image.value = ref
     @tree.close_scope(image)
@@ -452,26 +456,26 @@ class Parser
   def link()
     link = Link.new()
     @tree.open_scope()
-    #        String ref = ""
-    consume_token(LBRACK)
+    ref = ""
+    consume_token(TokenManager::LBRACK)
     white_space()
-    #        while (linkHasAnyElements()) {
-    #            if (modules.contains("images") && hasImageAhead()) {
-    #                image()
-    #            } else if (modules.contains("formatting") && hasStrongAhead()) {
-    #                strong()
-    #            } else if (modules.contains("formatting") && hasEmAhead()) {
-    #                em()
-    #            } else if (modules.contains("code") && hasCodeAhead()) {
-    #                code()
-    #            } else if (hasResourceTextAhead()) {
-    #                resourceText()
-    #            } else {
-    #                looseChar()
-    #            }
-    #        }
+    while (link_has_any_elements())
+      if (modules.includes?("images") && has_Image_ahead())
+        image()
+      elsif (modules.includes?("formatting") && has_strong_ahead())
+        strong()
+      elsif (modules.includes?("formatting") && has_em_ahead())
+        em()
+      elsif (modules.includes?("code") && has_code_ahead())
+        code()
+      elsif(has_resource_text_ahead())
+        resource_text()
+      else
+        looseChar()
+      end
+    end
     white_space()
-    consume_token(RBRACK)
+    consume_token(TokenManager::RBRACK)
     if (hasResourceUrlAhead())
       ref = resource_url()
     end
@@ -482,75 +486,75 @@ class Parser
   def strong()
     strong = Strong.new()
     @tree.open_scope()
-    consume_token(ASTERISK)
-    #        while (strongHasElements()) {
-    #            if (hasTextAhead()) {
-    #                text()
-    #            } else if (modules.contains("images") && hasImage()) {
-    #                image()
-    #            } else if (modules.contains("links") && hasLinkAhead()) {
-    #                link()
-    #            } else if (modules.contains("code") && multilineAhead(BACKTICK)) {
-    #                codeMultiline()
-    #            } else if (strongEmWithinStrongAhead()) {
-    #                emWithinStrong()
-    #            } else {
-    #                switch (getNextTokenKind()) {
-    #                case BACKTICK:
-    #                    tree.addSingleValue(new Text(), consumeToken(BACKTICK))
-    #                    break
-    #                case LBRACK:
-    #                    tree.addSingleValue(new Text(), consumeToken(LBRACK))
-    #                    break
-    #                case UNDERSCORE:
-    #                    tree.addSingleValue(new Text(), consumeToken(UNDERSCORE))
-    #                    break
-    #                }
-    #            }
-    #        }
-    consume_token(ASTERISK)
+    consume_token(TokenManager::ASTERISK)
+    while (strong_has_elements())
+      if (has_text_ahead())
+        text()
+      elsif (modules.includes?("images") && has_image())
+        image()
+      elsif (modules.includes?("links") && has_link_ahead())
+        link()
+      elsif (modules.includes?("code") && multiline_ahead(TokenManager::BACKTICK))
+        code_multiline()
+      elsif (strongEmWithinStrongAhead())
+        em_within_strong()
+      else
+        #                switch (getNextTokenKind()) {
+        #                case TokenManager::BACKTICK:
+        #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
+        #                    break
+        #                case TokenManager::LBRACK:
+        #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
+        #                    break
+        #                case TokenManager::UNDERSCORE:
+        #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::UNDERSCORE))
+        #                    break
+        #                }
+      end
+    end
+    consume_token(TokenManager::ASTERISK)
     @tree.close_scope(strong)
   end
 
   def em()
     em = Em.new()
     @tree.open_scope()
-    consume_Token(UNDERSCORE)
-    #        while (emHasElements()) {
-    #            if (hasTextAhead()) {
-    #                text()
-    #            } else if (modules.contains("images") && hasImage()) {
-    #                image()
-    #            } else if (modules.contains("links") && hasLinkAhead()) {
-    #                link()
-    #            } else if (modules.contains("code") && hasCodeAhead()) {
-    #                code()
-    #            } else if (emHasStrongWithinEm()) {
-    #                strongWithinEm()
-    #            } else {
-    #                switch (getNextTokenKind()) {
-    #                case ASTERISK:
-    #                    tree.addSingleValue(new Text(), consumeToken(ASTERISK))
-    #                    break
-    #                case BACKTICK:
-    #                    tree.addSingleValue(new Text(), consumeToken(BACKTICK))
-    #                    break
-    #                case LBRACK:
-    #                    tree.addSingleValue(new Text(), consumeToken(LBRACK))
-    #                    break
-    #                }
-    #            }
-    #        }
-    consume_token(UNDERSCORE)
+    consume_Token(TokenManager::UNDERSCORE)
+    while (em_has_elements())
+      if (has_text_ahead())
+        text()
+      elsif (modules.includes?("images") && has_image())
+        image()
+      elsif (modules.includes?("links") && has_link_ahead())
+        link()
+      elsif (modules.includes?("code") && has_code_ahead())
+        code()
+      elsif (em_has_strong_within_em())
+        strong_within_em()
+      else
+        #                switch (getNextTokenKind()) {
+        #                case TokenManager::ASTERISK:
+        #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::ASTERISK))
+        #                    break
+        #                case TokenManager::BACKTICK:
+        #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
+        #                    break
+        #                case TokenManager::LBRACK:
+        #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
+        #                    break
+        #                }
+      end
+    end
+    consume_token(TokenManager::UNDERSCORE)
     tree.close_scope(em)
   end
 
   def code()
     code = Code.new
     @tree.open_scope()
-    consume_token(BACKTICK)
+    consume_token(TokenManager::BACKTICK)
     code_text()
-    consumetToken(BACKTICK)
+    consumetToken(TokenManager::BACKTICK)
     @tree.close_scope(code)
   end
 
@@ -560,65 +564,65 @@ class Parser
     #        StringBuffer s = new StringBuffer()
     #        do {
     #            switch (getNextTokenKind()) {
-    #          case CHAR_SEQUENCE:
-    #            s.append(consumeToken(CHAR_SEQUENCE).image)
+    #          case TokenManager::CHAR_STokenManager::EQUENCE:
+    #            s.append(consumeToken(TokenManager::CHAR_STokenManager::EQUENCE).image)
     #            break
-    #            case ASTERISK:
-    #                s.append(consumeToken(ASTERISK).image)
+    #            case TokenManager::ASTERISK:
+    #                s.append(consumeToken(TokenManager::ASTERISK).image)
     #                break
-    #            case BACKSLASH:
-    #                s.append(consumeToken(BACKSLASH).image)
+    #            case TokenManager::BACKSLASH:
+    #                s.append(consumeToken(TokenManager::BACKSLASH).image)
     #                break
-    #            case COLON:
-    #                s.append(consumeToken(COLON).image)
+    #            case TokenManager::COLON:
+    #                s.append(consumeToken(TokenManager::COLON).image)
     #                break
-    #            case DASH:
-    #                s.append(consumeToken(DASH).image)
+    #            case TokenManager::DASH:
+    #                s.append(consumeToken(TokenManager::DASH).image)
     #                break
-    #            case DIGITS:
-    #                s.append(consumeToken(DIGITS).image)
+    #            case TokenManager::DIGITS:
+    #                s.append(consumeToken(TokenManager::DIGITS).image)
     #                break
-    #            case DOT:
-    #                s.append(consumeToken(DOT).image)
+    #            case TokenManager::DOT:
+    #                s.append(consumeToken(TokenManager::DOT).image)
     #                break
-    #            case EQ:
-    #                s.append(consumeToken(EQ).image)
+    #            case TokenManager::EQ:
+    #                s.append(consumeToken(TokenManager::EQ).image)
     #                break
-    #            case ESCAPED_CHAR:
-    #                s.append(consumeToken(ESCAPED_CHAR).image)
+    #            case TokenManager::ESCAPED_CHAR:
+    #                s.append(consumeToken(TokenManager::ESCAPED_CHAR).image)
     #                break
-    #            case IMAGE_LABEL:
-    #                s.append(consumeToken(IMAGE_LABEL).image)
+    #            case TokenManager::IMAGE_LABEL:
+    #                s.append(consumeToken(TokenManager::IMAGE_LABEL).image)
     #                break
-    #            case LT:
-    #                s.append(consumeToken(LT).image)
+    #            case TokenManager::LT:
+    #                s.append(consumeToken(TokenManager::LT).image)
     #                break
-    #            case LBRACK:
-    #                s.append(consumeToken(LBRACK).image)
+    #            case TokenManager::LBRACK:
+    #                s.append(consumeToken(TokenManager::LBRACK).image)
     #                break
-    #            case RBRACK:
-    #                s.append(consumeToken(RBRACK).image)
+    #            case TokenManager::RBRACK:
+    #                s.append(consumeToken(TokenManager::RBRACK).image)
     #                break
-    #            case LPAREN:
-    #                s.append(consumeToken(LPAREN).image)
+    #            case TokenManager::LPAREN:
+    #                s.append(consumeToken(TokenManager::LPAREN).image)
     #                break
-    #            case GT:
-    #                s.append(consumeToken(GT).image)
+    #            case TokenManager::GT:
+    #                s.append(consumeToken(TokenManager::GT).image)
     #                break
-    #            case RPAREN:
-    #                s.append(consumeToken(RPAREN).image)
+    #            case TokenManager::RPAREN:
+    #                s.append(consumeToken(TokenManager::RPAREN).image)
     #                break
-    #            case UNDERSCORE:
-    #                s.append(consumeToken(UNDERSCORE).image)
+    #            case TokenManager::UNDERSCORE:
+    #                s.append(consumeToken(TokenManager::UNDERSCORE).image)
     #                break
     #            default:
-    #                if (!nextAfterSpace(EOL, EOF)) {
+    #                if (!nextAfterspace(TokenManager::TokenManager::EOL, EOF)) {
     #                    switch (getNextTokenKind()) {
-    #                    case SPACE:
-    #                        s.append(consumeToken(SPACE).image)
+    #                    case TokenManager::SPACE:
+    #                        s.append(consumeToken(TokenManager::SPACE).image)
     #                        break
-    #                    case TAB:
-    #                        consumeToken(TAB)
+    #                    case TokenManager::TAB:
+    #                        consumeToken(TokenManager::TAB)
     #                        s.append("    ")
     #                        break
     #                    }
@@ -633,17 +637,17 @@ class Parser
     text = Text.new()
     @tree.open_scope()
     #        switch (getNextTokenKind()) {
-    #        case ASTERISK:
-    #            text.setValue(consumeToken(ASTERISK).image)
+    #        case TokenManager::ASTERISK:
+    #            text.setValue(consumeToken(TokenManager::ASTERISK).image)
     #            break
-    #        case BACKTICK:
-    #            text.setValue(consumeToken(BACKTICK).image)
+    #        case TokenManager::BACKTICK:
+    #            text.setValue(consumeToken(TokenManager::BACKTICK).image)
     #            break
-    #        case LBRACK:
-    #            text.setValue(consumeToken(LBRACK).image)
+    #        case TokenManager::LBRACK:
+    #            text.setValue(consumeToken(TokenManager::LBRACK).image)
     #            break
-    #        case UNDERSCORE:
-    #            text.setValue(consumeToken(UNDERSCORE).image)
+    #        case TokenManager::UNDERSCORE:
+    #            text.setValue(consumeToken(TokenManager::UNDERSCORE).image)
     #            break
     #        }
     @tree.close_scope(text)
@@ -652,91 +656,91 @@ class Parser
   def line_break()
     linebreak = LineBreak.new()
     tree.open_scope()
-    #        while (getNextTokenKind() == SPACE || getNextTokenKind() == TAB) {
-    #            consumeToken(getNextTokenKind())
-    #        }
-    consume_token(EOL)
+    while (get_next_token_kind() == TokenManager::SPACE || get_next_token_kind() == TokenManager::TAB)
+      consumeToken(getNextTokenKind())
+    end
+    consume_token(TokenManager::EOL)
     tree.close_scope(linebreak)
   end
 
-  def level_white_space(threshold)
-    currentPos = 1
-    #        while (getNextTokenKind() == GT) {
-    #            consumeToken(getNextTokenKind())
-    #        }
-    #        while ((getNextTokenKind() == SPACE || getNextTokenKind() == TAB) && currentPos < (threshold - 1)) {
-    #            currentPos = consumeToken(getNextTokenKind()).beginColumn
-    #        }
+  def level_white_space()
+    current_pos = 1
+    while (get_next_token_kind() == TokenManager::GT)
+      consume_token(get_next_token_kind())
+    end
+    while ((get_next_token_kind() == TokenManager::SPACE || get_next_token_kind() == TokenManager::TAB) && current_pos < (threshold - 1))
+      current_pos = consume_token(get_next_token_kind()).begin_column
+    end
   end
 
   def code_language()
     #        StringBuilder s = new StringBuilder()
     #        do {
     #            switch (getNextTokenKind()) {
-    #          case CHAR_SEQUENCE:
-    #            s.append(consumeToken(CHAR_SEQUENCE).image)
+    #          case TokenManager::CHAR_STokenManager::EQUENCE:
+    #            s.append(consumeToken(TokenManager::CHAR_STokenManager::EQUENCE).image)
     #            break
-    #            case ASTERISK:
-    #                s.append(consumeToken(ASTERISK).image)
+    #            case TokenManager::ASTERISK:
+    #                s.append(consumeToken(TokenManager::ASTERISK).image)
     #                break
-    #            case BACKSLASH:
-    #                s.append(consumeToken(BACKSLASH).image)
+    #            case TokenManager::BACKSLASH:
+    #                s.append(consumeToken(TokenManager::BACKSLASH).image)
     #                break
-    #            case BACKTICK:
-    #                s.append(consumeToken(BACKTICK).image)
+    #            case TokenManager::BACKTICK:
+    #                s.append(consumeToken(TokenManager::BACKTICK).image)
     #                break
-    #            case COLON:
-    #                s.append(consumeToken(COLON).image)
+    #            case TokenManager::COLON:
+    #                s.append(consumeToken(TokenManager::COLON).image)
     #                break
-    #            case DASH:
-    #                s.append(consumeToken(DASH).image)
+    #            case TokenManager::DASH:
+    #                s.append(consumeToken(TokenManager::DASH).image)
     #                break
-    #            case DIGITS:
-    #                s.append(consumeToken(DIGITS).image)
+    #            case TokenManager::DIGITS:
+    #                s.append(consumeToken(TokenManager::DIGITS).image)
     #                break
-    #            case DOT:
-    #                s.append(consumeToken(DOT).image)
+    #            case TokenManager::DOT:
+    #                s.append(consumeToken(TokenManager::DOT).image)
     #                break
-    #            case EQ:
-    #                s.append(consumeToken(EQ).image)
+    #            case TokenManager::EQ:
+    #                s.append(consumeToken(TokenManager::EQ).image)
     #                break
-    #            case ESCAPED_CHAR:
-    #                s.append(consumeToken(ESCAPED_CHAR).image)
+    #            case TokenManager::ESCAPED_CHAR:
+    #                s.append(consumeToken(TokenManager::ESCAPED_CHAR).image)
     #                break
-    #            case IMAGE_LABEL:
-    #                s.append(consumeToken(IMAGE_LABEL).image)
+    #            case TokenManager::IMAGE_LABEL:
+    #                s.append(consumeToken(TokenManager::IMAGE_LABEL).image)
     #                break
-    #            case LT:
-    #                s.append(consumeToken(LT).image)
+    #            case TokenManager::LT:
+    #                s.append(consumeToken(TokenManager::LT).image)
     #                break
-    #            case GT:
-    #                s.append(consumeToken(GT).image)
+    #            case TokenManager::GT:
+    #                s.append(consumeToken(TokenManager::GT).image)
     #                break
-    #            case LBRACK:
-    #                s.append(consumeToken(LBRACK).image)
+    #            case TokenManager::LBRACK:
+    #                s.append(consumeToken(TokenManager::LBRACK).image)
     #                break
-    #            case RBRACK:
-    #                s.append(consumeToken(RBRACK).image)
+    #            case TokenManager::RBRACK:
+    #                s.append(consumeToken(TokenManager::RBRACK).image)
     #                break
-    #            case LPAREN:
-    #                s.append(consumeToken(LPAREN).image)
+    #            case TokenManager::LPAREN:
+    #                s.append(consumeToken(TokenManager::LPAREN).image)
     #                break
-    #            case RPAREN:
-    #                s.append(consumeToken(RPAREN).image)
+    #            case TokenManager::RPAREN:
+    #                s.append(consumeToken(TokenManager::RPAREN).image)
     #                break
-    #            case UNDERSCORE:
-    #                s.append(consumeToken(UNDERSCORE).image)
+    #            case TokenManager::UNDERSCORE:
+    #                s.append(consumeToken(TokenManager::UNDERSCORE).image)
     #                break
-    #            case SPACE:
-    #                s.append(consumeToken(SPACE).image)
+    #            case TokenManager::SPACE:
+    #                s.append(consumeToken(TokenManager::SPACE).image)
     #                break
-    #            case TAB:
+    #            case TokenManager::TAB:
     #                s.append("    ")
     #                break
     #            default:
     #                break
     #            }
-    #        } while (getNextTokenKind() != EOL && getNextTokenKind() != EOF)
+    #        } while (getNextTokenKind() != TokenManager::TokenManager::EOL && getNextTokenKind() != EOF)
     #        return s.toString()
   end
 
@@ -748,11 +752,11 @@ class Parser
     #                image()
     #            } else if (modules.contains("links") && hasLinkAhead()) {
     #                link()
-    #            } else if (modules.contains("formatting") && multilineAhead(ASTERISK)) {
+    #            } else if (modules.contains("formatting") && multilineAhead(TokenManager::ASTERISK)) {
     #                strongMultiline()
-    #            } else if (modules.contains("formatting") && multilineAhead(UNDERSCORE)) {
+    #            } else if (modules.contains("formatting") && multilineAhead(TokenManager::UNDERSCORE)) {
     #                emMultiline()
-    #            } else if (modules.contains("code") && multilineAhead(BACKTICK)) {
+    #            } else if (modules.contains("code") && multilineAhead(TokenManager::BACKTICK)) {
     #                codeMultiline()
     #            } else {
     #                looseChar()
@@ -766,53 +770,53 @@ class Parser
     #        StringBuilder s = new StringBuilder()
     #        do {
     #            switch (getNextTokenKind()) {
-    #          case CHAR_SEQUENCE:
-    #            s.append(consumeToken(CHAR_SEQUENCE).image)
+    #          case TokenManager::CHAR_STokenManager::EQUENCE:
+    #            s.append(consumeToken(TokenManager::CHAR_STokenManager::EQUENCE).image)
     #            break
-    #            case BACKSLASH:
-    #                s.append(consumeToken(BACKSLASH).image)
+    #            case TokenManager::BACKSLASH:
+    #                s.append(consumeToken(TokenManager::BACKSLASH).image)
     #                break
-    #            case COLON:
-    #                s.append(consumeToken(COLON).image)
+    #            case TokenManager::COLON:
+    #                s.append(consumeToken(TokenManager::COLON).image)
     #                break
-    #            case DASH:
-    #                s.append(consumeToken(DASH).image)
+    #            case TokenManager::DASH:
+    #                s.append(consumeToken(TokenManager::DASH).image)
     #                break
-    #            case DIGITS:
-    #                s.append(consumeToken(DIGITS).image)
+    #            case TokenManager::DIGITS:
+    #                s.append(consumeToken(TokenManager::DIGITS).image)
     #                break
-    #            case DOT:
-    #                s.append(consumeToken(DOT).image)
+    #            case TokenManager::DOT:
+    #                s.append(consumeToken(TokenManager::DOT).image)
     #                break
-    #            case EQ:
-    #                s.append(consumeToken(EQ).image)
+    #            case TokenManager::EQ:
+    #                s.append(consumeToken(TokenManager::EQ).image)
     #                break
-    #            case ESCAPED_CHAR:
-    #                s.append(consumeToken(ESCAPED_CHAR).image.substring(1))
+    #            case TokenManager::ESCAPED_CHAR:
+    #                s.append(consumeToken(TokenManager::ESCAPED_CHAR).image.substring(1))
     #                break
-    #            case IMAGE_LABEL:
-    #                s.append(consumeToken(IMAGE_LABEL).image)
+    #            case TokenManager::IMAGE_LABEL:
+    #                s.append(consumeToken(TokenManager::IMAGE_LABEL).image)
     #                break
-    #            case GT:
-    #                s.append(consumeToken(GT).image)
+    #            case TokenManager::GT:
+    #                s.append(consumeToken(TokenManager::GT).image)
     #                break
-    #            case LPAREN:
-    #                s.append(consumeToken(LPAREN).image)
+    #            case TokenManager::LPAREN:
+    #                s.append(consumeToken(TokenManager::LPAREN).image)
     #                break
-    #            case LT:
-    #                s.append(consumeToken(LT).image)
+    #            case TokenManager::LT:
+    #                s.append(consumeToken(TokenManager::LT).image)
     #                break
-    #            case RPAREN:
-    #                s.append(consumeToken(RPAREN).image)
+    #            case TokenManager::RPAREN:
+    #                s.append(consumeToken(TokenManager::RPAREN).image)
     #                break
     #            default:
-    #                if (!nextAfterSpace(RBRACK)) {
+    #                if (!nextAfterspace(TokenManager::RBRACK)) {
     #                    switch (getNextTokenKind()) {
-    #                    case SPACE:
-    #                        s.append(consumeToken(SPACE).image)
+    #                    case TokenManager::SPACE:
+    #                        s.append(consumeToken(TokenManager::SPACE).image)
     #                        break
-    #                    case TAB:
-    #                        consumeToken(TAB)
+    #                    case TokenManager::TAB:
+    #                        consumeToken(TokenManager::TAB)
     #                        s.append("    ")
     #                        break
     #                    }
@@ -824,11 +828,11 @@ class Parser
   end
 
   def resource_url()
-    consume_token(LPAREN)
+    consume_token(TokenManager::LPAREN)
     white_space()
-    ref = resourceUrlText()
+    ref = resourceUrltext()
     white_space()
-    consume_token(RPAREN)
+    consume_token(TokenManager::RPAREN)
     return ref
   end
 
@@ -836,65 +840,65 @@ class Parser
     #        StringBuilder s = new StringBuilder()
     #        while (resourceTextHasElementsAhead()) {
     #            switch (getNextTokenKind()) {
-    #          case CHAR_SEQUENCE:
-    #            s.append(consumeToken(CHAR_SEQUENCE).image)
+    #          case TokenManager::CHAR_STokenManager::EQUENCE:
+    #            s.append(consumeToken(TokenManager::CHAR_STokenManager::EQUENCE).image)
     #            break
-    #            case ASTERISK:
-    #                s.append(consumeToken(ASTERISK).image)
+    #            case TokenManager::ASTERISK:
+    #                s.append(consumeToken(TokenManager::ASTERISK).image)
     #                break
-    #            case BACKSLASH:
-    #                s.append(consumeToken(BACKSLASH).image)
+    #            case TokenManager::BACKSLASH:
+    #                s.append(consumeToken(TokenManager::BACKSLASH).image)
     #                break
-    #            case BACKTICK:
-    #                s.append(consumeToken(BACKTICK).image)
+    #            case TokenManager::BACKTICK:
+    #                s.append(consumeToken(TokenManager::BACKTICK).image)
     #                break
-    #            case COLON:
-    #                s.append(consumeToken(COLON).image)
+    #            case TokenManager::COLON:
+    #                s.append(consumeToken(TokenManager::COLON).image)
     #                break
-    #            case DASH:
-    #                s.append(consumeToken(DASH).image)
+    #            case TokenManager::DASH:
+    #                s.append(consumeToken(TokenManager::DASH).image)
     #                break
-    #            case DIGITS:
-    #                s.append(consumeToken(DIGITS).image)
+    #            case TokenManager::DIGITS:
+    #                s.append(consumeToken(TokenManager::DIGITS).image)
     #                break
-    #            case DOT:
-    #                s.append(consumeToken(DOT).image)
+    #            case TokenManager::DOT:
+    #                s.append(consumeToken(TokenManager::DOT).image)
     #                break
-    #            case EQ:
-    #                s.append(consumeToken(EQ).image)
+    #            case TokenManager::EQ:
+    #                s.append(consumeToken(TokenManager::EQ).image)
     #                break
-    #            case ESCAPED_CHAR:
-    #                s.append(consumeToken(ESCAPED_CHAR).image.substring(1))
+    #            case TokenManager::ESCAPED_CHAR:
+    #                s.append(consumeToken(TokenManager::ESCAPED_CHAR).image.substring(1))
     #                break
-    #            case IMAGE_LABEL:
-    #                s.append(consumeToken(IMAGE_LABEL).image)
+    #            case TokenManager::IMAGE_LABEL:
+    #                s.append(consumeToken(TokenManager::IMAGE_LABEL).image)
     #                break
-    #            case GT:
-    #                s.append(consumeToken(GT).image)
+    #            case TokenManager::GT:
+    #                s.append(consumeToken(TokenManager::GT).image)
     #                break
-    #            case LBRACK:
-    #                s.append(consumeToken(LBRACK).image)
+    #            case TokenManager::LBRACK:
+    #                s.append(consumeToken(TokenManager::LBRACK).image)
     #                break
-    #            case LPAREN:
-    #                s.append(consumeToken(LPAREN).image)
+    #            case TokenManager::LPAREN:
+    #                s.append(consumeToken(TokenManager::LPAREN).image)
     #                break
-    #            case LT:
-    #                s.append(consumeToken(LT).image)
+    #            case TokenManager::LT:
+    #                s.append(consumeToken(TokenManager::LT).image)
     #                break
-    #            case RBRACK:
-    #                s.append(consumeToken(RBRACK).image)
+    #            case TokenManager::RBRACK:
+    #                s.append(consumeToken(TokenManager::RBRACK).image)
     #                break
-    #            case UNDERSCORE:
-    #                s.append(consumeToken(UNDERSCORE).image)
+    #            case TokenManager::UNDERSCORE:
+    #                s.append(consumeToken(TokenManager::UNDERSCORE).image)
     #                break
     #            default:
-    #                if (!nextAfterSpace(RPAREN)) {
+    #                if (!nextAfterspace(TokenManager::RPAREN)) {
     #                    switch (getNextTokenKind()) {
-    #                    case SPACE:
-    #                        s.append(consumeToken(SPACE).image)
+    #                    case TokenManager::SPACE:
+    #                        s.append(consumeToken(TokenManager::SPACE).image)
     #                        break
-    #                    case TAB:
-    #                        consumeToken(TAB)
+    #                    case TokenManager::TAB:
+    #                        consumeToken(TokenManager::TAB)
     #                        s.append("    ")
     #                        break
     #                    }
@@ -907,393 +911,393 @@ class Parser
   def strong_multiline()
     Strong strong = Strong.new()
     @tree.open_scope()
-    consume_token(ASTERISK)
+    consume_token(TokenManager::ASTERISK)
     strong_multiline_content()
-    #        while (textAhead()) {
-    #            lineBreak()
-    #            whiteSpace()
-    #            strongMultilineContent()
-    #        }
-    consume_token(ASTERISK)
+    while (text_ahead())
+      line_break()
+      white_space()
+      strong_multiline_content()
+    end
+    consume_token(TokenManager::ASTERISK)
     @tree.close_scope(strong)
   end
 
   def strong_multiline_content()
     #        do {
-    #            if (hasTextAhead()) {
-    #                text()
-    #            } else if (modules.contains("images") && hasImageAhead()) {
-    #                image()
-    #            } else if (modules.contains("links") && hasLinkAhead()) {
-    #                link()
-    #            } else if (modules.contains("code") && hasCodeAhead()) {
-    #                code()
-    #            } else if (hasEmWithinStrongMultiline()) {
-    #                emWithinStrongMultiline()
-    #            } else {
-    #                switch (getNextTokenKind()) {
-    #                case BACKTICK:
-    #                    tree.addSingleValue(new Text(), consumeToken(BACKTICK))
-    #                    break
-    #                case LBRACK:
-    #                    tree.addSingleValue(new Text(), consumeToken(LBRACK))
-    #                    break
-    #                case UNDERSCORE:
-    #                    tree.addSingleValue(new Text(), consumeToken(UNDERSCORE))
-    #                    break
-    #                }
-    #            }
+    if (has_text_ahead())
+      text()
+    elsif (modules.includes?("images") && has_image_ahead())
+      image()
+    elsif (modules.includes?("links") && has_link_ahead())
+      link()
+    elsif (modules.includes?("code") && has_code_ahead())
+      code()
+    elsif (has_em_within_strong_multiline())
+      em_within_strong_multiline()
+    else
+      #                switch (getNextTokenKind()) {
+      #                case TokenManager::BACKTICK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
+      #                    break
+      #                case TokenManager::LBRACK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
+      #                    break
+      #                case TokenManager::UNDERSCORE:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::UNDERSCORE))
+      #                    break
+      #                }
+    end
     #        } while (strongMultilineHasElementsAhead())
   end
 
   def strong_within_em_multiline()
     Strong strong = Strong.new()
     @tree.open_scope()
-    consume_token(ASTERISK)
-    strong_within_em_eultilineContent()
-    #        while (textAhead()) {
-    #            lineBreak()
-    #            strongWithinEmMultilineContent()
-    #        }
-    consume_token(ASTERISK)
+    consume_token(TokenManager::ASTERISK)
+    strong_within_em_multiline_content()
+    while (text_ahead())
+      line_break()
+      strong_within_em_multiline_content()
+    end
+    consume_token(TokenManager::ASTERISK)
     @tree.close_scope(strong)
   end
 
   def strong_within_em_multiline_content()
     #        do {
-    #            if (hasTextAhead()) {
-    #                text()
-    #            } else if (modules.contains("images") && hasImageAhead()) {
-    #                image()
-    #            } else if (modules.contains("links") && hasLinkAhead()) {
-    #                link()
-    #            } else if (modules.contains("code") && hasCodeAhead()) {
-    #                code()
-    #            } else {
-    #                switch (getNextTokenKind()) {
-    #                case BACKTICK:
-    #                    tree.addSingleValue(new Text(), consumeToken(BACKTICK))
-    #                    break
-    #                case LBRACK:
-    #                    tree.addSingleValue(new Text(), consumeToken(LBRACK))
-    #                    break
-    #                case UNDERSCORE:
-    #                    tree.addSingleValue(new Text(), consumeToken(UNDERSCORE))
-    #                    break
-    #                }
-    #            }
+    if (has_text_ahead())
+      text()
+    elsif (modules.includes?("images") && has_image_ahead())
+      image()
+    elsif (modules.includes?("links") && has_link_ahead())
+      link()
+    elsif (modules.includes?("code") && has_code_ahead())
+      code()
+    else
+      #                switch (getNextTokenKind()) {
+      #                case TokenManager::BACKTICK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
+      #                    break
+      #                case TokenManager::LBRACK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
+      #                    break
+      #                case TokenManager::UNDERSCORE:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::UNDERSCORE))
+      #                    break
+      #                }
+    end
     #        } while (strongWithinEmMultilineHasElementsAhead())
   end
 
   def strong_within_em()
     strong = Strong.new()
     @tree.open_scope()
-    consume_token(ASTERISK)
+    consume_token(TokenManager::ASTERISK)
     #        do {
-    #            if (hasTextAhead()) {
-    #                text()
-    #            } else if (modules.contains("images") && hasImageAhead()) {
-    #                image()
-    #            } else if (modules.contains("links") && hasLinkAhead()) {
-    #                link()
-    #            } else if (modules.contains("code") && hasCodeAhead()) {
-    #                code()
-    #            } else {
-    #                switch (getNextTokenKind()) {
-    #                case BACKTICK:
-    #                    tree.addSingleValue(new Text(), consumeToken(BACKTICK))
-    #                    break
-    #                case LBRACK:
-    #                    tree.addSingleValue(new Text(), consumeToken(LBRACK))
-    #                    break
-    #                case UNDERSCORE:
-    #                    tree.addSingleValue(new Text(), consumeToken(UNDERSCORE))
-    #                    break
-    #                }
-    #            }
+    if (has_text_ahead())
+      text()
+    elsif (modules.includes?("images") && has_image_ahead())
+      image()
+    elsif (modules.includes?("links") && has_link_ahead())
+      link()
+    elsif (modules.includes?("code") && has_code_ahead())
+      code()
+    else
+      #                switch (getNextTokenKind()) {
+      #                case TokenManager::BACKTICK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
+      #                    break
+      #                case TokenManager::LBRACK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
+      #                    break
+      #                case TokenManager::UNDERSCORE:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::UNDERSCORE))
+      #                    break
+      #                }
+    end
     #        } while (strongWithinEmHasElementsAhead())
-    consume_token(ASTERISK)
+    consume_token(TokenManager::ASTERISK)
     @tree.close_scope(strong)
   end
 
   def em_multiline()
     em = Em.new()
     tree.open_scope()
-    consume_token(UNDERSCORE)
+    consume_token(TokenManager::UNDERSCORE)
     em_multiline_content()
-    #        while (textAhead()) {
-    #            lineBreak()
-    #            whiteSpace()
-    #            emMultilineContent()
-    #        }
-    consume_token(UNDERSCORE)
+    while (text_ahead())
+      line_break()
+      white_space()
+      em_multiline_content()
+    end
+    consume_token(TokenManager::UNDERSCORE)
     tree.close_scope(em)
   end
 
   def em_multiline_content()
     #        do {
-    #            if (hasTextAhead()) {
-    #                text()
-    #            } else if (modules.contains("images") && hasImageAhead()) {
-    #                image()
-    #            } else if (modules.contains("links") && hasLinkAhead()) {
-    #                link()
-    #            } else if (modules.contains("code") && multilineAhead(BACKTICK)) {
-    #                codeMultiline()
-    #            } else if (hasStrongWithinEmMultilineAhead()) {
-    #                strongWithinEmMultiline()
-    #            } else {
-    #                switch (getNextTokenKind()) {
-    #                case ASTERISK:
-    #                    tree.addSingleValue(new Text(), consumeToken(ASTERISK))
-    #                    break
-    #                case BACKTICK:
-    #                    tree.addSingleValue(new Text(), consumeToken(BACKTICK))
-    #                    break
-    #                case LBRACK:
-    #                    tree.addSingleValue(new Text(), consumeToken(LBRACK))
-    #                    break
-    #                }
-    #            }
+    if (has_text_ahead())
+      text()
+    elsif (modules.includes?("images") && has_image_ahead())
+      image()
+    elsif (modules.includes?("links") && has_link_ahead())
+      link()
+    elsif (modules.includes("code") && multiline_ahead(TokenManager::BACKTICK))
+      code_multiline()
+    elsif (hasStrongWithinEmMultilineAhead())
+      strong_within_em_multiline()
+    else
+      #                switch (getNextTokenKind()) {
+      #                case TokenManager::ASTERISK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::ASTERISK))
+      #                    break
+      #                case TokenManager::BACKTICK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
+      #                    break
+      #                case TokenManager::LBRACK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
+      #                    break
+      #                }
+    end
     #        } while (emMultilineContentHasElementsAhead())
   end
 
   def em_within_strong_multiline()
     em = Em.new()
     tree.open_scope()
-    consume_token(UNDERSCORE)
+    consume_token(TokenManager::UNDERSCORE)
     em_within_strong_multiline_content()
-    #        while (textAhead()) {
-    #            lineBreak()
-    #            emWithinStrongMultilineContent()
-    #        }
-    consume_token(UNDERSCORE)
+    while (text_ahead())
+      line_break()
+      em_within_strong_multiline_content()
+    end
+    consume_token(TokenManager::UNDERSCORE)
     tree.close_scope(em)
   end
 
   def em_within_strong_multiline_content()
     #        do {
-    #            if (hasTextAhead()) {
-    #                text()
-    #            } else if (modules.contains("images") && hasImageAhead()) {
-    #                image()
-    #            } else if (modules.contains("links") && hasLinkAhead()) {
-    #                link()
-    #            } else if (modules.contains("code") && hasCodeAhead()) {
-    #                code()
-    #            } else {
-    #                switch (getNextTokenKind()) {
-    #                case ASTERISK:
-    #                    tree.addSingleValue(new Text(), consumeToken(ASTERISK))
-    #                    break
-    #                case BACKTICK:
-    #                    tree.addSingleValue(new Text(), consumeToken(BACKTICK))
-    #                    break
-    #                case LBRACK:
-    #                    tree.addSingleValue(new Text(), consumeToken(LBRACK))
-    #                    break
-    #                }
-    #            }
+    if (has_text_ahead())
+      text()
+    elsif (modules.includes?("images") && has_image_ahead())
+      image()
+    elsif (modules.includes?("links") && has_link_ahead())
+      link()
+    elsif (modules.includes("code") && has_code_ahead())
+      code()
+    else
+      #                switch (getNextTokenKind()) {
+      #                case TokenManager::ASTERISK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::ASTERISK))
+      #                    break
+      #                case TokenManager::BACKTICK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
+      #                    break
+      #                case TokenManager::LBRACK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
+      #                    break
+      #                }
+    end
     #        } while (emWithinStrongMultilineContentHasElementsAhead())
   end
 
   def em_within_strong()
     em = Em.new()
     @tree.open_scope()
-    consume_token(UNDERSCORE)
+    consume_token(TokenManager::UNDERSCORE)
     #        do {
-    #            if (hasTextAhead()) {
-    #                text()
-    #            } else if (modules.contains("images") && hasImageAhead()) {
-    #                image()
-    #            } else if (modules.contains("links") && hasLinkAhead()) {
-    #                link()
-    #            } else if (modules.contains("code") && hasCodeAhead()) {
-    #                code()
-    #            } else {
-    #                switch (getNextTokenKind()) {
-    #                case ASTERISK:
-    #                    tree.addSingleValue(new Text(), consumeToken(ASTERISK))
-    #                    break
-    #                case BACKTICK:
-    #                    tree.addSingleValue(new Text(), consumeToken(BACKTICK))
-    #                    break
-    #                case LBRACK:
-    #                    tree.addSingleValue(new Text(), consumeToken(LBRACK))
-    #                    break
-    #                }
-    #            }
+    if (has_text_ahead())
+      text()
+    elsif (modules.includes?("images") && has_image_ahead())
+      image()
+    elsif (modules.includes?("links") && has_link_ahead())
+      link()
+    elsif (modules.includes?("code") && has_code_ahead())
+      code()
+    else
+      #                switch (getNextTokenKind()) {
+      #                case TokenManager::ASTERISK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::ASTERISK))
+      #                    break
+      #                case TokenManager::BACKTICK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
+      #                    break
+      #                case TokenManager::LBRACK:
+      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
+      #                    break
+
+    end
     #        } while (emWithinStrongHasElementsAhead())
-    consume_token(UNDERSCORE)
+    consume_token(TokenManager::UNDERSCORE)
     @tree.close_scope(em)
   end
 
   def code_multiline()
     code = Code.new()
     @tree.openScope()
-    consume_token(BACKTICK)
+    consume_token(TokenManager::BACKTICK)
     code_text()
-    #        while (textAhead()) {
-    #            lineBreak()
-    #            whiteSpace()
-    #            while (getNextTokenKind() == GT) {
-    #                consumeToken(GT)
-    #                whiteSpace()
-    #            }
-    #            codeText()
-    #        }
-    consume_token(BACKTICK)
+    while (text_ahead())
+      line_break()
+      white_space()
+      while (get_next_token_kind() == TokenManager::GT)
+        consume_token(TokenManager::GT)
+        white_space()
+      end
+      code_text()
+    end
+    consume_token(TokenManager::BACKTICK)
     @tree.close_scope(code)
   end
 
   def white_space()
-    #        while (getNextTokenKind() == SPACE || getNextTokenKind() == TAB) {
-    #            consumeToken(getNextTokenKind())
-    #        }
+    while (get_next_token_kind() == TokenManager::SPACE || get_next_token_kind() == TokenManager::TAB)
+      consume_token(get_next_token_kind())
+    end
   end
 
   def has_any_block_elements_ahead()
     #        try {
-    #            lookAhead = 1
-    #            lastPosition = scanPosition = token
-    #            return !scanMoreBlockElements()
+    look_ahead = 1
+    last_position = scan_position = token
+    return !scan_more_block_elements()
     #        } catch (LookaheadSuccess ls) {
     #            return true
     #        }
   end
 
-  def block_ahead(blockBeginColumn)
+  def block_ahead(block_begin_bolumn)
     quoteLevel = 0
 
-    if (get_next_token_kind() == EOL)
+    if (get_next_token_kind() == TokenManager::TokenManager::EOL)
       #            Token t
-      #            int i = 2
-      #            quoteLevel = 0
+      i = 2
+      quoteLevel = 0
       #            do {
       #                quoteLevel = 0
       #                do {
       #                    t = getToken(i++)
-      #                    if (t.kind == GT) {
+      #                    if (t.kind == TokenManager::GT) {
       #                        if (t.beginColumn == 1 && currentBlockLevel > 0 && currentQuoteLevel == 0) {
       #                            return false
       #                        }
       #                        quoteLevel++
       #                    }
-      #                } while (t.kind == GT || t.kind == SPACE || t.kind == TAB)
+      #                } while (t.kind == TokenManager::GT || t.kind == TokenManager::SPACE || t.kind == TokenManager::TAB)
       #                if (quoteLevel > currentQuoteLevel) {
       #                    return true
       #                }
       #                if (quoteLevel < currentQuoteLevel) {
       #                    return false
       #                }
-      #            } while (t.kind == EOL)
-      #            return t.kind != EOF && (currentBlockLevel == 0 || t.beginColumn >= blockBeginColumn + 2)
+      #            } while (t.kind == TokenManager::TokenManager::EOL)
+      return t.kind != TokenManager::EOF && (@current_block_level == 0 || t.begin_column >= block_begin_bolumn + 2)
     end
     return false
   end
 
   def multiline_ahead(token)
-    #        if (getNextTokenKind() == token && getToken(2).kind != token && getToken(2).kind != EOL) {
-    #
-    #            for (int i = 2 i++) {
-    #                Token t = getToken(i)
-    #                if (t.kind == token) {
-    #                    return true
-    #                } else if (t.kind == EOL) {
-    #                    i = skip(i + 1, SPACE, TAB)
-    #                    int quoteLevel = newQuoteLevel(i)
-    #                    if (quoteLevel == currentQuoteLevel) {
-    #                        i = skip(i, SPACE, TAB, GT)
-    #                        if (getToken(i).kind == token || getToken(i).kind == EOL || getToken(i).kind == DASH
-    #                                || (getToken(i).kind == DIGITS && getToken(i + 1).kind == DOT)
-    #                                || (getToken(i).kind == BACKTICK && getToken(i + 1).kind == BACKTICK
-    #                                        && getToken(i + 2).kind == BACKTICK)
-    #                                || headingAhead(i)) {
-    #                            return false
-    #                        }
-    #                    } else {
-    #                        return false
-    #                    }
-    #                } else if (t.kind == EOF) {
-    #                    return false
-    #                }
-    #            }
-    #        }
+    if (get_next_token_kind() == token && get_token(2).kind != token && get_token(2).kind != TokenManager::EOL)
+
+      #            for (int i = 2 i++) {
+      #                Token t = getToken(i)
+      #                if (t.kind == token) {
+      #                    return true
+      #                } else if (t.kind == TokenManager::TokenManager::EOL) {
+      #                    i = skip(i + 1, TokenManager::SPACE, TokenManager::TAB)
+      #                    int quoteLevel = newQuoteLevel(i)
+      #                    if (quoteLevel == currentQuoteLevel) {
+      #                        i = skip(i, TokenManager::SPACE, TokenManager::TAB, TokenManager::GT)
+      #                        if (getToken(i).kind == token || getToken(i).kind == TokenManager::TokenManager::EOL || getToken(i).kind == TokenManager::DASH
+      #                                || (getToken(i).kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT)
+      #                                || (getToken(i).kind == TokenManager::BACKTICK && getToken(i + 1).kind == TokenManager::BACKTICK
+      #                                        && getToken(i + 2).kind == TokenManager::BACKTICK)
+      #                                || headingAhead(i)) {
+      #                            return false
+      #                        }
+      #                    } else {
+      #                        return false
+      #                    }
+      #                } else if (t.kind == EOF) {
+      #                    return false
+      #                }
+      #            }
+    end
     return false
   end
 
   def fences_ahead()
-    #        int i = skip(2, SPACE, TAB, GT)
-    #        if (getToken(i).kind == BACKTICK && getToken(i + 1).kind == BACKTICK && getToken(i + 2).kind == BACKTICK) {
-    #            i = skip(i + 3, SPACE, TAB)
-    #            return getToken(i).kind == EOL || getToken(i).kind == EOF
-    #        }
+    i = skip(2, TokenManager::SPACE, TokenManager::TAB, TokenManager::GT)
+    if (get_token(i).kind == TokenManager::BACKTICK && get_token(i + 1).kind == TokenManager::BACKTICK && get_token(i + 2).kind == TokenManager::BACKTICK)
+      i = skip(i + 3, TokenManager::SPACE, TokenManager::TAB)
+      return get_token(i).kind == TokenManager::EOL || get_token(i).kind == TokenManager::EOF
+    end
     return false
   end
 
   def heading_ahead(offset)
-    #        if (getToken(offset).kind == EQ) {
-    #            int heading = 1
-    #            for (int i = (offset + 1) i++) {
-    #                if (getToken(i).kind != EQ) {
-    #                    return true
-    #                }
-    #                if (++heading > 6) {
-    #                    return false
-    #                }
-    #            }
-    #        }
-            return false
+    if (get_token(offset).kind == TokenManager::EQ)
+      heading = 1
+      #            for (int i = (offset + 1) i++) {
+      #                if (getToken(i).kind != TokenManager::EQ) {
+      #                    return true
+      #                }
+      #                if (++heading > 6) {
+      #                    return false
+      #                }
+      #            }
+    end
+    return false
   end
 
   def list_item_ahead(listBeginColumn, ordered)
-    #        if (getNextTokenKind() == EOL) {
-    #            for (int i = 2, eol = 1 i++) {
-    #                Token t = getToken(i)
-    #
-    #                if (t.kind == EOL && ++eol > 2) {
-    #                    return false
-    #                } else if (t.kind != SPACE && t.kind != TAB && t.kind != GT && t.kind != EOL) {
-    #                    if (ordered) {
-    #                        return (t.kind == DIGITS && getToken(i + 1).kind == DOT && t.beginColumn >= listBeginColumn)
-    #                    }
-    #                    return t.kind == DASH && t.beginColumn >= listBeginColumn
-    #                }
-    #            }
-    #        }
+    if (get_next_token_kind() == TokenManager::EOL)
+      #            for (int i = 2, TokenManager::TokenManager::EOL = 1 i++) {
+      #                Token t = getToken(i)
+      #
+      #                if (t.kind == TokenManager::TokenManager::EOL && ++TokenManager::TokenManager::EOL > 2) {
+      #                    return false
+      #                } else if (t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB && t.kind != TokenManager::GT && t.kind != TokenManager::TokenManager::EOL) {
+      #                    if (ordered) {
+      #                        return (t.kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT && t.beginColumn >= listBeginColumn)
+      #                    }
+      #                    return t.kind == TokenManager::DASH && t.beginColumn >= listBeginColumn
+      #                }
+      #            }
+    end
     return false
   end
 
   def text_ahead()
-    #        if (getNextTokenKind() == EOL && getToken(2).kind != EOL) {
-    #            int i = skip(2, SPACE, TAB)
-    #            int quoteLevel = newQuoteLevel(i)
-    #            if (quoteLevel == currentQuoteLevel || !modules.contains("blockquotes")) {
-    #                i = skip(i, SPACE, TAB, GT)
-    #
-    #                Token t = getToken(i)
-    #                return getToken(i).kind != EOL && !(modules.contains("lists") && t.kind == DASH)
-    #                        && !(modules.contains("lists") && t.kind == DIGITS && getToken(i + 1).kind == DOT)
-    #                        && !(getToken(i).kind == BACKTICK && getToken(i + 1).kind == BACKTICK
-    #                                && getToken(i + 2).kind == BACKTICK)
-    #                        && !(modules.contains("headings") && headingAhead(i))
-    #            }
-    #        }
+    if (get_next_token_kind() == TokenManager::EOL && get_token(2).kind != TokenManager::EOL)
+      i = skip(2, TokenManager::SPACE, TokenManager::TAB)
+      quote_level = new_quoteLevel(i)
+      if (quote_level == @current_quote_level || !@modules.includes?("blockquotes"))
+        i = skip(i, TokenManager::SPACE, TokenManager::TAB, TokenManager::GT)
+
+        t = get_token(i)
+        return get_token(i).kind != TokenManager::EOL && !(@modules.includes?("lists") && t.kind == TokenManager::DASH)
+        #                        && !(@modules.includes?("lists") && t.kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT)
+        #                        && !(getToken(i).kind == TokenManager::BACKTICK && getToken(i + 1).kind == TokenManager::BACKTICK
+        #                                && getToken(i + 2).kind == TokenManager::BACKTICK)
+        #                        && !(modules.contains("headings") && headingAhead(i))
+      end
+    end
     return false
   end
 
   def next_after_space(tokens)
-    i = skip(1, SPACE, TAB)
-    #        return Arrays.asList(tokens).contains(getToken(i).kind)
+    i = skip(1, TokenManager::SPACE, TokenManager::TAB)
+    return tokens.includes?(get_token(i).kind)
   end
 
   def new_quote_level(offset)
     quoteLevel = 0
     #        for (int i = offset i++) {
     #            Token t = getToken(i)
-    #            if (t.kind == GT) {
+    #            if (t.kind == TokenManager::GT) {
     #                quoteLevel++
-    #            } else if (t.kind != SPACE && t.kind != TAB) {
+    #            } else if (t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB) {
     #                return quoteLevel
     #            }
     #
@@ -1314,9 +1318,9 @@ class Parser
     @lookAhead = 2
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanToken(DIGITS) && !scanToken(DOT)
+    #            return !scanToken(TokenManager::DIGITS) && !scanToken(TokenManager::DOT)
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1326,36 +1330,36 @@ class Parser
     #        try {
     #            return !scanFencedCodeBlock()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
   def heading_has_inline_elements_ahead()
-    @lookAhead = 1
-    @lastPosition = @scanPosition = @token
+    @look_ahead = 1
+    @last_position = @scan_position = @token
     #        try {
-    #            Token xsp = scanPosition
-    #            if (scanTextTokens()) {
-    #                scanPosition = xsp
-    #                if (scanImage()) {
-    #                    scanPosition = xsp
-    #                    if (scanLink()) {
-    #                        scanPosition = xsp
-    #                        if (scanStrong()) {
-    #                            scanPosition = xsp
-    #                            if (scanEm()) {
-    #                                scanPosition = xsp
-    #                                if (scanCode()) {
-    #                                    scanPosition = xsp
-    #                                    if (scanLooseChar()) {
-    #                                        return false
-    #                                    }
-    #                                }
-    #                            }
-    #                        }
-    #                    }
-    #                }
-    #            }
+    xsp = @scan_position
+    if (scan_text_tokens())
+      @scan_position = xsp
+      if (scan_image())
+        @scan_position = xsp
+        if (scan_link())
+          @scan_position = xsp
+          if (scan_strong())
+            @scan_position = xsp
+            if (scan_em())
+              @scan_position = xsp
+              if (scan_code())
+                @scan_position = xsp
+                if (scan_loose_char())
+                  return false
+                end
+              end
+            end
+          end
+        end
+      end
+    end
     return true
     #        } catch (LookaheadSuccess ls) {
     return true
@@ -1366,9 +1370,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanTextTokens()
+    return !scan_text_tokens()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1376,9 +1380,9 @@ class Parser
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanImage()
+    return !scan_image()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1386,9 +1390,9 @@ class Parser
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanBlockQuoteEmptyLine()
+    return !scan_block_quote_empty_line()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1396,9 +1400,9 @@ class Parser
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanStrong()
+    return !scan_strong()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1406,9 +1410,9 @@ class Parser
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanEm()
+    return !scan_em()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1416,9 +1420,9 @@ class Parser
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanCode()
+    return !scan_code()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1426,9 +1430,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanMoreBlockElements()
+    return !scan_more_block_elements()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1436,9 +1440,9 @@ class Parser
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanBlockQuoteEmptyLines()
+    return !scan_block_quote_empty_lines()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1446,9 +1450,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanMoreBlockElements()
+    return !scan_more_block_elements()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1456,9 +1460,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanTextTokens()
+    return !scan_text_tokens()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1466,9 +1470,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanInlineElement()
+    return !scan_inline_element()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1476,9 +1480,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanImageElement()
+    return !scan_image_element()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1486,9 +1490,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanResourceElements()
+    return !scan_resource_elements()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1496,9 +1500,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanLinkElement()
+    return !scan_link_element()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1506,9 +1510,9 @@ class Parser
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanResourceUrl()
+    return !scan_resource_url()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1516,9 +1520,9 @@ class Parser
     @lookAhead = 2
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanResourceElement()
+    return !scan_resource_element()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1526,9 +1530,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanResourceTextElement()
+    return !scan_resource_text_element()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1536,9 +1540,9 @@ class Parser
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanEmWithinStrongMultiline()
+    return !scan_em_within_strong_multiline()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1546,9 +1550,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanStrongMultilineElements()
+    return !scan_strong_multiline_elements()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1556,9 +1560,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanStrongWithinEmMultilineElements()
+    return !scan_strong_within_em_multiline_elements()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1566,9 +1570,9 @@ class Parser
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanImage()
+    return !scan_image()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1576,9 +1580,9 @@ class Parser
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanLink()
+    return !scan_link()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1586,9 +1590,9 @@ class Parser
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanEmWithinStrong()
+    return !scan_em_within_strong()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1596,9 +1600,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanStrongElements()
+    return !scan_strong_elements()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1606,9 +1610,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanStrongWithinEmElements()
+    return !scan_strong_within_em_elements()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1616,9 +1620,9 @@ class Parser
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanStrongWithinEmMultiline()
+    return !scan_strong_within_em_multiline()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1626,9 +1630,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanEmMultilineContentElements()
+    return !scan_em_multiline_content_elements()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1636,9 +1640,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanEmWithinStrongMultilineContent()
+    return !scan_em_within_strong_multilineContent()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1646,9 +1650,9 @@ class Parser
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanStrongWithinEm()
+    return !scan_strong_within_em()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1656,9 +1660,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanEmElements()
+    return !scan_em_elements()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1676,9 +1680,9 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanCodeTextTokens()
+    return !scan_code_text_tokens()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
@@ -1686,75 +1690,75 @@ class Parser
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
     #        try {
-    #            return !scanText()
+    return !scan_text()
     #        } catch (LookaheadSuccess ls) {
-    #            return true
+    return true
     #        }
   end
 
   def scan_loose_char()
-    xsp = @scanPosition
-    #        if (scanToken(ASTERISK)) {
-    #            scanPosition = xsp
-    #            if (scanToken(BACKTICK)) {
-    #                scanPosition = xsp
-    #                if (scanToken(LBRACK)) {
-    #                    scanPosition = xsp
-    #                    return scanToken(UNDERSCORE)
-    #                }
-    #            }
-    #        }
-    #        return false
+    xsp = @scan_position
+    if (scan_token(TokenManager::ASTERISK))
+      @scan_position = xsp
+      if (scan_token(TokenManager::BACKTICK))
+        @scan_position = xsp
+        if (scan_token(TokenManager::LBRACK))
+          @scan_position = xsp
+          return scan_token(TokenManager::UNDERSCORE)
+        end
+      end
+    end
+    return false
   end
 
   def scan_text()
-    xsp = scanPosition
-    #        if (scanToken(BACKSLASH)) {
-    #            scanPosition = xsp
-    #            if (scanToken(CHAR_SEQUENCE)) {
-    #                scanPosition = xsp
-    #                if (scanToken(COLON)) {
-    #                    scanPosition = xsp
-    #                    if (scanToken(DASH)) {
-    #                        scanPosition = xsp
-    #                        if (scanToken(DIGITS)) {
-    #                            scanPosition = xsp
-    #                            if (scanToken(DOT)) {
-    #                                scanPosition = xsp
-    #                                if (scanToken(EQ)) {
-    #                                    scanPosition = xsp
-    #                                    if (scanToken(ESCAPED_CHAR)) {
-    #                                        scanPosition = xsp
-    #                                        if (scanToken(GT)) {
-    #                                            scanPosition = xsp
-    #                                            if (scanToken(IMAGE_LABEL)) {
-    #                                                scanPosition = xsp
-    #                                                if (scanToken(LPAREN)) {
-    #                                                    scanPosition = xsp
-    #                                                    if (scanToken(LT)) {
-    #                                                        scanPosition = xsp
-    #                                                        if (scanToken(RBRACK)) {
-    #                                                            scanPosition = xsp
-    #                                                            if (scanToken(RPAREN)) {
-    #                                                                scanPosition = xsp
-    #                                                                lookingAhead = true
-    #                                                                semanticLookAhead = !nextAfterSpace(EOL, EOF)
-    #                                                                lookingAhead = false
-    #                                                                return (!semanticLookAhead || scanWhitspaceToken())
-    #                                                            }
-    #                                                        }
-    #                                                    }
-    #                                                }
-    #                                            }
-    #                                        }
-    #                                    }
-    #                                }
-    #                            }
-    #                        }
-    #                    }
-    #                }
-    #            }
-    #        }
+    xsp = @scan_position
+    if (scan_token(TokenManager::BACKSLASH))
+      @scan_position = xsp
+      if (scan_token(TokenManager::CHAR_SEQUENCE))
+        #                scanPosition = xsp
+        #                if (scanToken(TokenManager::COLON)) {
+        #                    scanPosition = xsp
+        #                    if (scanToken(TokenManager::DASH)) {
+        #                        scanPosition = xsp
+        #                        if (scanToken(TokenManager::DIGITS)) {
+        #                            scanPosition = xsp
+        #                            if (scanToken(TokenManager::DOT)) {
+        #                                scanPosition = xsp
+        #                                if (scanToken(TokenManager::EQ)) {
+        #                                    scanPosition = xsp
+        #                                    if (scanToken(TokenManager::ESCAPED_CHAR)) {
+        #                                        scanPosition = xsp
+        #                                        if (scanToken(TokenManager::GT)) {
+        #                                            scanPosition = xsp
+        #                                            if (scanToken(TokenManager::IMAGE_LABEL)) {
+        #                                                scanPosition = xsp
+        #                                                if (scanToken(TokenManager::LPAREN)) {
+        #                                                    scanPosition = xsp
+        #                                                    if (scanToken(TokenManager::LT)) {
+        #                                                        scanPosition = xsp
+        #                                                        if (scanToken(TokenManager::RBRACK)) {
+        #                                                            scanPosition = xsp
+        #                                                            if (scanToken(TokenManager::RPAREN)) {
+        #                                                                scanPosition = xsp
+        #                                                                lookingAhead = true
+        #                                                                semanticLookAhead = !nextAfterspace(TokenManager::TokenManager::EOL, EOF)
+        #                                                                lookingAhead = false
+        #                                                                return (!semanticLookAhead || scanWhitspaceToken())
+        #                                                            }
+        #                                                        }
+        #                                                    }
+        #                                                }
+        #                                            }
+        #                                        }
+        #                                    }
+        #                                }
+        #                            }
+        #                        }
+        #                    }
+        #                }
+      end
+    end
     return false
   end
 
@@ -1775,42 +1779,42 @@ class Parser
 
   def scan_code_text_tokens()
     xsp = @scanPosition
-    #        if (scanToken(ASTERISK)) {
+    #        if (scanToken(TokenManager::ASTERISK)) {
     #            scanPosition = xsp
-    #            if (scanToken(BACKSLASH)) {
+    #            if (scanToken(TokenManager::BACKSLASH)) {
     #                scanPosition = xsp
-    #                if (scanToken(CHAR_SEQUENCE)) {
+    #                if (scanToken(TokenManager::CHAR_STokenManager::EQUENCE)) {
     #                    scanPosition = xsp
-    #                    if (scanToken(COLON)) {
+    #                    if (scanToken(TokenManager::COLON)) {
     #                        scanPosition = xsp
-    #                        if (scanToken(DASH)) {
+    #                        if (scanToken(TokenManager::DASH)) {
     #                            scanPosition = xsp
-    #                            if (scanToken(DIGITS)) {
+    #                            if (scanToken(TokenManager::DIGITS)) {
     #                                scanPosition = xsp
-    #                                if (scanToken(DOT)) {
+    #                                if (scanToken(TokenManager::DOT)) {
     #                                    scanPosition = xsp
-    #                                    if (scanToken(EQ)) {
+    #                                    if (scanToken(TokenManager::EQ)) {
     #                                        scanPosition = xsp
-    #                                        if (scanToken(ESCAPED_CHAR)) {
+    #                                        if (scanToken(TokenManager::ESCAPED_CHAR)) {
     #                                            scanPosition = xsp
-    #                                            if (scanToken(IMAGE_LABEL)) {
+    #                                            if (scanToken(TokenManager::IMAGE_LABEL)) {
     #                                                scanPosition = xsp
-    #                                                if (scanToken(LT)) {
+    #                                                if (scanToken(TokenManager::LT)) {
     #                                                    scanPosition = xsp
-    #                                                    if (scanToken(LBRACK)) {
+    #                                                    if (scanToken(TokenManager::LBRACK)) {
     #                                                        scanPosition = xsp
-    #                                                        if (scanToken(RBRACK)) {
+    #                                                        if (scanToken(TokenManager::RBRACK)) {
     #                                                            scanPosition = xsp
-    #                                                            if (scanToken(LPAREN)) {
+    #                                                            if (scanToken(TokenManager::LPAREN)) {
     #                                                                scanPosition = xsp
-    #                                                                if (scanToken(GT)) {
+    #                                                                if (scanToken(TokenManager::GT)) {
     #                                                                    scanPosition = xsp
-    #                                                                    if (scanToken(RPAREN)) {
+    #                                                                    if (scanToken(TokenManager::RPAREN)) {
     #                                                                        scanPosition = xsp
-    #                                                                        if (scanToken(UNDERSCORE)) {
+    #                                                                        if (scanToken(TokenManager::UNDERSCORE)) {
     #                                                                            scanPosition = xsp
     #                                                                            lookingAhead = true
-    #                                                                            semanticLookAhead = !nextAfterSpace(EOL,
+    #                                                                            semanticLookAhead = !nextAfterspace(TokenManager::TokenManager::EOL,
     #                                                                                    EOF)
     #                                                                            lookingAhead = false
     #                                                                            return (!semanticLookAhead
@@ -1832,15 +1836,15 @@ class Parser
     #                }
     #            }
     #        }
-            return false
+    return false
   end
 
   def scan_code()
-    return scan_token(BACKTICK) || scan_code_text_tokens_ahead() || scan_token(BACKTICK)
+    return scan_token(TokenManager::BACKTICK) || scan_code_text_tokens_ahead() || scan_token(TokenManager::BACKTICK)
   end
 
   def scan_code_multiline()
-    if (scan_token(BACKTICK) || scan_code_text_tokens_ahead())
+    if (scan_token(TokenManager::BACKTICK) || scan_code_text_tokens_ahead())
       return true
     end
     #        Token xsp
@@ -1851,7 +1855,7 @@ class Parser
     #                break
     #            }
     #        }
-    #        return scanToken(BACKTICK)
+    #        return scanToken(TokenManager::BACKTICK)
   end
 
   def scan_code_text_tokens_ahead()
@@ -1870,13 +1874,13 @@ class Parser
   end
 
   def has_code_text_on_next_line_ahead()
-    if (scan_whitespace_token_before_eol())
+    if (scan_whitespace_token_before_TokenManager::TokenManager::EOL())
       return true
     end
     #        Token xsp
     #        while (true) {
     #            xsp = scanPosition
-    #            if (scanToken(GT)) {
+    #            if (scanToken(TokenManager::GT)) {
     #                scanPosition = xsp
     #                break
     #            }
@@ -1884,7 +1888,7 @@ class Parser
     #        return scanCodeTextTokensAhead()
   end
 
-  def scan_whitspace_tokens()
+  def scan_with_space_tokens()
     #        Token xsp
     #        while (true) {
     #            xsp = scanPosition
@@ -1897,7 +1901,7 @@ class Parser
   end
 
   def scan_whitespace_token_before_eol()
-    return scan_whitspace_tokens() || scan_token(EOL)
+    return scan_whitspace_tokens() || scan_token(TokenManager::TokenManager::EOL)
   end
 
   def scan_em_within_strong_elements
@@ -1910,11 +1914,11 @@ class Parser
     #                    scanPosition = xsp
     #                    if (scanCode()) {
     #                        scanPosition = xsp
-    #                        if (scanToken(ASTERISK)) {
+    #                        if (scanToken(TokenManager::ASTERISK)) {
     #                            scanPosition = xsp
-    #                            if (scanToken(BACKTICK)) {
+    #                            if (scanToken(TokenManager::BACKTICK)) {
     #                                scanPosition = xsp
-    #                                return scanToken(LBRACK)
+    #                                return scanToken(TokenManager::LBRACK)
     #                            }
     #                        }
     #                    }
@@ -1925,7 +1929,7 @@ class Parser
   end
 
   def scan_em_within_strong()
-    #        if (scanToken(UNDERSCORE) || scanEmWithinStrongElements()) {
+    #        if (scanToken(TokenManager::UNDERSCORE) || scanEmWithinStrongElements()) {
     #            return true
     #        }
     #        Token xsp
@@ -1936,7 +1940,7 @@ class Parser
     #                break
     #            }
     #        }
-    #        return scanToken(UNDERSCORE)
+    #        return scanToken(TokenManager::UNDERSCORE)
   end
 
   def scan_em_elements()
@@ -1951,11 +1955,11 @@ class Parser
     #                        scanPosition = xsp
     #                        if (scanStrongWithinEm()) {
     #                            scanPosition = xsp
-    #                            if (scanToken(ASTERISK)) {
+    #                            if (scanToken(TokenManager::ASTERISK)) {
     #                                scanPosition = xsp
-    #                                if (scanToken(BACKTICK)) {
+    #                                if (scanToken(TokenManager::BACKTICK)) {
     #                                    scanPosition = xsp
-    #                                    return scanToken(LBRACK)
+    #                                    return scanToken(TokenManager::LBRACK)
     #                                }
     #                            }
     #                        }
@@ -1967,7 +1971,7 @@ class Parser
   end
 
   def scan_em()
-    if (scanToken(UNDERSCORE) || scanEmElements())
+    if (scanToken(TokenManager::UNDERSCORE) || scanEmElements())
       return true
     end
     #        Token xsp
@@ -1978,7 +1982,7 @@ class Parser
     #                break
     #            }
     #        }
-    #        return scanToken(UNDERSCORE)
+    #        return scanToken(TokenManager::UNDERSCORE)
   end
 
   def scan_em_within_strong_multiline_content()
@@ -1991,11 +1995,11 @@ class Parser
     #                    scanPosition = xsp
     #                    if (scanCode()) {
     #                        scanPosition = xsp
-    #                        if (scanToken(ASTERISK)) {
+    #                        if (scanToken(TokenManager::ASTERISK)) {
     #                            scanPosition = xsp
-    #                            if (scanToken(BACKTICK)) {
+    #                            if (scanToken(TokenManager::BACKTICK)) {
     #                                scanPosition = xsp
-    #                                return scanToken(LBRACK)
+    #                                return scanToken(TokenManager::LBRACK)
     #                            }
     #                        }
     #                    }
@@ -2021,18 +2025,18 @@ class Parser
   end
 
   def scan_em_within_strong_multiline()
-    if (scan_token(UNDERSCORE) || has_no_em_within_strong_multiline_content_ahead())
+    if (scan_token(TokenManager::UNDERSCORE) || has_no_em_within_strong_multiline_content_ahead())
       return true
     end
     #        Token xsp
     #        while (true) {
     #            xsp = scanPosition
-    #            if (scanWhitespaceTokenBeforeEol() || hasNoEmWithinStrongMultilineContentAhead()) {
+    #            if (scanWhitespaceTokenBeforeTokenManager::TokenManager::EOL() || hasNoEmWithinStrongMultilineContentAhead()) {
     #                scanPosition = xsp
     #                break
     #            }
     #        }
-    #        return scanToken(UNDERSCORE)
+    #        return scanToken(TokenManager::UNDERSCORE)
   end
 
   def scan_em_multiline_content_elements()
@@ -2044,17 +2048,17 @@ class Parser
     #                if (scanLink()) {
     #                    scanPosition = xsp
     #                    lookingAhead = true
-    #                    semanticLookAhead = multilineAhead(BACKTICK)
+    #                    semanticLookAhead = multilineAhead(TokenManager::BACKTICK)
     #                    lookingAhead = false
     #                    if (!semanticLookAhead || scanCodeMultiline()) {
     #                        scanPosition = xsp
     #                        if (scanStrongWithinEmMultiline()) {
     #                            scanPosition = xsp
-    #                            if (scanToken(ASTERISK)) {
+    #                            if (scanToken(TokenManager::ASTERISK)) {
     #                                scanPosition = xsp
-    #                                if (scanToken(BACKTICK)) {
+    #                                if (scanToken(TokenManager::BACKTICK)) {
     #                                    scanPosition = xsp
-    #                                    return scanToken(LBRACK)
+    #                                    return scanToken(TokenManager::LBRACK)
     #                                }
     #                            }
     #                        }
@@ -2075,11 +2079,11 @@ class Parser
     #                    scanPosition = xsp
     #                    if (scanCode()) {
     #                        scanPosition = xsp
-    #                        if (scanToken(BACKTICK)) {
+    #                        if (scanToken(TokenManager::BACKTICK)) {
     #                            scanPosition = xsp
-    #                            if (scanToken(LBRACK)) {
+    #                            if (scanToken(TokenManager::LBRACK)) {
     #                                scanPosition = xsp
-    #                                return scanToken(UNDERSCORE)
+    #                                return scanToken(TokenManager::UNDERSCORE)
     #                            }
     #                        }
     #                    }
@@ -2090,7 +2094,7 @@ class Parser
   end
 
   def scan_strong_within_em()
-    if (scan_token(ASTERISK) || scan_strong_within_em_elements())
+    if (scan_token(TokenManager::ASTERISK) || scan_strong_within_em_elements())
       return true
     end
     #        Token xsp
@@ -2101,7 +2105,7 @@ class Parser
     #                break
     #            }
     #        }
-    #        return scanToken(ASTERISK)
+    #        return scanToken(TokenManager::ASTERISK)
   end
 
   def scan_strong_elements()
@@ -2113,17 +2117,17 @@ class Parser
     #                if (scanLink()) {
     #                    scanPosition = xsp
     #                    lookingAhead = true
-    #                    semanticLookAhead = multilineAhead(BACKTICK)
+    #                    semanticLookAhead = multilineAhead(TokenManager::BACKTICK)
     #                    lookingAhead = false
     #                    if (!semanticLookAhead || scanCodeMultiline()) {
     #                        scanPosition = xsp
     #                        if (scanEmWithinStrong()) {
     #                            scanPosition = xsp
-    #                            if (scanToken(BACKTICK)) {
+    #                            if (scanToken(TokenManager::BACKTICK)) {
     #                                scanPosition = xsp
-    #                                if (scanToken(LBRACK)) {
+    #                                if (scanToken(TokenManager::LBRACK)) {
     #                                    scanPosition = xsp
-    #                                    return scanToken(UNDERSCORE)
+    #                                    return scanToken(TokenManager::UNDERSCORE)
     #                                }
     #                            }
     #                        }
@@ -2135,7 +2139,7 @@ class Parser
   end
 
   def scan_strong()
-    #        if (scanToken(ASTERISK) || scanStrongElements()) {
+    #        if (scanToken(TokenManager::ASTERISK) || scanStrongElements()) {
     #            return true
     #        }
     #        Token xsp
@@ -2146,7 +2150,7 @@ class Parser
     #                break
     #            }
     #        }
-    return scan_token(ASTERISK)
+    return scan_token(TokenManager::ASTERISK)
   end
 
   def scan_strong_within_em_multiline_elements()
@@ -2159,11 +2163,11 @@ class Parser
     #                    scanPosition = xsp
     #                    if (scanCode()) {
     #                        scanPosition = xsp
-    #                        if (scanToken(BACKTICK)) {
+    #                        if (scanToken(TokenManager::BACKTICK)) {
     #                            scanPosition = xsp
-    #                            if (scanToken(LBRACK)) {
+    #                            if (scanToken(TokenManager::LBRACK)) {
     #                                scanPosition = xsp
-    #                                return scanToken(UNDERSCORE)
+    #                                return scanToken(TokenManager::UNDERSCORE)
     #                            }
     #                        }
     #                    }
@@ -2189,18 +2193,18 @@ class Parser
   end
 
   def scan_strong_within_em_multiline()
-    if (scan_token(ASTERISK) || scan_for_more_strong_within_em_multiline_elements())
+    if (scan_token(TokenManager::ASTERISK) || scan_for_more_strong_within_em_multiline_elements())
       return true
     end
     #        Token xsp
     #        while (true) {
     #            xsp = scanPosition
-    #            if (scanWhitespaceTokenBeforeEol() || scanForMoreStrongWithinEmMultilineElements()) {
+    #            if (scanWhitespaceTokenBeforeTokenManager::TokenManager::EOL() || scanForMoreStrongWithinEmMultilineElements()) {
     #                scanPosition = xsp
     #                break
     #            }
     #        }
-    #        return scanToken(ASTERISK)
+    #        return scanToken(TokenManager::ASTERISK)
   end
 
   def scan_strong_multiline_elements()
@@ -2215,11 +2219,11 @@ class Parser
     #                        scanPosition = xsp
     #                        if (scanEmWithinStrongMultiline()) {
     #                            scanPosition = xsp
-    #                            if (scanToken(BACKTICK)) {
+    #                            if (scanToken(TokenManager::BACKTICK)) {
     #                                scanPosition = xsp
-    #                                if (scanToken(LBRACK)) {
+    #                                if (scanToken(TokenManager::LBRACK)) {
     #                                    scanPosition = xsp
-    #                                    return scanToken(UNDERSCORE)
+    #                                    return scanToken(TokenManager::UNDERSCORE)
     #                                }
     #                            }
     #                        }
@@ -2232,42 +2236,42 @@ class Parser
 
   def scan_resource_text_element()
     xsp = @scanPosition
-    #        if (scanToken(ASTERISK)) {
+    #        if (scanToken(TokenManager::ASTERISK)) {
     #            scanPosition = xsp
-    #            if (scanToken(BACKSLASH)) {
+    #            if (scanToken(TokenManager::BACKSLASH)) {
     #                scanPosition = xsp
-    #                if (scanToken(BACKTICK)) {
+    #                if (scanToken(TokenManager::BACKTICK)) {
     #                    scanPosition = xsp
-    #                    if (scanToken(CHAR_SEQUENCE)) {
+    #                    if (scanToken(TokenManager::CHAR_STokenManager::EQUENCE)) {
     #                        scanPosition = xsp
-    #                        if (scanToken(COLON)) {
+    #                        if (scanToken(TokenManager::COLON)) {
     #                            scanPosition = xsp
-    #                            if (scanToken(DASH)) {
+    #                            if (scanToken(TokenManager::DASH)) {
     #                                scanPosition = xsp
-    #                                if (scanToken(DIGITS)) {
+    #                                if (scanToken(TokenManager::DIGITS)) {
     #                                    scanPosition = xsp
-    #                                    if (scanToken(DOT)) {
+    #                                    if (scanToken(TokenManager::DOT)) {
     #                                        scanPosition = xsp
-    #                                        if (scanToken(EQ)) {
+    #                                        if (scanToken(TokenManager::EQ)) {
     #                                            scanPosition = xsp
-    #                                            if (scanToken(ESCAPED_CHAR)) {
+    #                                            if (scanToken(TokenManager::ESCAPED_CHAR)) {
     #                                                scanPosition = xsp
-    #                                                if (scanToken(IMAGE_LABEL)) {
+    #                                                if (scanToken(TokenManager::IMAGE_LABEL)) {
     #                                                    scanPosition = xsp
-    #                                                    if (scanToken(GT)) {
+    #                                                    if (scanToken(TokenManager::GT)) {
     #                                                        scanPosition = xsp
-    #                                                        if (scanToken(LBRACK)) {
+    #                                                        if (scanToken(TokenManager::LBRACK)) {
     #                                                            scanPosition = xsp
-    #                                                            if (scanToken(LPAREN)) {
+    #                                                            if (scanToken(TokenManager::LPAREN)) {
     #                                                                scanPosition = xsp
-    #                                                                if (scanToken(LT)) {
+    #                                                                if (scanToken(TokenManager::LT)) {
     #                                                                    scanPosition = xsp
-    #                                                                    if (scanToken(RBRACK)) {
+    #                                                                    if (scanToken(TokenManager::RBRACK)) {
     #                                                                        scanPosition = xsp
-    #                                                                        if (scanToken(UNDERSCORE)) {
+    #                                                                        if (scanToken(TokenManager::UNDERSCORE)) {
     #                                                                            scanPosition = xsp
     #                                                                            lookingAhead = true
-    #                                                                            semanticLookAhead = !nextAfterSpace(RPAREN)
+    #                                                                            semanticLookAhead = !nextAfterspace(TokenManager::RPAREN)
     #                                                                            lookingAhead = false
     #                                                                            return (!semanticLookAhead
     #                                                                                    || scanWhitspaceToken())
@@ -2315,7 +2319,7 @@ class Parser
   end
 
   def scan_resource_url()
-    return scan_token(LPAREN) || scan_whitspace_tokens() || scan_resource_text_elements() || scan_whitspace_tokens() || scan_token(RPAREN)
+    return scan_token(TokenManager::LPAREN) || scan_whitspace_tokens() || scan_resource_text_elements() || scan_whitspace_tokens() || scan_token(TokenManager::RPAREN)
   end
 
   def scan_link_element()
@@ -2341,34 +2345,34 @@ class Parser
 
   def scan_resource_element()
     #        Token xsp = scanPosition
-    #        if (scanToken(BACKSLASH)) {
+    #        if (scanToken(TokenManager::BACKSLASH)) {
     #            scanPosition = xsp
-    #            if (scanToken(COLON)) {
+    #            if (scanToken(TokenManager::COLON)) {
     #                scanPosition = xsp
-    #                if (scanToken(CHAR_SEQUENCE)) {
+    #                if (scanToken(TokenManager::CHAR_STokenManager::EQUENCE)) {
     #                    scanPosition = xsp
-    #                    if (scanToken(DASH)) {
+    #                    if (scanToken(TokenManager::DASH)) {
     #                        scanPosition = xsp
-    #                        if (scanToken(DIGITS)) {
+    #                        if (scanToken(TokenManager::DIGITS)) {
     #                            scanPosition = xsp
-    #                            if (scanToken(DOT)) {
+    #                            if (scanToken(TokenManager::DOT)) {
     #                                scanPosition = xsp
-    #                                if (scanToken(EQ)) {
+    #                                if (scanToken(TokenManager::EQ)) {
     #                                    scanPosition = xsp
-    #                                    if (scanToken(ESCAPED_CHAR)) {
+    #                                    if (scanToken(TokenManager::ESCAPED_CHAR)) {
     #                                        scanPosition = xsp
-    #                                        if (scanToken(IMAGE_LABEL)) {
+    #                                        if (scanToken(TokenManager::IMAGE_LABEL)) {
     #                                            scanPosition = xsp
-    #                                            if (scanToken(GT)) {
+    #                                            if (scanToken(TokenManager::GT)) {
     #                                                scanPosition = xsp
-    #                                                if (scanToken(LPAREN)) {
+    #                                                if (scanToken(TokenManager::LPAREN)) {
     #                                                    scanPosition = xsp
-    #                                                    if (scanToken(LT)) {
+    #                                                    if (scanToken(TokenManager::LT)) {
     #                                                        scanPosition = xsp
-    #                                                        if (scanToken(RPAREN)) {
+    #                                                        if (scanToken(TokenManager::RPAREN)) {
     #                                                            scanPosition = xsp
     #                                                            lookingAhead = true
-    #                                                            semanticLookAhead = !nextAfterSpace(RBRACK)
+    #                                                            semanticLookAhead = !nextAfterspace(TokenManager::RBRACK)
     #                                                            lookingAhead = false
     #                                                            return (!semanticLookAhead || scanWhitspaceToken())
     #                                                        }
@@ -2403,7 +2407,7 @@ class Parser
   end
 
   def scan_link()
-    if (scan_token(LBRACK) || scan_whitspace_tokens() || scan_link_element())
+    if (scan_token(TokenManager::LBRACK) || scan_whitspace_tokens() || scan_link_element())
       return true
     end
     #        Token xsp
@@ -2414,7 +2418,7 @@ class Parser
     #                break
     #            }
     #        }
-    #        if (scanWhitspaceTokens() || scanToken(RBRACK)) {
+    #        if (scanWhitspaceTokens() || scanToken(TokenManager::RBRACK)) {
     #            return true
     #        }
     #        xsp = scanPosition
@@ -2425,7 +2429,7 @@ class Parser
   end
 
   def scan_image()
-    if (scan_token(LBRACK) || scan_whitspace_tokens() || scan_token(IMAGE_LABEL) || scan_image_element())
+    if (scan_token(TokenManager::LBRACK) || scan_whitspace_tokens() || scan_token(TokenManager::IMAGE_LABEL) || scan_image_element())
       return true
     end
     #        Token xsp
@@ -2436,7 +2440,7 @@ class Parser
     #                break
     #            }
     #        }
-    #        if (scanWhitspaceTokens() || scanToken(RBRACK)) {
+    #        if (scanWhitspaceTokens() || scanToken(TokenManager::RBRACK)) {
     #            return true
     #        }
     #        xsp = scanPosition
@@ -2455,17 +2459,17 @@ class Parser
     #                if (scanLink()) {
     #                    scanPosition = xsp
     #                    lookingAhead = true
-    #                    semanticLookAhead = multilineAhead(ASTERISK)
+    #                    semanticLookAhead = multilineAhead(TokenManager::ASTERISK)
     #                    lookingAhead = false
-    #                    if (!semanticLookAhead || scanToken(ASTERISK)) {
+    #                    if (!semanticLookAhead || scanToken(TokenManager::ASTERISK)) {
     #                        scanPosition = xsp
     #                        lookingAhead = true
-    #                        semanticLookAhead = multilineAhead(UNDERSCORE)
+    #                        semanticLookAhead = multilineAhead(TokenManager::UNDERSCORE)
     #                        lookingAhead = false
-    #                        if (!semanticLookAhead || scanToken(UNDERSCORE)) {
+    #                        if (!semanticLookAhead || scanToken(TokenManager::UNDERSCORE)) {
     #                            scanPosition = xsp
     #                            lookingAhead = true
-    #                            semanticLookAhead = multilineAhead(BACKTICK)
+    #                            semanticLookAhead = multilineAhead(TokenManager::BACKTICK)
     #                            lookingAhead = false
     #                            if (!semanticLookAhead || scanCodeMultiline()) {
     #                                scanPosition = xsp
@@ -2496,9 +2500,9 @@ class Parser
 
   def scan_whitspace_token()
     #        Token xsp = scanPosition
-    #        if (scanToken(SPACE)) {
+    #        if (scanToken(TokenManager::SPACE)) {
     #            scanPosition = xsp
-    #            if (scanToken(TAB)) {
+    #            if (scanToken(TokenManager::TAB)) {
     #                return true
     #            }
     #        }
@@ -2506,21 +2510,21 @@ class Parser
   end
 
   def scan_fenced_code_block()
-    return scan_token(BACKTICK) || scan_token(BACKTICK) || scan_token(BACKTICK)
+    return scan_token(TokenManager::BACKTICK) || scan_token(TokenManager::BACKTICK) || scan_token(TokenManager::BACKTICK)
   end
 
   def scan_block_quote_empty_lines()
-    return scan_block_quote_empty_line() || scanToken(EOL)
+    return scan_block_quote_empty_line() || scanToken(TokenManager::TokenManager::EOL)
   end
 
   def scan_block_quote_empty_line()
-    if (scan_token(EOL) || scan_whitspace_tokens() || scan_token(GT) || scan_whitspace_tokens())
+    if (scan_token(TokenManager::TokenManager::EOL) || scan_whitspace_tokens() || scan_token(TokenManager::GT) || scan_whitspace_tokens())
       return true
     end
     #        Token xsp
     #        while (true) {
     #            xsp = scanPosition
-    #            if (scanToken(GT) || scanWhitspaceTokens()) {
+    #            if (scanToken(TokenManager::GT) || scanWhitspaceTokens()) {
     #                scanPosition = xsp
     #                break
     #            }
@@ -2529,13 +2533,13 @@ class Parser
   end
 
   def scan_for_headersigns()
-    if (scan_token(EQ))
+    if (scan_token(TokenManager::EQ))
       return true
     end
     #        Token xsp
     #        while (true) {
     #            xsp = scanPosition
-    #            if (scanToken(EQ)) {
+    #            if (scanToken(TokenManager::EQ)) {
     #                scanPosition = xsp
     #                break
     #            }
@@ -2550,11 +2554,11 @@ class Parser
     @lookingAhead = false
     if (!semantic_lookAhead || scan_for_headersigns())
       #            scanPosition = xsp
-      #            if (scanToken(GT)) {
+      #            if (scanToken(TokenManager::GT)) {
       #                scanPosition = xsp
-      #                if (scanToken(DASH)) {
+      #                if (scanToken(TokenManager::DASH)) {
       #                    scanPosition = xsp
-      #                    if (scanToken(DIGITS) || scanToken(DOT)) {
+      #                    if (scanToken(TokenManager::DIGITS) || scanToken(TokenManager::DOT)) {
       #                        scanPosition = xsp
       #                        if (scanFencedCodeBlock()) {
       #                            scanPosition = xsp
@@ -2598,7 +2602,7 @@ class Parser
   end
 
   def consume_token(kind)
-    #        Token old = token
+    old = @token
     #        if (token.next != null) {
     #            token = token.next
     #        } else {
@@ -2609,7 +2613,7 @@ class Parser
     #            return token
     #        }
     #        token = old
-    return token
+    return @token
   end
 
   def get_token(index)
