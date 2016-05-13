@@ -1716,47 +1716,46 @@ class Parser
     if (scan_token(TokenManager::BACKSLASH))
       @scan_position = xsp
       if (scan_token(TokenManager::CHAR_SEQUENCE))
-        #                scanPosition = xsp
-        #                if (scanToken(TokenManager::COLON)) {
-        #                    scanPosition = xsp
-        #                    if (scanToken(TokenManager::DASH)) {
-        #                        scanPosition = xsp
-        #                        if (scanToken(TokenManager::DIGITS)) {
-        #                            scanPosition = xsp
-        #                            if (scanToken(TokenManager::DOT)) {
-        #                                scanPosition = xsp
-        #                                if (scanToken(TokenManager::EQ)) {
-        #                                    scanPosition = xsp
-        #                                    if (scanToken(TokenManager::ESCAPED_CHAR)) {
-        #                                        scanPosition = xsp
-        #                                        if (scanToken(TokenManager::GT)) {
-        #                                            scanPosition = xsp
-        #                                            if (scanToken(TokenManager::IMAGE_LABEL)) {
-        #                                                scanPosition = xsp
-        #                                                if (scanToken(TokenManager::LPAREN)) {
-        #                                                    scanPosition = xsp
-        #                                                    if (scanToken(TokenManager::LT)) {
-        #                                                        scanPosition = xsp
-        #                                                        if (scanToken(TokenManager::RBRACK)) {
-        #                                                            scanPosition = xsp
-        #                                                            if (scanToken(TokenManager::RPAREN)) {
-        #                                                                scanPosition = xsp
-        #                                                                lookingAhead = true
-        #                                                                semanticLookAhead = !nextAfterspace(TokenManager::TokenManager::EOL, EOF)
-        #                                                                lookingAhead = false
-        #                                                                return (!semanticLookAhead || scanWhitspaceToken())
-        #                                                            }
-        #                                                        }
-        #                                                    }
-        #                                                }
-        #                                            }
-        #                                        }
-        #                                    }
-        #                                }
-        #                            }
-        #                        }
-        #                    }
-        #                }
+        @scan_position = xsp
+        if (scanToken(TokenManager::COLON))
+          @scan_position = xsp
+          if (scan_token(TokenManager::DASH))
+            @scan_position = xsp
+            if (scan_token(TokenManager::DIGITS))
+              @scan_position = xsp
+              if (scan_token(TokenManager::DOT))
+                @scan_position = xsp
+                if (scan_token(TokenManager::EQ))
+                  @scan_position = xsp
+                  if (scan_token(TokenManager::ESCAPED_CHAR))
+                    @scan_position = xsp
+                    if (scan_token(TokenManager::GT))
+                      @scan_position = xsp
+                      if (scan_token(TokenManager::IMAGE_LABEL))
+                        @scan_position = xsp
+                        if (scan_token(TokenManager::LPAREN))
+                          @scan_position = xsp
+                          if (scan_token(TokenManager::LT))
+                            @scan_position = xsp
+                            if (scan_token(TokenManager::RBRACK))
+                              @scan_position = xsp
+                              if (scan_token(TokenManager::RPAREN))
+                                @scan_Position = xsp
+                                looking_ahead = true
+                                semantic_look_ahead = !next_after_space(TokenManager::EOL, TokenManager::EOF)
+                                return (!semantic_look_ahead || scan_whitspace_token())
+                              end
+                            end
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+              end
+            end
+          end
+        end
       end
     end
     return false
@@ -1766,76 +1765,74 @@ class Parser
     if (scan_text())
       return true
     end
-    #        Token xsp
-    #        while (true) {
-    #            xsp = scanPosition
-    #            if (scanText()) {
-    #                scanPosition = xsp
-    #                break
-    #            }
-    #        }
-    #        return false
+    #       Token xsp
+    while (true)
+      xsp = @scan_position
+      if (scan_text())
+        @scan_position = xsp
+        break
+      end
+    end
+    return false
   end
 
   def scan_code_text_tokens()
     xsp = @scanPosition
-    #        if (scanToken(TokenManager::ASTERISK)) {
-    #            scanPosition = xsp
-    #            if (scanToken(TokenManager::BACKSLASH)) {
-    #                scanPosition = xsp
-    #                if (scanToken(TokenManager::CHAR_STokenManager::EQUENCE)) {
-    #                    scanPosition = xsp
-    #                    if (scanToken(TokenManager::COLON)) {
-    #                        scanPosition = xsp
-    #                        if (scanToken(TokenManager::DASH)) {
-    #                            scanPosition = xsp
-    #                            if (scanToken(TokenManager::DIGITS)) {
-    #                                scanPosition = xsp
-    #                                if (scanToken(TokenManager::DOT)) {
-    #                                    scanPosition = xsp
-    #                                    if (scanToken(TokenManager::EQ)) {
-    #                                        scanPosition = xsp
-    #                                        if (scanToken(TokenManager::ESCAPED_CHAR)) {
-    #                                            scanPosition = xsp
-    #                                            if (scanToken(TokenManager::IMAGE_LABEL)) {
-    #                                                scanPosition = xsp
-    #                                                if (scanToken(TokenManager::LT)) {
-    #                                                    scanPosition = xsp
-    #                                                    if (scanToken(TokenManager::LBRACK)) {
-    #                                                        scanPosition = xsp
-    #                                                        if (scanToken(TokenManager::RBRACK)) {
-    #                                                            scanPosition = xsp
-    #                                                            if (scanToken(TokenManager::LPAREN)) {
-    #                                                                scanPosition = xsp
-    #                                                                if (scanToken(TokenManager::GT)) {
-    #                                                                    scanPosition = xsp
-    #                                                                    if (scanToken(TokenManager::RPAREN)) {
-    #                                                                        scanPosition = xsp
-    #                                                                        if (scanToken(TokenManager::UNDERSCORE)) {
-    #                                                                            scanPosition = xsp
-    #                                                                            lookingAhead = true
-    #                                                                            semanticLookAhead = !nextAfterspace(TokenManager::TokenManager::EOL,
-    #                                                                                    EOF)
-    #                                                                            lookingAhead = false
-    #                                                                            return (!semanticLookAhead
-    #                                                                                    || scanWhitspaceToken())
-    #                                                                        }
-    #                                                                    }
-    #                                                                }
-    #                                                            }
-    #                                                        }
-    #                                                    }
-    #                                                }
-    #                                            }
-    #                                        }
-    #                                    }
-    #                                }
-    #                            }
-    #                        }
-    #                    }
-    #                }
-    #            }
-    #        }
+    if (scan_token(TokenManager::ASTERISK))
+      @scan_position = xsp
+      if (scan_token(TokenManager::BACKSLASH))
+        @scan_position = xsp
+        if (scan_token(TokenManager::CHAR_SEQUENCE))
+          @scan_position = xsp
+          if (scan_token(TokenManager::COLON))
+            @scan_position = xsp
+            if (scan_token(TokenManager::DASH))
+              @scan_position = xsp
+              if (scan_token(TokenManager::DIGITS))
+                @scan_position = xsp
+                if (scan_token(TokenManager::DOT))
+                  @scan_position = xsp
+                  if (scan_token(TokenManager::EQ))
+                    @scan_position = xsp
+                    if (scan_token(TokenManager::ESCAPED_CHAR))
+                      @scan_position = xsp
+                      if (scan_token(TokenManager::IMAGE_LABEL))
+                        @scan_position = xsp
+                        if (scan_token(TokenManager::LT))
+                          @scan_position = xsp
+                          if (scan_token(TokenManager::LBRACK))
+                            @scan_position = xsp
+                            if (scanToken(TokenManager::RBRACK))
+                              @scan_position = xsp
+                              if (scan_token(TokenManager::LPAREN))
+                                @scan_position = xsp
+                                if (scan_token(TokenManager::GT))
+                                  @scan_position = xsp
+                                  if (scan_token(TokenManager::RPAREN))
+                                    @scan_position = xsp
+                                    if (scan_token(TokenManager::UNDERSCORE))
+                                      @scan_position = xsp
+                                      @looking_ahead = true
+                                      @semantic_look_ahead = !next_after_space(TokenManager::EOL, TokenManager::EOF)
+                                      @looking_ahead = false
+                                      return (!@semantic_look_ahead || scan_whitspace_token())
+                                    end
+                                  end
+                                end
+                              end
+                            end
+                          end
+                        end
+                      end
+                    end
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+    end
     return false
   end
 
@@ -1848,14 +1845,14 @@ class Parser
       return true
     end
     #        Token xsp
-    #        while (true) {
-    #            xsp = scanPosition
-    #            if (hasCodeTextOnNextLineAhead()) {
-    #                scanPosition = xsp
-    #                break
-    #            }
-    #        }
-    #        return scanToken(TokenManager::BACKTICK)
+    while (true)
+      xsp = @scan_position
+      if (has_code_text_on_next_line_ahead())
+        @scan_position = xsp
+        break
+      end
+    end
+    return scan_token(TokenManager::BACKTICK)
   end
 
   def scan_code_text_tokens_ahead()
@@ -1863,14 +1860,14 @@ class Parser
       return true
     end
     #        Token xsp
-    #        while (true) {
-    #            xsp = scanPosition
-    #            if (scanCodeTextTokens()) {
-    #                scanPosition = xsp
-    #                break
-    #            }
-    #        }
-    #        return false
+    while (true)
+      xsp = @scan_position
+      if (scan_code_text_tokens())
+        @scan_position = xsp
+        break
+      end
+    end
+    return false
   end
 
   def has_code_text_on_next_line_ahead()
@@ -1878,26 +1875,26 @@ class Parser
       return true
     end
     #        Token xsp
-    #        while (true) {
-    #            xsp = scanPosition
-    #            if (scanToken(TokenManager::GT)) {
-    #                scanPosition = xsp
-    #                break
-    #            }
-    #        }
-    #        return scanCodeTextTokensAhead()
+    while (true)
+      xsp = @scan_position
+      if (scan_token(TokenManager::GT))
+        @scan_position = xsp
+        break
+      end
+    end
+    return scan_code_text_tokens_ahead()
   end
 
   def scan_with_space_tokens()
     #        Token xsp
-    #        while (true) {
-    #            xsp = scanPosition
-    #            if (scanWhitspaceToken()) {
-    #                scanPosition = xsp
-    #                break
-    #            }
-    #        }
-    #        return false
+    while (true)
+      xsp = @scan_position
+      if (scan_white_space_token())
+        @scan_position = xsp
+        break
+      end
+    end
+    return false
   end
 
   def scan_whitespace_token_before_eol()
@@ -1905,68 +1902,68 @@ class Parser
   end
 
   def scan_em_within_strong_elements
-    #        Token xsp = scanPosition
-    #        if (scanTextTokens()) {
-    #            scanPosition = xsp
-    #            if (scanImage()) {
-    #                scanPosition = xsp
-    #                if (scanLink()) {
-    #                    scanPosition = xsp
-    #                    if (scanCode()) {
-    #                        scanPosition = xsp
-    #                        if (scanToken(TokenManager::ASTERISK)) {
-    #                            scanPosition = xsp
-    #                            if (scanToken(TokenManager::BACKTICK)) {
-    #                                scanPosition = xsp
-    #                                return scanToken(TokenManager::LBRACK)
-    #                            }
-    #                        }
-    #                    }
-    #                }
-    #            }
-    #        }
-    #        return false
+    xsp = @scan_position
+    if (scan_text_tokens())
+      @scan_position = xsp
+      if (scan_image())
+        @scan_position = xsp
+        if (scan_link())
+          @scan_position = xsp
+          if (scan_code())
+            @scan_position = xsp
+            if (scan_token(TokenManager::ASTERISK))
+              @scan_position = xsp
+              if (scan_token(TokenManager::BACKTICK))
+                @scan_position = xsp
+                return scan_Token(TokenManager::LBRACK)
+              end
+            end
+          end
+        end
+      end
+    end
+    return false
   end
 
   def scan_em_within_strong()
-    #        if (scanToken(TokenManager::UNDERSCORE) || scanEmWithinStrongElements()) {
-    #            return true
-    #        }
+    if (scan_token(TokenManager::UNDERSCORE) || scan_em_within_strong_elements())
+      return true
+    end
     #        Token xsp
-    #        while (true) {
-    #            xsp = scanPosition
-    #            if (scanEmWithinStrongElements()) {
-    #                scanPosition = xsp
-    #                break
-    #            }
-    #        }
-    #        return scanToken(TokenManager::UNDERSCORE)
+    while (true)
+      xsp = @scan_position
+      if (scan_em_within_strong_elements())
+        @scan_position = xsp
+        break
+      end
+    end
+    return scan_token(TokenManager::UNDERSCORE)
   end
 
   def scan_em_elements()
-    #        Token xsp = scanPosition
-    #        if (scanTextTokens()) {
-    #            scanPosition = xsp
-    #            if (scanImage()) {
-    #                scanPosition = xsp
-    #                if (scanLink()) {
-    #                    scanPosition = xsp
-    #                    if (scanCode()) {
-    #                        scanPosition = xsp
-    #                        if (scanStrongWithinEm()) {
-    #                            scanPosition = xsp
-    #                            if (scanToken(TokenManager::ASTERISK)) {
-    #                                scanPosition = xsp
-    #                                if (scanToken(TokenManager::BACKTICK)) {
-    #                                    scanPosition = xsp
-    #                                    return scanToken(TokenManager::LBRACK)
-    #                                }
-    #                            }
-    #                        }
-    #                    }
-    #                }
-    #            }
-    #        }
+    xsp = @scan_position
+    if (scan_text_tokens())
+      @scan_position = xsp
+      if (scan_image())
+        @scan_position = xsp
+        if (scan_link())
+          @scan_position = xsp
+          if (scan_code())
+            @scan_position = xsp
+            if (scan_strong_within_em())
+              @scan_position = xsp
+              if (scan_token(TokenManager::ASTERISK))
+                @scan_position = xsp
+                if (scan_token(TokenManager::BACKTICK))
+                  @scan_position = xsp
+                  return scan_token(TokenManager::LBRACK)
+                end
+              end
+            end
+          end
+        end
+      end
+    end
     return false
   end
 
@@ -1975,53 +1972,53 @@ class Parser
       return true
     end
     #        Token xsp
-    #        while (true) {
-    #            xsp = scanPosition
-    #            if (scanEmElements()) {
-    #                scanPosition = xsp
-    #                break
-    #            }
-    #        }
-    #        return scanToken(TokenManager::UNDERSCORE)
+    while (true)
+      xsp = @scan_position
+      if (scan_em_elements())
+        @scan_position = xsp
+        break
+      end
+    end
+    return scan_token(TokenManager::UNDERSCORE)
   end
 
   def scan_em_within_strong_multiline_content()
-    #        Token xsp = scanPosition
-    #        if (scanTextTokens()) {
-    #            scanPosition = xsp
-    #            if (scanImage()) {
-    #                scanPosition = xsp
-    #                if (scanLink()) {
-    #                    scanPosition = xsp
-    #                    if (scanCode()) {
-    #                        scanPosition = xsp
-    #                        if (scanToken(TokenManager::ASTERISK)) {
-    #                            scanPosition = xsp
-    #                            if (scanToken(TokenManager::BACKTICK)) {
-    #                                scanPosition = xsp
-    #                                return scanToken(TokenManager::LBRACK)
-    #                            }
-    #                        }
-    #                    }
-    #                }
-    #            }
-    #        }
+    xsp = @scan_position
+    if (scan_text_tokens())
+      @scan_position = xsp
+      if (scan_image())
+        @scan_position = xsp
+        if (scan_link())
+          @scan_position = xsp
+          if (scan_code())
+            @scan_position = xsp
+            if (scan_token(TokenManager::ASTERISK))
+              @scan_position = xsp
+              if (scan_token(TokenManager::BACKTICK))
+                @scan_position = xsp
+                return scan_token(TokenManager::LBRACK)
+              end
+            end
+          end
+        end
+      end
+    end
     return false
   end
 
   def has_no_em_within_strong_multiline_content_ahead()
-    #        if (scanEmWithinStrongMultilineContent()) {
-    #            return true
-    #        }
+    if (scan_em_within_strong_multilineContent())
+      return true
+    end
     #        Token xsp
-    #        while (true) {
-    #            xsp = scanPosition
-    #            if (scanEmWithinStrongMultilineContent()) {
-    #                scanPosition = xsp
-    #                break
-    #            }
-    #        }
-    #        return false
+    while (true)
+      xsp = @scan_position
+      if (scan_em_within_strong_multilineContent())
+        @scan_position = xsp
+        break
+      end
+    end
+    return false
   end
 
   def scan_em_within_strong_multiline()
@@ -2029,44 +2026,44 @@ class Parser
       return true
     end
     #        Token xsp
-    #        while (true) {
-    #            xsp = scanPosition
-    #            if (scanWhitespaceTokenBeforeTokenManager::TokenManager::EOL() || hasNoEmWithinStrongMultilineContentAhead()) {
-    #                scanPosition = xsp
-    #                break
-    #            }
-    #        }
-    #        return scanToken(TokenManager::UNDERSCORE)
+    while (true)
+      xsp = @scan_position
+      if (scan_whitespace_token_before_eol() || has_no_em_within_strong_multiline_content_ahead())
+        @scan_position = xsp
+        break
+      end
+    end
+    return scan_token(TokenManager::UNDERSCORE)
   end
 
   def scan_em_multiline_content_elements()
     xsp = @scanPosition
-    #        if (scanTextTokens()) {
-    #            scanPosition = xsp
-    #            if (scanImage()) {
-    #                scanPosition = xsp
-    #                if (scanLink()) {
-    #                    scanPosition = xsp
-    #                    lookingAhead = true
-    #                    semanticLookAhead = multilineAhead(TokenManager::BACKTICK)
-    #                    lookingAhead = false
-    #                    if (!semanticLookAhead || scanCodeMultiline()) {
-    #                        scanPosition = xsp
-    #                        if (scanStrongWithinEmMultiline()) {
-    #                            scanPosition = xsp
-    #                            if (scanToken(TokenManager::ASTERISK)) {
-    #                                scanPosition = xsp
-    #                                if (scanToken(TokenManager::BACKTICK)) {
-    #                                    scanPosition = xsp
-    #                                    return scanToken(TokenManager::LBRACK)
-    #                                }
-    #                            }
-    #                        }
-    #                    }
-    #                }
-    #            }
-    #        }
-    #        return false
+    if (scan_text_tokens())
+      @scan_position = xsp
+                  if (scan_image())
+      #                scanPosition = xsp
+      #                if (scanLink()) {
+      #                    scanPosition = xsp
+      #                    lookingAhead = true
+      #                    semanticLookAhead = multilineAhead(TokenManager::BACKTICK)
+      #                    lookingAhead = false
+      #                    if (!semanticLookAhead || scanCodeMultiline()) {
+      #                        scanPosition = xsp
+      #                        if (scanStrongWithinEmMultiline()) {
+      #                            scanPosition = xsp
+      #                            if (scanToken(TokenManager::ASTERISK)) {
+      #                                scanPosition = xsp
+      #                                if (scanToken(TokenManager::BACKTICK)) {
+      #                                    scanPosition = xsp
+      #                                    return scanToken(TokenManager::LBRACK)
+      #                                }
+      #                            }
+      #                        }
+      #                    }
+      #                }
+                  end
+    end
+    return false
   end
 
   def scan_strong_within_em_elements()
