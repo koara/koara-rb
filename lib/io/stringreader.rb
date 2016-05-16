@@ -19,7 +19,7 @@ class StringReader
       @index += length
       return characters_read
     end
-    -1
+    return -1
   end
 
 end

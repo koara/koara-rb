@@ -22,7 +22,6 @@ class TokenManager
   SPACE = 19
   TAB = 20
   UNDERSCORE = 21
-
   #    private CharStream cs
   #    private char curChar
   #    private int jjnewStateCnt
@@ -36,80 +35,60 @@ class TokenManager
     @cs = stream
   end
 
-  #    public Token getNextToken() {
-  #        try {
-  #            int curPos = 0
-  #            while (true) {
-  #                try {
-  #                    curChar = cs.beginToken()
-  #                } catch (java.io.IOException e) {
-  #                    matchedKind = 0
-  #                    matchedPos = -1
-  #                    return fillToken()
-  #                }
-  #
-  #                matchedKind = Integer.MAX_VALUE
-  #                matchedPos = 0
-  #                curPos = moveStringLiteralDfa0()
-  #                if (matchedKind != Integer.MAX_VALUE) {
-  #                    if (matchedPos + 1 < curPos) {
-  #                        cs.backup(curPos - matchedPos - 1)
-  #                    }
-  #                    return fillToken()
-  #                }
-  #            }
-  #        } catch (IOException e) {
-  #            return null
-  #        }
-  #    }
-  #
-  #    private Token fillToken() {
-  #        return new Token(matchedKind, cs.getBeginLine(), cs.getBeginColumn(), cs.getEndLine(), cs.getEndColumn(),
-  #                cs.getImage())
-  #    }
-  #
-  #    private int moveStringLiteralDfa0() throws IOException {
-  #        switch (curChar) {
-  #        case 9:
-  #            return startNfaWithStates(0, TAB, 8)
-  #        case 32:
-  #            return startNfaWithStates(0, SPACE, 8)
-  #        case 40:
-  #            return stopAtPos(0, LPAREN)
-  #        case 41:
-  #            return stopAtPos(0, RPAREN)
-  #        case 42:
-  #            return stopAtPos(0, ASTERISK)
-  #        case 45:
-  #            return stopAtPos(0, DASH)
-  #        case 46:
-  #            return stopAtPos(0, DOT)
-  #        case 58:
-  #            return stopAtPos(0, COLON)
-  #        case 60:
-  #            return stopAtPos(0, LT)
-  #        case 61:
-  #            return stopAtPos(0, EQ)
-  #        case 62:
-  #            return stopAtPos(0, GT)
-  #        case 73:
-  #            return moveStringLiteralDfa1(0x2000L)
-  #        case 91:
-  #            return stopAtPos(0, LBRACK)
-  #        case 92:
-  #            return startNfaWithStates(0, BACKSLASH, 7)
-  #        case 93:
-  #            return stopAtPos(0, RBRACK)
-  #        case 95:
-  #            return stopAtPos(0, UNDERSCORE)
-  #        case 96:
-  #            return stopAtPos(0, BACKTICK)
-  #        case 105:
-  #            return moveStringLiteralDfa1(0x2000L)
-  #        default:
-  #            return moveNfa(6, 0)
-  #        }
-  #    }
+  def get_next_token()
+    begin
+      cur_pos = 0
+      while (true)
+        begin
+          @cur_char = cs.begin_token()
+        rescue => err
+          @matched_kind = 0
+          @matched_pos = -1
+          return fill_token()
+        end
+
+        @matched_kind = 2147483647
+        @matched_pos = 0
+        @cur_pos = move_string_literal_dfa0()
+        if (matchedKind != 2147483647)
+          if (matchedPos + 1 < curPos)
+            @cs.backup(curPos - matchedPos - 1)
+          end
+          return fill_token()
+        end
+      end
+    rescue => err
+      return null
+    end
+  end
+
+  def fillToken()
+    return Token.new(@matched_kind, @cs.get_begin_line(), @cs.get_begin_column(), @cs.get_end_line(), @cs.get_end_column(), @cs.get_image())
+  end
+
+  def move_string_literal_dfa0()
+    case curChar
+    when 9: return start_nfa_with_states(0, TAB, 8)
+    when 32: return start_nfa_with_states(0, SPACE, 8)
+    when 40: return stop_at_pos(0, LPAREN)
+    when 41: return stop_at_pos(0, RPAREN)
+    when 42: return stop_at_pos(0, ASTERISK)
+    when 45: return stop_at_pos(0, DASH)
+    when 46: return stop_at_pos(0, DOT)
+    when 58: return stop_at_pos(0, COLON)
+    when 60: return stop_at_pos(0, LT)
+    when 61: return stop_at_pos(0, EQ)
+    when 62: return stop_at_pos(0, GT)
+    when 73: return move_string_literal_dfa1(0x2000)
+    when 91: return stop_at_pos(0, LBRACK)
+    when 92: return start_nfa_with_states(0, BACKSLASH, 7)
+    when 93: return stop_at_pos(0, RBRACK)
+    when 95: return stop_at_pos(0, UNDERSCORE)
+    when 96: return stop_at_Pos(0, BACKTICK)
+    when 105: return move_string_literal_dfa1(0x2000)
+    else return moveNfa(6, 0)
+    end
+  end
   #
   #    private int startNfaWithStates(int pos, int kind, int state) {
   #        matchedKind = kind

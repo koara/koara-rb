@@ -28,6 +28,7 @@ class Parser
   end
 
   def parse_file(file)
+
     #      if(!file.getName().toLowerCase().endsWith(".kd")) {
     #        throw new IllegalArgumentException("Can only parse files with extension .kd")
     #      }
@@ -145,19 +146,21 @@ class Parser
 
   def block_quote_prefix()
     i = 0
-    #        do {
-    consume_token(TokenManager::GT)
-    white_space()
-    #        } while (++i < currentQuoteLevel)
+    loop do
+      consume_token(TokenManager::GT)
+      white_space()
+      break if(i+1 >= @current_quote_level)
+    end
   end
 
   def block_quote_empty_line()
     consume_token(TokenManager::TokenManager::EOL)
     white_space()
-    #        do {
-    consume_token(TokenManager::GT)
-    white_space()
-    #        } while (getNextTokenKind() == TokenManager::GT)
+    loop do
+      consume_token(TokenManager::GT)
+      white_space()
+      break if(get_next_toen_kind() != TokenManager::GT)
+    end
   end
 
   def unordered_list()
@@ -244,11 +247,12 @@ class Parser
   def fenced_code_block()
     code_block = CodeBlock.new()
     @tree.open_scope()
-    #        StringBuilder s = new StringBuilder()
+    s = StringIO.new
     begin_column = consume_token(TokenManager::BACKTICK).begin_column
-    #        do {
-    #            consumeToken(TokenManager::BACKTICK)
-    #        } while (getNextTokenKind() == TokenManager::BACKTICK)
+    loop do
+      consume_token(TokenManager::BACKTICK)
+      break if (get_next_token_kind() != TokenManager::BACKTICK)
+    end
     white_space()
     if (get_next_token_kind() == TokenManager::CHAR_SEQUENCE)
       code_block.language = code_language()
@@ -260,6 +264,11 @@ class Parser
 
     kind = get_next_token_kind()
     while (kind != TokenManager::EOF && ((kind != TokenManager::EOL && kind != TokenManager::BACKTICK) || !fences_ahead()))
+
+      case kind
+      when TokenManager::CHAR_SEQUENCE: s << consume_token(TokenManager::CHAR_SEQUENCE).image
+      end
+
       #            switch (kind) {
       #          case TokenManager::CHAR_STokenManager::EQUENCE:
       #            s.append(consumeToken(TokenManager::CHAR_STokenManager::EQUENCE).image)
@@ -1157,13 +1166,13 @@ class Parser
   end
 
   def has_any_block_elements_ahead()
-    #        try {
-    look_ahead = 1
-    last_position = scan_position = token
-    return !scan_more_block_elements()
-    #        } catch (LookaheadSuccess ls) {
-    #            return true
-    #        }
+    begin
+      @look_ahead = 1
+      @last_position = @scan_position = @token
+      return !scan_more_block_elements()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def block_ahead(block_begin_bolumn)
@@ -2549,78 +2558,79 @@ class Parser
     @semanticLookAhead = heading_ahead(1)
     @lookingAhead = false
     if (!semantic_lookAhead || scan_for_headersigns())
-      #            scanPosition = xsp
-      #            if (scanToken(TokenManager::GT)) {
-      #                scanPosition = xsp
-      #                if (scanToken(TokenManager::DASH)) {
-      #                    scanPosition = xsp
-      #                    if (scanToken(TokenManager::DIGITS) || scanToken(TokenManager::DOT)) {
-      #                        scanPosition = xsp
-      #                        if (scanFencedCodeBlock()) {
-      #                            scanPosition = xsp
-      #                            return scanParagraph()
-      #                        }
-      #                    }
-      #                }
-      #            }
+      @scan_position = xsp
+      if (scan_token(TokenManager::GT))
+        @scan_position = xsp
+        if (scan_token(TokenManager::DASH))
+          @scan_position = xsp
+          if (scan_token(TokenManager::DIGITS) || scan_token(TokenManager::DOT))
+            @scan_position = xsp
+            if (scan_fenced_code_block())
+              @scan_position = xsp
+              return scan_paragraph()
+            end
+          end
+        end
+      end
     end
-    #        return false
+    return false
   end
 
   def scan_token(kind)
-    #        if (scanPosition == lastPosition) {
-    #            lookAhead--
-    #            if (scanPosition.next == null) {
-    #                lastPosition = scanPosition = scanPosition.next = tm.getNextToken()
-    #            } else {
-    #                lastPosition = scanPosition = scanPosition.next
-    #            }
-    #        } else {
-    #            scanPosition = scanPosition.next
-    #        }
-    #        if (scanPosition.kind != kind) {
-    #            return true
-    #        }
-    #        if (lookAhead == 0 && scanPosition == lastPosition) {
-    #            throw lookAheadSuccess
-    #        }
+    if (@scan_position == @last_position)
+      @look_ahead -= 1
+      if (@scan_position.next.nil?)
+        @last_position = @scan_position = @scan_position.next = @tm.get_next_token()
+      else
+        @last_position = @scan_position = @scan_position.next
+      end
+    else
+      @scan_position = @scan_position.next
+    end
+    if (@scan_position.kind != kind)
+      return true
+    end
+    if (@look_ahead == 0 && @scan_position == @last_position)
+      raise @look_ahead_success
+    end
     return false
   end
 
   def get_next_token_kind()
-    #        if (nextTokenKind != -1) {
-    #            return nextTokenKind
-    #        } else if ((nextToken = token.next) == null) {
-    #            token.next = tm.getNextToken()
-    #            return (nextTokenKind = token.next.kind)
-    #        }
-    #        return (nextTokenKind = nextToken.kind)
+    if (@next_token_kind != -1)
+      return @next_token_kind
+    elsif ((@next_token = @token.next).nil?)
+      @token.next = @tm.get_next_token()
+      return (@next_token_kind = @token.next.kind)
+    end
+    return (@next_token_kind = @next_token.kind)
   end
 
   def consume_token(kind)
     old = @token
-    #        if (token.next != null) {
-    #            token = token.next
-    #        } else {
-    #            token = token.next = tm.getNextToken()
-    #        }
-    #        nextTokenKind = -1
-    #        if (token.kind == kind) {
-    #            return token
-    #        }
-    #        token = old
+    if (@token.next.nil?)
+      @token = @token.next
+    else
+      @token = @token.next = @tm.get_next_token()
+    end
+    @next_token_kind = -1
+    if (@token.kind == kind)
+      return token
+    end
+    @token = old
     return @token
   end
 
   def get_token(index)
-    #        Token t = lookingAhead ? scanPosition : token
-    #        for (int i = 0 i < index i++) {
-    #            if (t.next != null) {
-    #                t = t.next
-    #            } else {
-    #                t = t.next = tm.getNextToken()
-    #            }
-    #        }
+    t = @looking_ahead ? @scan_position : @token
+
+    0.upto(index - 1) do |i|
+      if(!t.next.nil?)
+        t = t.next
+      else
+        t = t.next = @tm.get_next_token()
+      end
+    end
     return t
   end
 
