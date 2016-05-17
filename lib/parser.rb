@@ -266,7 +266,8 @@ class Parser
     while (kind != TokenManager::EOF && ((kind != TokenManager::EOL && kind != TokenManager::BACKTICK) || !fences_ahead()))
 
       case kind
-      when TokenManager::CHAR_SEQUENCE: s << consume_token(TokenManager::CHAR_SEQUENCE).image
+      when TokenManager::CHAR_SEQUENCE
+        s << consume_token(TokenManager::CHAR_SEQUENCE).image
       end
 
       #            switch (kind) {

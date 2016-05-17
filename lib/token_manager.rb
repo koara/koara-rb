@@ -58,7 +58,7 @@ class TokenManager
         end
       end
     rescue => err
-      return null
+      return nil
     end
   end
 
@@ -68,281 +68,297 @@ class TokenManager
 
   def move_string_literal_dfa0()
     case curChar
-    when 9: return start_nfa_with_states(0, TAB, 8)
-    when 32: return start_nfa_with_states(0, SPACE, 8)
-    when 40: return stop_at_pos(0, LPAREN)
-    when 41: return stop_at_pos(0, RPAREN)
-    when 42: return stop_at_pos(0, ASTERISK)
-    when 45: return stop_at_pos(0, DASH)
-    when 46: return stop_at_pos(0, DOT)
-    when 58: return stop_at_pos(0, COLON)
-    when 60: return stop_at_pos(0, LT)
-    when 61: return stop_at_pos(0, EQ)
-    when 62: return stop_at_pos(0, GT)
-    when 73: return move_string_literal_dfa1(0x2000)
-    when 91: return stop_at_pos(0, LBRACK)
-    when 92: return start_nfa_with_states(0, BACKSLASH, 7)
-    when 93: return stop_at_pos(0, RBRACK)
-    when 95: return stop_at_pos(0, UNDERSCORE)
-    when 96: return stop_at_Pos(0, BACKTICK)
-    when 105: return move_string_literal_dfa1(0x2000)
+    when 9
+      return start_nfa_with_states(0, TAB, 8)
+    when 32
+      return start_nfa_with_states(0, SPACE, 8)
+    when 40
+      return stop_at_pos(0, LPAREN)
+    when 41
+      return stop_at_pos(0, RPAREN)
+    when 42
+      return stop_at_pos(0, ASTERISK)
+    when 45
+      return stop_at_pos(0, DASH)
+    when 46
+      return stop_at_pos(0, DOT)
+    when 58
+      return stop_at_pos(0, COLON)
+    when 60
+      return stop_at_pos(0, LT)
+    when 61
+      return stop_at_pos(0, EQ)
+    when 62
+      return stop_at_pos(0, GT)
+    when 73
+      return move_string_literal_dfa1(0x2000)
+    when 91
+      return stop_at_pos(0, LBRACK)
+    when 92
+      return start_nfa_with_states(0, BACKSLASH, 7)
+    when 93
+      return stop_at_pos(0, RBRACK)
+    when 95
+      return stop_at_pos(0, UNDERSCORE)
+    when 96
+      return stop_at_Pos(0, BACKTICK)
+    when 105
+      return move_string_literal_dfa1(0x2000)
     else return moveNfa(6, 0)
     end
   end
-  #
-  #    private int startNfaWithStates(int pos, int kind, int state) {
-  #        matchedKind = kind
-  #        matchedPos = pos
-  #        try {
-  #            curChar = cs.readChar()
-  #        } catch (IOException e) {
-  #            return pos + 1
-  #        }
-  #        return moveNfa(state, pos + 1)
-  #    }
-  #
-  #    private int stopAtPos(int pos, int kind) {
-  #        matchedKind = kind
-  #        matchedPos = pos
-  #        return pos + 1
-  #    }
-  #
-  #    private int moveStringLiteralDfa1(long active) throws IOException {
-  #        curChar = cs.readChar()
-  #        if (curChar == 77 || curChar == 109) {
-  #            return moveStringLiteralDfa2(active, 0x2000L)
-  #        }
-  #        return startNfa(0, active)
-  #    }
-  #
-  #    private int moveStringLiteralDfa2(long old, long active) throws IOException {
-  #        curChar = cs.readChar()
-  #        if (curChar == 65 || curChar == 97) {
-  #            return moveStringLiteralDfa3(active, 0x2000L)
-  #        }
-  #        return startNfa(1, active)
-  #
-  #    }
-  #
-  #    private int moveStringLiteralDfa3(long old, long active) throws IOException {
-  #        curChar = cs.readChar()
-  #        if (curChar == 71 || curChar == 103) {
-  #            return moveStringLiteralDfa4(active, 0x2000L)
-  #        }
-  #        return startNfa(2, active)
-  #    }
-  #
-  #    private int moveStringLiteralDfa4(long old, long active) throws IOException {
-  #        curChar = cs.readChar()
-  #        if (curChar == 69 || curChar == 101) {
-  #            return moveStringLiteralDfa5(active, 0x2000L)
-  #        }
-  #        return startNfa(3, active)
-  #    }
-  #
-  #    private int moveStringLiteralDfa5(long old, long active) throws IOException {
-  #        curChar = cs.readChar()
-  #        if (curChar == 58 && ((active & 0x2000L) != 0L)) {
-  #            return stopAtPos(5, 13)
-  #        }
-  #        return startNfa(4, active)
-  #    }
-  #
-  #    private int startNfa(int pos, long active) {
-  #        return moveNfa(stopStringLiteralDfa(pos, active), pos + 1)
-  #    }
-  #
-  #    private int moveNfa(int startState, int curPos) {
-  #    	int startsAt = 0
-  #        jjnewStateCnt = 8
-  #        int i = 1
-  #        jjstateSet[0] = startState
-  #        int kind = 0x7fffffff
-  #
-  #        while (true) {
-  #            if (++round == 0x7fffffff) {
-  #                round = 0x80000001
-  #            }
-  #            if (curChar < 64) {
-  #                long l = 1L << curChar
-  #                do {
-  #                    switch (jjstateSet[--i]) {
-  #                    case 6:
-  #                        if ((0x880098feffffd9ffL & l) != 0L) {
-  #                            if (kind > 4) {
-  #                                kind = 4
-  #                            }
-  #                            checkNAdd(0)
-  #                        } else if ((0x3ff000000000000L & l) != 0L) {
-  #                            if (kind > 7) {
-  #                                kind = 7
-  #                            }
-  #                            checkNAdd(1)
-  #                        } else if ((0x2400L & l) != 0L) {
-  #                            if (kind > 9) {
-  #                                kind = 9
-  #                            }
-  #                        } else if ((0x100000200L & l) != 0L) {
-  #                            checkNAddStates(0, 2)
-  #                        }
-  #                        if (curChar == 13) {
-  #                            jjstateSet[jjnewStateCnt++] = 4
-  #                        }
-  #                        break
-  #                    case 8:
-  #                        if ((0x2400L & l) != 0L) {
-  #                            if (kind > 9) {
-  #                                kind = 9
-  #                            }
-  #                        } else if ((0x100000200L & l) != 0L) {
-  #                            checkNAddStates(0, 2)
-  #                        }
-  #                        if (curChar == 13) {
-  #                            jjstateSet[jjnewStateCnt++] = 4
-  #                        }
-  #                        break
-  #                    case 0:
-  #                        if ((0x880098feffffd9ffL & l) != 0L) {
-  #                            kind = 4
-  #                            checkNAdd(0)
-  #                        }
-  #                        break
-  #                    case 1:
-  #                        if ((0x3ff000000000000L & l) != 0L) {
-  #                            if (kind > 7) {
-  #                                kind = 7
-  #                            }
-  #                            checkNAdd(1)
-  #                        }
-  #                        break
-  #                    case 2:
-  #                        if ((0x100000200L & l) != 0L) {
-  #                            checkNAddStates(0, 2)
-  #                        }
-  #                        break
-  #                    case 3:
-  #                        if ((0x2400L & l) != 0L && kind > 9) {
-  #                            kind = 9
-  #                        }
-  #                        break
-  #                    case 4:
-  #                        if (curChar == 10 && kind > 9) {
-  #                            kind = 9
-  #                        }
-  #                        break
-  #                    case 5:
-  #                        if (curChar == 13) {
-  #                            jjstateSet[jjnewStateCnt++] = 4
-  #                        }
-  #                        break
-  #                    case 7:
-  #                        if ((0x77ff670000000000L & l) != 0L && kind > 11) {
-  #                            kind = 11
-  #                        }
-  #                        break
-  #                    }
-  #                } while (i != startsAt)
-  #            } else if (curChar < 128) {
-  #                long l = 1L << (curChar & 077)
-  #                do {
-  #                    switch (jjstateSet[--i]) {
-  #                    case 6:
-  #                        if (l != 0L) {
-  #                            if (kind > 4) {
-  #                                kind = 4
-  #                            }
-  #                            checkNAdd(0)
-  #                        } else if (curChar == 92) {
-  #                            jjstateSet[jjnewStateCnt++] = 7
-  #                        }
-  #                        break
-  #                    case 0:
-  #                        if ((0xfffffffe47ffffffL & l) != 0L) {
-  #                            kind = 4
-  #                            checkNAdd(0)
-  #                        }
-  #                        break
-  #                    case 7:
-  #                        if ((0x1b8000000L & l) != 0L && kind > 11) {
-  #                            kind = 11
-  #                        }
-  #                        break
-  #                    }
-  #                } while (i != startsAt)
-  #            } else {
-  #                do {
-  #                    switch (jjstateSet[--i]) {
-  #                    case 6:
-  #                    case 0:
-  #                        if (kind > 4) {
-  #                            kind = 4
-  #                        }
-  #                        checkNAdd(0)
-  #                        break
-  #                    }
-  #                } while (i != startsAt)
-  #            }
-  #            if (kind != 0x7fffffff) {
-  #                matchedKind = kind
-  #                matchedPos = curPos
-  #                kind = 0x7fffffff
-  #            }
-  #            ++curPos
-  #
-  #
-  #            if ((i = jjnewStateCnt) == (startsAt = 8 - (jjnewStateCnt = startsAt))) {
-  #                return curPos
-  #            }
-  #            try {
-  #                curChar = cs.readChar()
-  #            } catch (IOException e) {
-  #                return curPos
-  #            }
-  #        }
-  #    }
-  #
-  #    private void checkNAddStates(int start, int end) {
-  #        do {
-  #            checkNAdd(jjnextStates[start])
-  #        } while (start++ != end)
-  #    }
-  #
-  #    private void checkNAdd(int state) {
-  #        if (jjrounds[state] != round) {
-  #            jjstateSet[jjnewStateCnt++] = state
-  #            jjrounds[state] = round
-  #        }
-  #    }
-  #
-  #    private int stopStringLiteralDfa(int pos, long active) {
-  #        if (pos == 0) {
-  #            if ((active & 0x2000L) != 0L) {
-  #                matchedKind = 4
-  #                return 0
-  #            } else if ((active & 0x180000L) != 0L) {
-  #                return 8
-  #            } else if ((active & 0x4L) != 0L) {
-  #                return 7
-  #            }
-  #        } else if (pos == 1 && (active & 0x2000L) != 0L) {
-  #            matchedKind = 4
-  #            matchedPos = 1
-  #            return 0
-  #        } else if (pos == 2 && (active & 0x2000L) != 0L) {
-  #            matchedKind = 4
-  #            matchedPos = 2
-  #            return 0
-  #        } else if (pos == 3 && (active & 0x2000L) != 0L) {
-  #            matchedKind = 4
-  #            matchedPos = 3
-  #            return 0
-  #        } else if (pos == 4 && (active & 0x2000L) != 0L) {
-  #            matchedKind = 4
-  #            matchedPos = 4
-  #            return 0
-  #        }
-  #        return -1
-  #    }
-  #
-  #}
+
+  def startNfaWithStates(pos, kind, state)
+    @matched_kind = kind
+    @matched_pos = pos
+    begin
+      @cur_char = @cs.read_char()
+    rescue  => err
+      return pos + 1
+    end
+    return move_nfa(state, pos + 1)
+  end
+
+  def stop_at_pos(pos, kind)
+    @matched_kind = kind
+    @matched_pos = pos
+    return pos + 1
+  end
+
+  def move_string_literal_dfa1(active)
+    @cur_char = @cs.read_char()
+    if (@cur_char.to_i == 77 || @cur_char.to_i == 109)
+      return move_string_literal_dfa2(active, 0x2000)
+    end
+    return start_nfa(0, active)
+  end
+
+  def move_string_literal_dfa2(old, active)
+    @cur_char = @cs.readChar()
+    if (@cur_char.to_i == 65 || @cur_char.to_i == 97)
+      return move_string_literal_dfa3(active, 0x2000)
+    end
+    return start_nfa(1, active)
+  end
+
+  def move_string_literal_dfa3(old, active)
+    @cur_char = @cs.readChar()
+    if (@cur_char.to_i == 71 || @cur_char.to_i == 103)
+      return move_string_literal_dfa4(active, 0x2000)
+    end
+    return start_nfa(2, active)
+  end
+
+  def moveStringLiteralDfa4(old, active)
+    @cur_char = @cs.readChar()
+    if (@cur_char.to_i == 69 || @cur_char.to_i == 101)
+      return move_string_literal_dfa5(active, 0x2000)
+    end
+    return start_nfa(3, active)
+  end
+
+  def move_string_literal_dfa5(old, active)
+    @cur_char = @cs.read_char()
+    if (@cur_char.to_i == 58 && ((active & 0x2000) != 0))
+      return stop_at_pos(5, 13)
+    end
+    return start_nfa(4, active)
+  end
+
+  def start_nfa(pos, active)
+    return move_nfa(stop_string_literal_dfa(pos, active), pos + 1)
+  end
+
+  def move_nfa(startState, curPos)
+    starts_at = 0
+    @jj_new_state_cnt = 8
+    i = 1
+    @jj_state_set[0] = start_state
+    kind = 0x7fffffff
+
+    while (true)
+      if ((@round += 1) == 0x7fffffff)
+        @round = 0x80000001
+      end
+      if (@cur_char.to_i < 64)
+        l = 1 << @cur_char.to_i
+        loop do
+          case @jj_state_set[i-=1]
+          when 6:
+            if ((0x880098feffffd9ff & l) != 0)
+              if (kind > 4)
+                kind = 4
+              end
+              checkNAdd(0)
+            elsif ((0x3ff000000000000 & l) != 0)
+              if (kind > 7)
+                kind = 7
+              end
+              check_n_add(1)
+            #                        } else if ((0x2400L & l) != 0L) {
+            #                            if (kind > 9) {
+            #                                kind = 9
+            #                            }
+            #                        } else if ((0x100000200L & l) != 0L) {
+            #                            checkNAddStates(0, 2)
+            #                        }
+            #                        if (curChar == 13) {
+            #                            jjstateSet[jjnewStateCnt++] = 4
+            #                        }
+            #                        break
+          when 8:
+            #                        if ((0x2400L & l) != 0L) {
+            #                            if (kind > 9) {
+            #                                kind = 9
+            #                            }
+            #                        } else if ((0x100000200L & l) != 0L) {
+            #                            checkNAddStates(0, 2)
+            #                        }
+            #                        if (curChar == 13) {
+            #                            jjstateSet[jjnewStateCnt++] = 4
+            #                        }
+            #                        break
+          when 0:
+            #                        if ((0x880098feffffd9ffL & l) != 0L) {
+            #                            kind = 4
+            #                            checkNAdd(0)
+            #                        }
+            #                        break
+          when 1:
+            #                        if ((0x3ff000000000000L & l) != 0L) {
+            #                            if (kind > 7) {
+            #                                kind = 7
+            #                            }
+            #                            checkNAdd(1)
+            #                        }
+            #                        break
+          when 2:
+            #                        if ((0x100000200L & l) != 0L) {
+            #                            checkNAddStates(0, 2)
+            #                        }
+            #                        break
+          when 3:
+            #                        if ((0x2400L & l) != 0L && kind > 9) {
+            #                            kind = 9
+            #                        }
+            #                        break
+          when 4:
+            #                        if (curChar == 10 && kind > 9) {
+            #                            kind = 9
+            #                        }
+            #                        break
+          when 5:
+            #                        if (curChar == 13) {
+            #                            jjstateSet[jjnewStateCnt++] = 4
+            #                        }
+            #                        break
+          when 7:
+            #                        if ((0x77ff670000000000L & l) != 0L && kind > 11) {
+            #                            kind = 11
+            #                        }
+            #                        break
+          end
+          break if(i == startsAt)
+        end
+      elsif (@cur_char.to_i < 128)
+        l = 1 << (@cur_char.to_i & 077)
+        #                do {
+        #                    switch (jjstateSet[--i]) {
+        #                    case 6:
+        #                        if (l != 0L) {
+        #                            if (kind > 4) {
+        #                                kind = 4
+        #                            }
+        #                            checkNAdd(0)
+        #                        } else if (curChar == 92) {
+        #                            jjstateSet[jjnewStateCnt++] = 7
+        #                        }
+        #                        break
+        #                    case 0:
+        #                        if ((0xfffffffe47ffffffL & l) != 0L) {
+        #                            kind = 4
+        #                            checkNAdd(0)
+        #                        }
+        #                        break
+        #                    case 7:
+        #                        if ((0x1b8000000L & l) != 0L && kind > 11) {
+        #                            kind = 11
+        #                        }
+        #                        break
+        #                    }
+        #                } while (i != startsAt)
+      else
+        #                do {
+        #                    switch (jjstateSet[--i]) {
+        #                    case 6:
+        #                    case 0:
+        #                        if (kind > 4) {
+        #                            kind = 4
+        #                        }
+        #                        checkNAdd(0)
+        #                        break
+        #                    }
+        #                } while (i != startsAt)
+      end
+      if (@kind != 0x7fffffff)
+        @matched_kind = kind
+        @matched_pos = curPos
+        @kind = 0x7fffffff
+      end
+      @cur_pos += 1
+
+      if ((i = @jj_new_state_cnt) == (@starts_at = 8 - (@jj_new_state_cnt = @starts_at)))
+        return @cur_pos
+      end
+      begin
+        @cur_char = @cs.read_char()
+      rescue => err
+        return curPos
+      end
+    end
+  end
+
+  def check_n_add_states(start, ending)
+    loop do
+      check_n_add(@jj_next_states[start])
+      break if(start +1 == ending)
+    end
+  end
+
+  def checkNAdd(state)
+    if (@jj_rounds[state] != @round)
+      @jj_state_set[@jj_new_stateCnt+=1] = state
+      @jj_rounds[state] = @round
+    end
+  end
+
+  def stop_string_literal_dfa(pos, active)
+    if (pos == 0)
+      if ((active & 0x2000) != 0)
+        @matched_kind = 4
+        return 0
+      elsif ((active & 0x180000) != 0)
+        return 8
+      elsif ((active & 0x4) != 0)
+        return 7
+      end
+    elsif (pos == 1 && (active & 0x2000) != 0)
+      @matched_kind = 4
+      @matched_pos = 1
+      return 0
+    elsif (pos == 2 && (active & 0x2000) != 0)
+      @matched_kind = 4
+      @matched_pos = 2
+      return 0
+    elsif (pos == 3 && (active & 0x2000) != 0)
+      @matched_kind = 4
+      @matched_pos = 3
+      return 0
+    elsif (pos == 4 && (active & 0x2000) != 0)
+      @matched_kind = 4
+      @matched_pos = 4
+      return 0
+    end
+    return -1
+  end
 end
