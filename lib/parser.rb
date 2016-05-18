@@ -268,81 +268,56 @@ class Parser
       case kind
       when TokenManager::CHAR_SEQUENCE
         s << consume_token(TokenManager::CHAR_SEQUENCE).image
+      when TokenManager::ASTERISK
+        s << consume_token(TokenManager::ASTERISK).image
+      when TokenManager::BACKSLASH
+        s << consume_token(TokenManager::BACKSLASH).image
+      when TokenManager::COLON
+        s << consume_token(TokenManager::COLON).image
+      when TokenManager::DASH
+        s << consume_token(TokenManager::DASH).image
+      when TokenManager::DIGITS
+        s << consume_token(TokenManager::DIGITS).image
+      when TokenManager::DOT
+        s << consume_token(TokenManager::DOT).image
+      when TokenManager::EQ
+        s << consume_token(TokenManager::EQ).image
+      when TokenManager::ESCAPED_CHAR
+        s << consume_token(TokenManager::ESCAPED_CHAR).image
+      when TokenManager::IMAGE_LABEL
+        s << consume_token(TokenManager::IMAGE_LABEL).image
+      when TokenManager::LT
+        s << consume_token(TokenManager::LT).image
+      when TokenManager::GT
+        s << consume_token(TokenManager::GT).image
+      when TokenManager::LBRACK
+        s << consume_token(TokenManager::LBRACK).image
+      when TokenManager::RBRACK
+        s << consume_token(TokenManager::RBRACK).image
+      when TokenManager::LPAREN
+        s << consume_token(TokenManager::LPAREN).image
+      when TokenManager::RPAREN
+        s << consume_token(TokenManager::RPAREN).image
+      when TokenManager::UNDERSCORE
+        s << consume_token(TokenManager::UNDERSCORE).image
+      when TokenManager::BACKTICK
+        s << consume_token(TokenManager::BACKTICK).image
+      else
+        if (!next_after_space(TokenManager::EOL, TokenManager::EOF))
+          case kind
+          when TokenManager::SPACE
+            s << consume_token(TokenManager::SPACE).image
+          when TokenManager::TAB
+            consume_token(TokenManager::TAB)
+            s << consume_token("    ")
+          end
+        elsif (!fences_ahead())
+          consume_token(TokenManager::EOL)
+          s << "\n"
+          level_white_space(begin_column)
+        end
       end
-
-      #            switch (kind) {
-      #          case TokenManager::CHAR_STokenManager::EQUENCE:
-      #            s.append(consumeToken(TokenManager::CHAR_STokenManager::EQUENCE).image)
-      #            break
-      #            case TokenManager::ASTERISK:
-      #                s.append(consumeToken(TokenManager::ASTERISK).image)
-      #                break
-      #            case TokenManager::BACKSLASH:
-      #                s.append(consumeToken(TokenManager::BACKSLASH).image)
-      #                break
-      #            case TokenManager::COLON:
-      #                s.append(consumeToken(TokenManager::COLON).image)
-      #                break
-      #            case TokenManager::DASH:
-      #                s.append(consumeToken(TokenManager::DASH).image)
-      #                break
-      #            case TokenManager::DIGITS:
-      #                s.append(consumeToken(TokenManager::DIGITS).image)
-      #                break
-      #            case TokenManager::DOT:
-      #                s.append(consumeToken(TokenManager::DOT).image)
-      #                break
-      #            case TokenManager::EQ:
-      #                s.append(consumeToken(TokenManager::EQ).image)
-      #                break
-      #            case TokenManager::ESCAPED_CHAR:
-      #                s.append(consumeToken(TokenManager::ESCAPED_CHAR).image)
-      #                break
-      #            case TokenManager::IMAGE_LABEL:
-      #                s.append(consumeToken(TokenManager::IMAGE_LABEL).image)
-      #                break
-      #            case TokenManager::LT:
-      #                s.append(consumeToken(TokenManager::LT).image)
-      #                break
-      #            case TokenManager::GT:
-      #                s.append(consumeToken(TokenManager::GT).image)
-      #                break
-      #            case TokenManager::LBRACK:
-      #                s.append(consumeToken(TokenManager::LBRACK).image)
-      #                break
-      #            case TokenManager::RBRACK:
-      #                s.append(consumeToken(TokenManager::RBRACK).image)
-      #                break
-      #            case TokenManager::LPAREN:
-      #                s.append(consumeToken(TokenManager::LPAREN).image)
-      #                break
-      #            case TokenManager::RPAREN:
-      #                s.append(consumeToken(TokenManager::RPAREN).image)
-      #                break
-      #            case TokenManager::UNDERSCORE:
-      #                s.append(consumeToken(TokenManager::UNDERSCORE).image)
-      #                break
-      #            case TokenManager::BACKTICK:
-      #                s.append(consumeToken(TokenManager::BACKTICK).image)
-      #                break
-      #            default:
-      #                if (!nextAfterspace(TokenManager::TokenManager::EOL, EOF)) {
-      #                    switch (kind) {
-      #                    case TokenManager::SPACE:
-      #                        s.append(consumeToken(TokenManager::SPACE).image)
-      #                        break
-      #                    case TokenManager::TAB:
-      #                        consumeToken(TokenManager::TAB)
-      #                        s.append("    ")
-      #                        break
-      #                    }
-      #                } else if (!fencesAhead()) {
-      #                    consumeToken(TokenManager::TokenManager::EOL)
-      #                    s.append("\n")
-      #                    levelWhitespace(beginColumn)
-      #                }
-      #            }
-      #            kind = getNextTokenKind()
+      kind = get_next_token_kind()
     end
     if (fences_ahead())
       consume_token(TokenManager::TokenManager::EOL)
@@ -351,7 +326,7 @@ class Parser
         consume_token(TokenManager::BACKTICK)
       end
     end
-    #        codeBlock.setValue(s.toString())
+    codeBlock.value = s
     @tree.close_scope(code_block)
   end
 
@@ -376,66 +351,50 @@ class Parser
   def text()
     text = Text.new()
     @tree.open_scope()
-    #        StringBuffer s = new StringBuffer()
+    s = StringIO.new
     while (text_has_tokens_ahead())
-      #            switch (getNextTokenKind()) {
-      #          case TokenManager::CHAR_STokenManager::EQUENCE:
-      #            s.append(consumeToken(TokenManager::CHAR_STokenManager::EQUENCE).image)
-      #            break
-      #            case TokenManager::BACKSLASH:
-      #                s.append(consumeToken(TokenManager::BACKSLASH).image)
-      #                break
-      #            case TokenManager::COLON:
-      #                s.append(consumeToken(TokenManager::COLON).image)
-      #                break
-      #            case TokenManager::DASH:
-      #                s.append(consumeToken(TokenManager::DASH).image)
-      #                break
-      #            case TokenManager::DIGITS:
-      #                s.append(consumeToken(TokenManager::DIGITS).image)
-      #                break
-      #            case TokenManager::DOT:
-      #                s.append(consumeToken(TokenManager::DOT).image)
-      #                break
-      #            case TokenManager::EQ:
-      #                s.append(consumeToken(TokenManager::EQ).image)
-      #                break
-      #            case TokenManager::ESCAPED_CHAR:
-      #                s.append(consumeToken(TokenManager::ESCAPED_CHAR).image.substring(1))
-      #                break
-      #            case TokenManager::GT:
-      #                s.append(consumeToken(TokenManager::GT).image)
-      #                break
-      #            case TokenManager::IMAGE_LABEL:
-      #                s.append(consumeToken(TokenManager::IMAGE_LABEL).image)
-      #                break
-      #            case TokenManager::LPAREN:
-      #                s.append(consumeToken(TokenManager::LPAREN).image)
-      #                break
-      #            case TokenManager::LT:
-      #                s.append(consumeToken(TokenManager::LT).image)
-      #                break
-      #            case TokenManager::RBRACK:
-      #                s.append(consumeToken(TokenManager::RBRACK).image)
-      #                break
-      #            case TokenManager::RPAREN:
-      #                s.append(consumeToken(TokenManager::RPAREN).image)
-      #                break
-      #            default:
-      #                if (!nextAfterspace(TokenManager::TokenManager::EOL, EOF)) {
-      #                    switch (getNextTokenKind()) {
-      #                    case TokenManager::SPACE:
-      #                        s.append(consumeToken(TokenManager::SPACE).image)
-      #                        break
-      #                    case TokenManager::TAB:
-      #                        consumeToken(TokenManager::TAB)
-      #                        s.append("    ")
-      #                        break
-      #                    }
-      #                }
-      #            }
+      case get_next_token_kind()
+      when TokenManager::CHAR_SEQUENCE
+        s << consumeToken(TokenManager::CHAR_SEQUENCE).image
+      when TokenManager::BACKSLASH
+        s << consumeToken(TokenManager::BACKSLASH).image
+      when TokenManager::COLON
+        s << consumeToken(TokenManager::COLON).image
+      when TokenManager::DASH
+        s << consumeToken(TokenManager::DASH).image
+      when TokenManager::DIGITS
+        s << consumeToken(TokenManager::DIGITS).image
+      when TokenManager::DOT
+        s << consumeToken(TokenManager::DOT).image
+      when TokenManager::EQ
+        s << consumeToken(TokenManager::EQ).image
+      when TokenManager::ESCAPED_CHAR:
+        s << consumeToken(TokenManager::ESCAPED_CHAR).image.slice(0, 1)
+      when TokenManager::GT
+        s << consumeToken(TokenManager::GT).image
+      when TokenManager::IMAGE_LABEL
+        s << consumeToken(TokenManager::IMAGE_LABEL).image
+      when TokenManager::LPAREN
+        s << consumeToken(TokenManager::LPAREN).image
+      when TokenManager::LT
+        s << consumeToken(TokenManager::LT).image
+      when TokenManager::RBRACK
+        s << consumeToken(TokenManager::RBRACK).image
+      when TokenManager::RPAREN
+        s << consumeToken(TokenManager::RPAREN).image
+      else
+        if (!next_after_space(TokenManager::EOL, TokenManager::EOF))
+          case get_next_token_kind()
+          when TokenManager::SPACE
+            s << consume_token(TokenManager::SPACE).image
+          when TokenManager::TAB
+            consume_token(TokenManager::TAB)
+            s << "    "
+          end
+        end
+      end
     end
-    #        text.setValue(s.toString())
+    text.value = s
     @tree.close_scope(text)
   end
 
@@ -509,17 +468,14 @@ class Parser
       elsif (strongEmWithinStrongAhead())
         em_within_strong()
       else
-        #                switch (getNextTokenKind()) {
-        #                case TokenManager::BACKTICK:
-        #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
-        #                    break
-        #                case TokenManager::LBRACK:
-        #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
-        #                    break
-        #                case TokenManager::UNDERSCORE:
-        #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::UNDERSCORE))
-        #                    break
-        #                }
+        case get_next_token_kind()
+        when TokenManager::BACKTICK
+          @tree.add_single_value(Text.new(), consume_token(TokenManager::BACKTICK))
+        when TokenManager::LBRACK
+          @tree.add_single_value(Text.new(), consume_token(TokenManager::LBRACK))
+        when TokenManager::UNDERSCORE
+          @tree.add_single_value(Text.new(), consume_token(TokenManager::UNDERSCORE))
+        end
       end
     end
     consume_token(TokenManager::ASTERISK)
@@ -542,17 +498,14 @@ class Parser
       elsif (em_has_strong_within_em())
         strong_within_em()
       else
-        #                switch (getNextTokenKind()) {
-        #                case TokenManager::ASTERISK:
-        #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::ASTERISK))
-        #                    break
-        #                case TokenManager::BACKTICK:
-        #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
-        #                    break
-        #                case TokenManager::LBRACK:
-        #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
-        #                    break
-        #                }
+        case get_next_token_kind()
+        when TokenManager::ASTERISK
+          @tree.add_single_value(Text.new(), consume_token(TokenManager::ASTERISK))
+        when TokenManager::BACKTICK
+          @tree.add_single_value(Text.new(), consume_token(TokenManager::BACKTICK))
+        when TokenManager::LBRACK
+          @tree.add_single_value(Text.new(), consume_token(TokenManager::LBRACK))
+        end
       end
     end
     consume_token(TokenManager::UNDERSCORE)
@@ -571,95 +524,74 @@ class Parser
   def code_text()
     text = Text.new()
     @tree.open_scope()
-    #        StringBuffer s = new StringBuffer()
-    #        do {
-    #            switch (getNextTokenKind()) {
-    #          case TokenManager::CHAR_STokenManager::EQUENCE:
-    #            s.append(consumeToken(TokenManager::CHAR_STokenManager::EQUENCE).image)
-    #            break
-    #            case TokenManager::ASTERISK:
-    #                s.append(consumeToken(TokenManager::ASTERISK).image)
-    #                break
-    #            case TokenManager::BACKSLASH:
-    #                s.append(consumeToken(TokenManager::BACKSLASH).image)
-    #                break
-    #            case TokenManager::COLON:
-    #                s.append(consumeToken(TokenManager::COLON).image)
-    #                break
-    #            case TokenManager::DASH:
-    #                s.append(consumeToken(TokenManager::DASH).image)
-    #                break
-    #            case TokenManager::DIGITS:
-    #                s.append(consumeToken(TokenManager::DIGITS).image)
-    #                break
-    #            case TokenManager::DOT:
-    #                s.append(consumeToken(TokenManager::DOT).image)
-    #                break
-    #            case TokenManager::EQ:
-    #                s.append(consumeToken(TokenManager::EQ).image)
-    #                break
-    #            case TokenManager::ESCAPED_CHAR:
-    #                s.append(consumeToken(TokenManager::ESCAPED_CHAR).image)
-    #                break
-    #            case TokenManager::IMAGE_LABEL:
-    #                s.append(consumeToken(TokenManager::IMAGE_LABEL).image)
-    #                break
-    #            case TokenManager::LT:
-    #                s.append(consumeToken(TokenManager::LT).image)
-    #                break
-    #            case TokenManager::LBRACK:
-    #                s.append(consumeToken(TokenManager::LBRACK).image)
-    #                break
-    #            case TokenManager::RBRACK:
-    #                s.append(consumeToken(TokenManager::RBRACK).image)
-    #                break
-    #            case TokenManager::LPAREN:
-    #                s.append(consumeToken(TokenManager::LPAREN).image)
-    #                break
-    #            case TokenManager::GT:
-    #                s.append(consumeToken(TokenManager::GT).image)
-    #                break
-    #            case TokenManager::RPAREN:
-    #                s.append(consumeToken(TokenManager::RPAREN).image)
-    #                break
-    #            case TokenManager::UNDERSCORE:
-    #                s.append(consumeToken(TokenManager::UNDERSCORE).image)
-    #                break
-    #            default:
-    #                if (!nextAfterspace(TokenManager::TokenManager::EOL, EOF)) {
-    #                    switch (getNextTokenKind()) {
-    #                    case TokenManager::SPACE:
-    #                        s.append(consumeToken(TokenManager::SPACE).image)
-    #                        break
-    #                    case TokenManager::TAB:
-    #                        consumeToken(TokenManager::TAB)
-    #                        s.append("    ")
-    #                        break
-    #                    }
-    #                }
-    #            }
-    #        } while (codeTextHasAnyTokenAhead())
-    #        text.setValue(s.toString())
+    s = StringIO.new
+    loop do
+      case get_next_token_kind()
+      when TokenManager::CHAR_SEQUENCE
+        s << consumeToken(TokenManager::CHAR_SEQUENCE).image
+      when TokenManager::ASTERISK
+        s << consume_token(TokenManager::ASTERISK).image
+      when TokenManager::BACKSLASH
+        s << consume_token(TokenManager::BACKSLASH).image
+      when TokenManager::COLON
+        s << consume_token(TokenManager::COLON).image
+      when TokenManager::DASH
+        s << consume_token(TokenManager::DASH).image
+      when TokenManager::DIGITS
+        s << consume_token(TokenManager::DIGITS).image
+      when TokenManager::DOT
+        s << consume_token(TokenManager::DOT).image
+      when TokenManager::EQ
+        s << consume_token(TokenManager::EQ).image
+      when TokenManager::ESCAPED_CHAR
+        s << consume_token(TokenManager::ESCAPED_CHAR).image
+      when TokenManager::IMAGE_LABEL
+        s << consume_token(TokenManager::IMAGE_LABEL).image
+      when TokenManager::LT
+        s << consume_token(TokenManager::LT).image
+      when TokenManager::LBRACK
+        s << consume_token(TokenManager::LBRACK).image
+      when TokenManager::RBRACK
+        s << consume_token(TokenManager::RBRACK).image
+      when TokenManager::LPAREN
+        s << consume_token(TokenManager::LPAREN).image
+      when TokenManager::GT
+        s << consume_token(TokenManager::GT).image
+      when TokenManager::RPAREN
+        s << consume_token(TokenManager::RPAREN).image
+      when TokenManager::UNDERSCORE
+        s << consume_token(TokenManager::UNDERSCORE).image
+      else
+        if (!next_after_space(TokenManager::EOL, TokenManager::EOF))
+          case get_next_token_kind()
+          when TokenManager::SPACE
+            s << consume_token(TokenManager::SPACE).image
+          when TokenManager::SPACE
+            consume_token(TokenManager::TAB)
+            s << "    "
+          end
+        end
+      end
+
+      break if !code_text_has_any_token_ahead()
+    end
+    text.value = s
     @tree.close_scope(text)
   end
 
   def loose_char()
     text = Text.new()
     @tree.open_scope()
-    #        switch (getNextTokenKind()) {
-    #        case TokenManager::ASTERISK:
-    #            text.setValue(consumeToken(TokenManager::ASTERISK).image)
-    #            break
-    #        case TokenManager::BACKTICK:
-    #            text.setValue(consumeToken(TokenManager::BACKTICK).image)
-    #            break
-    #        case TokenManager::LBRACK:
-    #            text.setValue(consumeToken(TokenManager::LBRACK).image)
-    #            break
-    #        case TokenManager::UNDERSCORE:
-    #            text.setValue(consumeToken(TokenManager::UNDERSCORE).image)
-    #            break
-    #        }
+    case (get_next_token_kind())
+    when TokenManager::ASTERISK
+      text.value = consume_token(TokenManager::ASTERISK).image
+    when TokenManager::BACKTICK
+      text.value = consume_token(TokenManager::BACKTICK).image
+    when TokenManager::LBRACK
+      text.value = consume_token(TokenManager::LBRACK).image
+    when TokenManager::UNDERSCORE
+      text.value = consume_token(TokenManager::UNDERSCORE).image
+    end
     @tree.close_scope(text)
   end
 
@@ -684,8 +616,8 @@ class Parser
   end
 
   def code_language()
-    #        StringBuilder s = new StringBuilder()
-    #        do {
+    s = StringIO.new
+   loop do 
     #            switch (getNextTokenKind()) {
     #          case TokenManager::CHAR_STokenManager::EQUENCE:
     #            s.append(consumeToken(TokenManager::CHAR_STokenManager::EQUENCE).image)
@@ -750,7 +682,9 @@ class Parser
     #            default:
     #                break
     #            }
-    #        } while (getNextTokenKind() != TokenManager::TokenManager::EOL && getNextTokenKind() != EOF)
+     
+     break if getNextTokenKind() == TokenManager::EOL || get_next_token_kind() == TokenManager::EOF
+   end 
     #        return s.toString()
   end
 
@@ -1209,29 +1143,29 @@ class Parser
   def multiline_ahead(token)
     if (get_next_token_kind() == token && get_token(2).kind != token && get_token(2).kind != TokenManager::EOL)
 
-      #            for (int i = 2 i++) {
-      #                Token t = getToken(i)
-      #                if (t.kind == token) {
-      #                    return true
-      #                } else if (t.kind == TokenManager::TokenManager::EOL) {
-      #                    i = skip(i + 1, TokenManager::SPACE, TokenManager::TAB)
-      #                    int quoteLevel = newQuoteLevel(i)
-      #                    if (quoteLevel == currentQuoteLevel) {
-      #                        i = skip(i, TokenManager::SPACE, TokenManager::TAB, TokenManager::GT)
-      #                        if (getToken(i).kind == token || getToken(i).kind == TokenManager::TokenManager::EOL || getToken(i).kind == TokenManager::DASH
-      #                                || (getToken(i).kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT)
-      #                                || (getToken(i).kind == TokenManager::BACKTICK && getToken(i + 1).kind == TokenManager::BACKTICK
-      #                                        && getToken(i + 2).kind == TokenManager::BACKTICK)
-      #                                || headingAhead(i)) {
-      #                            return false
-      #                        }
-      #                    } else {
-      #                        return false
-      #                    }
-      #                } else if (t.kind == EOF) {
-      #                    return false
-      #                }
-      #            }
+      loop do
+        t = get_token(i)
+        #                if (t.kind == token) {
+        #                    return true
+        #                } else if (t.kind == TokenManager::TokenManager::EOL) {
+        #                    i = skip(i + 1, TokenManager::SPACE, TokenManager::TAB)
+        #                    int quoteLevel = newQuoteLevel(i)
+        #                    if (quoteLevel == currentQuoteLevel) {
+        #                        i = skip(i, TokenManager::SPACE, TokenManager::TAB, TokenManager::GT)
+        #                        if (getToken(i).kind == token || getToken(i).kind == TokenManager::TokenManager::EOL || getToken(i).kind == TokenManager::DASH
+        #                                || (getToken(i).kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT)
+        #                                || (getToken(i).kind == TokenManager::BACKTICK && getToken(i + 1).kind == TokenManager::BACKTICK
+        #                                        && getToken(i + 2).kind == TokenManager::BACKTICK)
+        #                                || headingAhead(i)) {
+        #                            return false
+        #                        }
+        #                    } else {
+        #                        return false
+        #                    }
+        #                } else if (t.kind == EOF) {
+        #                    return false
+        #                }
+      end
     end
     return false
   end
