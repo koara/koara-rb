@@ -22,12 +22,7 @@ class TokenManager
   SPACE = 19
   TAB = 20
   UNDERSCORE = 21
-  #    private CharStream cs
-  #    private char curChar
-  #    private int jjnewStateCnt
-  #    private int round
-  #    private int matchedPos
-  #    private int matchedKind
+
   def initialize(stream)
     @jjrounds = Array.new(8)
     @jjstateSet = Array.new(16)
@@ -184,7 +179,7 @@ class TokenManager
         l = 1 << @cur_char.to_i
         loop do
           case @jj_state_set[i-=1]
-          when 6:
+          when 6
             if ((0x880098feffffd9ff & l) != 0)
               if (kind > 4)
                 kind = 4
@@ -195,110 +190,118 @@ class TokenManager
                 kind = 7
               end
               check_n_add(1)
-            #                        } else if ((0x2400L & l) != 0L) {
-            #                            if (kind > 9) {
-            #                                kind = 9
-            #                            }
-            #                        } else if ((0x100000200L & l) != 0L) {
-            #                            checkNAddStates(0, 2)
-            #                        }
-            #                        if (curChar == 13) {
-            #                            jjstateSet[jjnewStateCnt++] = 4
-            #                        }
-            #                        break
-          when 8:
-            #                        if ((0x2400L & l) != 0L) {
-            #                            if (kind > 9) {
-            #                                kind = 9
-            #                            }
-            #                        } else if ((0x100000200L & l) != 0L) {
-            #                            checkNAddStates(0, 2)
-            #                        }
-            #                        if (curChar == 13) {
-            #                            jjstateSet[jjnewStateCnt++] = 4
-            #                        }
-            #                        break
-          when 0:
-            #                        if ((0x880098feffffd9ffL & l) != 0L) {
-            #                            kind = 4
-            #                            checkNAdd(0)
-            #                        }
-            #                        break
-          when 1:
-            #                        if ((0x3ff000000000000L & l) != 0L) {
-            #                            if (kind > 7) {
-            #                                kind = 7
-            #                            }
-            #                            checkNAdd(1)
-            #                        }
-            #                        break
-          when 2:
-            #                        if ((0x100000200L & l) != 0L) {
-            #                            checkNAddStates(0, 2)
-            #                        }
-            #                        break
-          when 3:
-            #                        if ((0x2400L & l) != 0L && kind > 9) {
-            #                            kind = 9
-            #                        }
-            #                        break
-          when 4:
-            #                        if (curChar == 10 && kind > 9) {
-            #                            kind = 9
-            #                        }
-            #                        break
-          when 5:
-            #                        if (curChar == 13) {
-            #                            jjstateSet[jjnewStateCnt++] = 4
-            #                        }
-            #                        break
-          when 7:
-            #                        if ((0x77ff670000000000L & l) != 0L && kind > 11) {
-            #                            kind = 11
-            #                        }
-            #                        break
+            elsif ((0x2400 & l) != 0)
+              if (@kind > 9)
+                @kind = 9
+              end
+            elsif ((0x100000200 & l) != 0)
+              checkNAddStates(0, 2)
+            end
+            if (@cur_char == 13)
+              @jj_state_set[@jj_new_state_cnt+=1] = 4
+            end
+            break
+          when 8
+            if ((0x2400 & l) != 0)
+              if (@kind > 9)
+                @kind = 9
+              end
+            elsif ((0x100000200 & l) != 0)
+              check_n_add_states(0, 2)
+            end
+            if (@cur_char.to_i == 13)
+              @jj_state_set[@jj_new_state_cnt+=1] = 4
+            end
+            break
+          when 0
+            if ((0x880098feffffd9ff & l) != 0)
+              @kind = 4
+              check_n_add(0)
+            end
+            break
+          when 1
+            if ((0x3ff000000000000 & l) != 0)
+              if (@kind > 7)
+                @kind = 7
+              end
+              check_n_add(1)
+            end
+            break
+          when 2
+            if ((0x100000200 & l) != 0)
+              check_n_add_states(0, 2)
+            end
+            break
+          when 3
+            if ((0x2400 & l) != 0 && @kind > 9)
+              @kind = 9
+            end
+            break
+          when 4
+            if (@cur_char.to_i == 10 && @kind > 9)
+              @kind = 9
+            end
+            break
+          when 5
+            if (@cur_char.to_i == 13)
+              @jj_state_set[@jj_new_state_cnt+=1] = 4
+            end
+            break
+          when 7
+            if ((0x77ff670000000000 & l) != 0 && @kind > 11)
+              kind = 11
+            end
+            break
+
           end
           break if(i == startsAt)
         end
       elsif (@cur_char.to_i < 128)
         l = 1 << (@cur_char.to_i & 077)
-        #                do {
-        #                    switch (jjstateSet[--i]) {
-        #                    case 6:
-        #                        if (l != 0L) {
-        #                            if (kind > 4) {
-        #                                kind = 4
-        #                            }
-        #                            checkNAdd(0)
-        #                        } else if (curChar == 92) {
-        #                            jjstateSet[jjnewStateCnt++] = 7
-        #                        }
-        #                        break
-        #                    case 0:
-        #                        if ((0xfffffffe47ffffffL & l) != 0L) {
-        #                            kind = 4
-        #                            checkNAdd(0)
-        #                        }
-        #                        break
-        #                    case 7:
-        #                        if ((0x1b8000000L & l) != 0L && kind > 11) {
-        #                            kind = 11
-        #                        }
-        #                        break
-        #                    }
-        #                } while (i != startsAt)
+        loop do
+          case jjstateSet[i-=1]
+          when 6
+            if (l != 0)
+              if (@kind > 4)
+                @kind = 4
+              end
+              check_n_add(0)
+            elsif (curChar == 92)
+              @jj_state_set[jjnewStateCnt+=1] = 7
+            end
+            break
+          when 0
+            if ((0xfffffffe47ffffff & l) != 0)
+              @kind = 4
+              check_n_add(0)
+            end
+            break
+          when 7
+            if ((0x1b8000000 & l) != 0 && @kind > 11)
+              @kind = 11
+            end
+            break
+          end
+          break if (i == startsAt)
+        end
       else
-        #                do {
-        #                    switch (jjstateSet[--i]) {
-        #                    case 6:
-        #                    case 0:
-        #                        if (kind > 4) {
-        #                            kind = 4
-        #                        }
-        #                        checkNAdd(0)
-        #                        break
-        #                    }
-        #                } while (i != startsAt)
+        loop do
+          case @jj_state_set[i-=1]
+          when 6
+            if (@kind > 4)
+              @kind = 4
+            end
+            check_n_add(0)
+            break
+          when 0
+            if (@kind > 4)
+              @kind = 4
+            end
+            check_n_add(0)
+            break
+          end
+          break if (i == startsAt)
+        end
       end
       if (@kind != 0x7fffffff)
         @matched_kind = kind
