@@ -57,7 +57,7 @@ class TokenManager
     end
   end
 
-  def fillToken()
+  def fill_token()
     return Token.new(@matched_kind, @cs.get_begin_line(), @cs.get_begin_column(), @cs.get_end_line(), @cs.get_end_column(), @cs.get_image())
   end
 
@@ -103,7 +103,7 @@ class TokenManager
     end
   end
 
-  def startNfaWithStates(pos, kind, state)
+  def start_nfa_with_states(pos, kind, state)
     @matched_kind = kind
     @matched_pos = pos
     begin
@@ -144,7 +144,7 @@ class TokenManager
     return start_nfa(2, active)
   end
 
-  def moveStringLiteralDfa4(old, active)
+  def move_string_literal_dfa4(old, active)
     @cur_char = @cs.readChar()
     if (@cur_char.to_i == 69 || @cur_char.to_i == 101)
       return move_string_literal_dfa5(active, 0x2000)
@@ -328,7 +328,7 @@ class TokenManager
     end
   end
 
-  def checkNAdd(state)
+  def check_n_add(state)
     if (@jj_rounds[state] != @round)
       @jj_state_set[@jj_new_stateCnt+=1] = state
       @jj_rounds[state] = @round

@@ -1,5 +1,3 @@
-require 'active_support/core_ext/string'
-
 class FileReader
   def initialize(file_name)
     @text = File.read(file_name)

@@ -15,22 +15,22 @@ class CharStream
     @tabSize = 4
   end
 
-  def beginToken()
-    @tokenBegin = -1
-    c = readChar()
-    tokenBegin = @bufpos
+  def begin_token()
+    @token_begin = -1
+    c = read_char()
+    @token_begin = @bufpos
     return c
   end
 
-  def readChar()
-    if (@inBuf > 0)
-      @inBuf -= 1
+  def read_char()
+    if (@in_buf > 0)
+      @in_buf -= 1
       if ((@bufpos += 1) == @bufsize)
         @bufpos = 0
       end
       return @buffer[@bufpos]
     end
-    
+
     if ((@bufpos += 1) >= @max_next_char_ind)
       fillBuff()
     end
@@ -39,25 +39,29 @@ class CharStream
     return c
   end
 
-  def fillBuff()
-    if (@maxNextCharInd == @available)
+  def fill_buff()
+    if (@max_next_char_ind == @available)
       if (@available == @bufsize)
         @bufpos = 0
-        @maxNextCharInd = 0
-        if (@tokenBegin > 2048)
-          @available = @tokenBegin
+        @max_next_char_ind = 0
+        if (@token_begin > 2048)
+          @available = @token_begin
         else
           @available = @bufsize
         end
       end
     end
     i = 0
-    
-    xbuffer = ""
-    @reader.read(5, xbuffer)
-    
-    puts "////" + xbuffer
-    
+
+    begin
+    rescue => e
+      @bufpos -= 1
+      backup(0)
+      if (@token_begin == -1)
+        @token_begin = bufpos
+      end
+      raise e
+    end
 
     #        try {
     #            if ((i = reader.read(buffer, maxNextCharInd, available - maxNextCharInd)) == -1) {
@@ -67,12 +71,7 @@ class CharStream
     #                maxNextCharInd += i
     #            }
     #        } catch (IOException e) {
-    #            --bufpos
-    #            backup(0)
-    #            if (tokenBegin == -1) {
-    #                tokenBegin = bufpos
-    #            }
-    #            throw e
+    #
     #        }
   end
 
@@ -83,7 +82,7 @@ class CharStream
     end
   end
 
-  def updateLineColumn(c)
+  def update_line_column(c)
     @column += 1
 
     if (@prev_char_is_lf)
@@ -93,13 +92,13 @@ class CharStream
     end
 
     case c
-      when '\n'
-        @prev_char_is_lf = true
-      when '\t'
-        @column -= 1
-        @column += (@tabSize - (@column % @tabSize)) 
+    when '\n'
+      @prev_char_is_lf = true
+    when '\t'
+      @column -= 1
+      @column += (@tabSize - (@column % @tabSize))
     end
-    
+
     @bufline[@bufpos] = @line
     @bufcolumn[@bufpos] = @column
   end
@@ -120,11 +119,11 @@ class CharStream
   end
 
   def getBeginColumn()
-    return @bufcolumn[@tokenBegin]
+    return @bufcolumn[@token_begin]
   end
 
   def getBeginLine()
-    return @bufline[@tokenBegin]
+    return @bufline[@token_begin]
   end
 
 end

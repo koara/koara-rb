@@ -6,18 +6,6 @@ require_relative 'tree_state'
 
 class Parser
   attr_reader :modules
-  #    private CharStream cs
-  #    private Token token, nextToken, scanPosition, lastPosition
-  #    private TokenManager tm
-  #    private TreeState tree
-  #    private int currentBlockLevel
-  #    private int currentQuoteLevel
-  #    private int lookAhead
-  #    private int nextTokenKind
-  #    private boolean lookingAhead
-  #    private boolean semanticLookAhead
-  #    private LookaheadSuccess lookAheadSuccess
-  #
   def initialize()
     @lookAheadSuccess = LookaheadSuccess.new
     @modules = ["paragraphs", "headings", "lists", "links", "images", "formatting", "blockquotes", "code"]
@@ -32,16 +20,16 @@ class Parser
     #      if(!file.getName().toLowerCase().endsWith(".kd")) {
     #        throw new IllegalArgumentException("Can only parse files with extension .kd")
     #      }
-    #      return parse_reader(new FileReader(file))
+    return parse_reader(FileReader.new(file))
   end
 
   def parse_reader(reader)
     @cs =  CharStream.new(reader)
     @tm =  TokenManager.new(@cs)
     @token =  Token.new
-    @tree = TreeState.new()
+    @tree = TreeState.new
     @nextTokenKind = -1
-    document = Document.new()
+    document = Document.new
     @tree.open_scope()
 
     while(get_next_token_kind() == TokenManager::EOL)
@@ -67,7 +55,6 @@ class Parser
     return document
   end
 
-  #
   def block_element()
     @current_block_level += 1
     if (modules.include?("headings") && heading_ahead(1))
@@ -87,7 +74,7 @@ class Parser
   end
 
   def heading()
-    heading =  Heading.new()
+    heading =  Heading.new
     @tree.open_scope()
     heading_level = 0
 
@@ -118,7 +105,7 @@ class Parser
   end
 
   def block_quote()
-    blockquote = BlockQuote.new()
+    blockquote = BlockQuote.new
     @tree.open_scope()
     @current_quote_Level += 1
     consume_token(TokenManager::GT)
@@ -181,7 +168,7 @@ class Parser
   end
 
   def unordered_list_item()
-    listItem = ListItem.new()
+    listItem = ListItem.new
     @tree.open_scope()
 
     t = consumeToken(TokenManager::DASH)
@@ -221,7 +208,7 @@ class Parser
   end
 
   def ordered_list_item()
-    list_item = ListItem.new()
+    list_item = ListItem.new
     @tree.open_scope()
     t = consume_token(TokenManager::DIGITS)
     consume_token(TokenManager::DOT)
@@ -245,7 +232,7 @@ class Parser
   end
 
   def fenced_code_block()
-    code_block = CodeBlock.new()
+    code_block = CodeBlock.new
     @tree.open_scope()
     s = StringIO.new
     begin_column = consume_token(TokenManager::BACKTICK).begin_column
@@ -331,7 +318,7 @@ class Parser
   end
 
   def paragraph()
-    paragraph = modules.includes?("paragraphs") ? Paragraph.new() : BlockElement.new()
+    paragraph = modules.includes?("paragraphs") ? Paragraph.new : BlockElement.new
     @tree.open_scope()
     inline()
     while (textAhead())
@@ -349,7 +336,7 @@ class Parser
   end
 
   def text()
-    text = Text.new()
+    text = Text.new
     @tree.open_scope()
     s = StringIO.new
     while (text_has_tokens_ahead())
@@ -399,7 +386,7 @@ class Parser
   end
 
   def image()
-    image = Image.new()
+    image = Image.new
     @tree.open_scope()
     ref = ""
     consume_token(TokenManager::LBRACK)
@@ -423,7 +410,7 @@ class Parser
   end
 
   def link()
-    link = Link.new()
+    link = Link.new
     @tree.open_scope()
     ref = ""
     consume_token(TokenManager::LBRACK)
@@ -453,7 +440,7 @@ class Parser
   end
 
   def strong()
-    strong = Strong.new()
+    strong = Strong.new
     @tree.open_scope()
     consume_token(TokenManager::ASTERISK)
     while (strong_has_elements())
@@ -470,11 +457,11 @@ class Parser
       else
         case get_next_token_kind()
         when TokenManager::BACKTICK
-          @tree.add_single_value(Text.new(), consume_token(TokenManager::BACKTICK))
+          @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
         when TokenManager::LBRACK
-          @tree.add_single_value(Text.new(), consume_token(TokenManager::LBRACK))
+          @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
         when TokenManager::UNDERSCORE
-          @tree.add_single_value(Text.new(), consume_token(TokenManager::UNDERSCORE))
+          @tree.add_single_value(Text.w, consume_token(TokenManager::UNDERSCORE))
         end
       end
     end
@@ -483,7 +470,7 @@ class Parser
   end
 
   def em()
-    em = Em.new()
+    em = Em.new
     @tree.open_scope()
     consume_Token(TokenManager::UNDERSCORE)
     while (em_has_elements())
@@ -500,11 +487,11 @@ class Parser
       else
         case get_next_token_kind()
         when TokenManager::ASTERISK
-          @tree.add_single_value(Text.new(), consume_token(TokenManager::ASTERISK))
+          @tree.add_single_value(Text.new, consume_token(TokenManager::ASTERISK))
         when TokenManager::BACKTICK
-          @tree.add_single_value(Text.new(), consume_token(TokenManager::BACKTICK))
+          @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
         when TokenManager::LBRACK
-          @tree.add_single_value(Text.new(), consume_token(TokenManager::LBRACK))
+          @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
         end
       end
     end
@@ -522,7 +509,7 @@ class Parser
   end
 
   def code_text()
-    text = Text.new()
+    text = Text.new
     @tree.open_scope()
     s = StringIO.new
     loop do
@@ -580,7 +567,7 @@ class Parser
   end
 
   def loose_char()
-    text = Text.new()
+    text = Text.new
     @tree.open_scope()
     case (get_next_token_kind())
     when TokenManager::ASTERISK
@@ -596,7 +583,7 @@ class Parser
   end
 
   def line_break()
-    linebreak = LineBreak.new()
+    linebreak = LineBreak.new
     tree.open_scope()
     while (get_next_token_kind() == TokenManager::SPACE || get_next_token_kind() == TokenManager::TAB)
       consumeToken(getNextTokenKind())
@@ -688,7 +675,7 @@ class Parser
   end
 
   def resource_text()
-    text = Text.new()
+    text = Text.new
     @tree.open_scope()
     s = StringIO.new
     loop do
@@ -798,7 +785,7 @@ class Parser
     end
 
     def strong_multiline()
-      Strong strong = Strong.new()
+      Strong strong = Strong.new
       @tree.open_scope()
       consume_token(TokenManager::ASTERISK)
       strong_multiline_content()
@@ -826,11 +813,11 @@ class Parser
         else
           case get_next_token_kind()
           when TokenManager::BACKTICK
-            @tree.add_single_value(Text.new(), consume_token(TokenManager::BACKTICK))
+            @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
           when TokenManager::LBRACK
-            @tree.add_single_value(Text.new(), consumeToken(TokenManager::LBRACK))
+            @tree.add_single_value(Text.new, consumeToken(TokenManager::LBRACK))
           when TokenManager::UNDERSCORE
-            @tree.add_single_value(Text.new(), consumeToken(TokenManager::UNDERSCORE))
+            @tree.add_single_value(Text.new, consumeToken(TokenManager::UNDERSCORE))
           end
         end
       end
@@ -839,7 +826,7 @@ class Parser
   end
 
   def strong_within_em_multiline()
-    Strong strong = Strong.new()
+    Strong strong = Strong.new
     @tree.open_scope()
     consume_token(TokenManager::ASTERISK)
     strong_within_em_multiline_content()
@@ -852,64 +839,60 @@ class Parser
   end
 
   def strong_within_em_multiline_content()
-    #        do {
-    if (has_text_ahead())
-      text()
-    elsif (modules.includes?("images") && has_image_ahead())
-      image()
-    elsif (modules.includes?("links") && has_link_ahead())
-      link()
-    elsif (modules.includes?("code") && has_code_ahead())
-      code()
-    else
-      case get_next_token_kind()
-      when TokenManager::BACKTICK
-      @tree.add_single_value(Text.new(), consume_token(TokenManager::BACKTICK))
-      #                    break
-      #                case TokenManager::LBRACK:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
-      #                    break
-      #                case TokenManager::UNDERSCORE:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::UNDERSCORE))
-      #                    break
+    loop do
+      if (has_text_ahead())
+        text()
+      elsif (modules.includes?("images") && has_image_ahead())
+        image()
+      elsif (modules.includes?("links") && has_link_ahead())
+        link()
+      elsif (modules.includes?("code") && has_code_ahead())
+        code()
+      else
+        case get_next_token_kind()
+        when TokenManager::BACKTICK
+          @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+        when TokenManager::LBRACK
+          @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+        when TokenManager::UNDERSCORE
+          @tree.add_single_value(Text.new, consume_token(TokenManager::UNDERSCORE))
+        end
       end
+      break if !strong_within_em_multiline_has_elements_ahead()
     end
-    #        } while (strongWithinEmMultilineHasElementsAhead())
   end
 
   def strong_within_em()
-    strong = Strong.new()
+    strong = Strong.new
     @tree.open_scope()
     consume_token(TokenManager::ASTERISK)
-    #        do {
-    if (has_text_ahead())
-      text()
-    elsif (modules.includes?("images") && has_image_ahead())
-      image()
-    elsif (modules.includes?("links") && has_link_ahead())
-      link()
-    elsif (modules.includes?("code") && has_code_ahead())
-      code()
-    else
-      #                switch (getNextTokenKind()) {
-      #                case TokenManager::BACKTICK:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
-      #                    break
-      #                case TokenManager::LBRACK:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
-      #                    break
-      #                case TokenManager::UNDERSCORE:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::UNDERSCORE))
-      #                    break
-      #                }
+    loop do
+      if (has_text_ahead())
+        text()
+      elsif (modules.includes?("images") && has_image_ahead())
+        image()
+      elsif (modules.includes?("links") && has_link_ahead())
+        link()
+      elsif (modules.includes?("code") && has_code_ahead())
+        code()
+      else
+        case get_next_token_kind()
+        when TokenManager::BACKTICK
+          @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+        when TokenManager::LBRACK
+          @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+        when TokenManager::UNDERSCORE
+          @tree.add_single_value(Text.new, consume_token(TokenManager::UNDERSCORE))
+        end
+      end
+      break if !strong_within_em_has_elements_ahead()
     end
-    #        } while (strongWithinEmHasElementsAhead())
     consume_token(TokenManager::ASTERISK)
     @tree.close_scope(strong)
   end
 
   def em_multiline()
-    em = Em.new()
+    em = Em.new
     tree.open_scope()
     consume_token(TokenManager::UNDERSCORE)
     em_multiline_content()
@@ -923,35 +906,34 @@ class Parser
   end
 
   def em_multiline_content()
-    #        do {
-    if (has_text_ahead())
-      text()
-    elsif (modules.includes?("images") && has_image_ahead())
-      image()
-    elsif (modules.includes?("links") && has_link_ahead())
-      link()
-    elsif (modules.includes("code") && multiline_ahead(TokenManager::BACKTICK))
-      code_multiline()
-    elsif (hasStrongWithinEmMultilineAhead())
-      strong_within_em_multiline()
-    else
-      #                switch (getNextTokenKind()) {
-      #                case TokenManager::ASTERISK:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::ASTERISK))
-      #                    break
-      #                case TokenManager::BACKTICK:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
-      #                    break
-      #                case TokenManager::LBRACK:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
-      #                    break
-      #                }
+    loop do
+      if (has_text_ahead())
+        text()
+      elsif (modules.includes?("images") && has_image_ahead())
+        image()
+      elsif (modules.includes?("links") && has_link_ahead())
+        link()
+      elsif (modules.includes("code") && multiline_ahead(TokenManager::BACKTICK))
+        code_multiline()
+      elsif (hasStrongWithinEmMultilineAhead())
+        strong_within_em_multiline()
+      else
+        case get_next_token_kind()
+        when TokenManager::ASTERISK
+          @tree.add_single_value(Text.new, consume_token(TokenManager::ASTERISK))
+        when TokenManager::BACKTICK
+          @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+        when TokenManager::LBRACK
+          @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+        end
+      end
+
+      break if !em_multiline_content_has_elements_ahead()
     end
-    #        } while (emMultilineContentHasElementsAhead())
   end
 
   def em_within_strong_multiline()
-    em = Em.new()
+    em = Em.new
     tree.open_scope()
     consume_token(TokenManager::UNDERSCORE)
     em_within_strong_multiline_content()
@@ -964,64 +946,60 @@ class Parser
   end
 
   def em_within_strong_multiline_content()
-    #        do {
-    if (has_text_ahead())
-      text()
-    elsif (modules.includes?("images") && has_image_ahead())
-      image()
-    elsif (modules.includes?("links") && has_link_ahead())
-      link()
-    elsif (modules.includes("code") && has_code_ahead())
-      code()
-    else
-      #                switch (getNextTokenKind()) {
-      #                case TokenManager::ASTERISK:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::ASTERISK))
-      #                    break
-      #                case TokenManager::BACKTICK:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
-      #                    break
-      #                case TokenManager::LBRACK:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
-      #                    break
-      #                }
+    loop do
+      if (has_text_ahead())
+        text()
+      elsif (modules.includes?("images") && has_image_ahead())
+        image()
+      elsif (modules.includes?("links") && has_link_ahead())
+        link()
+      elsif (modules.includes("code") && has_code_ahead())
+        code()
+      else
+        case get_next_token_kind()
+        when TokenManager::ASTERISK
+          @tree.add_single_value(Text.new, consume_token(TokenManager::ASTERISK))
+        when TokenManager::BACKTICK
+          @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+        when TokenManager::LBRACK
+          @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+        end
+      end
+      break if em_within_strong_multiline_content_has_elements_ahead()
     end
-    #        } while (emWithinStrongMultilineContentHasElementsAhead())
   end
 
   def em_within_strong()
-    em = Em.new()
+    em = Em.new
     @tree.open_scope()
     consume_token(TokenManager::UNDERSCORE)
-    #        do {
-    if (has_text_ahead())
-      text()
-    elsif (modules.includes?("images") && has_image_ahead())
-      image()
-    elsif (modules.includes?("links") && has_link_ahead())
-      link()
-    elsif (modules.includes?("code") && has_code_ahead())
-      code()
-    else
-      #                switch (getNextTokenKind()) {
-      #                case TokenManager::ASTERISK:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::ASTERISK))
-      #                    break
-      #                case TokenManager::BACKTICK:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::BACKTICK))
-      #                    break
-      #                case TokenManager::LBRACK:
-      #                    tree.addSingleValue(new Text(), consumeToken(TokenManager::LBRACK))
-      #                    break
-
+    loop do
+      if (has_text_ahead())
+        text()
+      elsif (modules.includes?("images") && has_image_ahead())
+        image()
+      elsif (modules.includes?("links") && has_link_ahead())
+        link()
+      elsif (modules.includes?("code") && has_code_ahead())
+        code()
+      else
+        case get_next_token_kind()
+        when TokenManager::ASTERISK
+          @tree.add_single_value(Text.new, consume_token(TokenManager::ASTERISK))
+        when TokenManager::BACKTICK
+          @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+        when TokenManager::LBRACK
+          @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+        end
+      end
+      break if !em_within_strong_has_elements_ahead()
     end
-    #        } while (emWithinStrongHasElementsAhead())
     consume_token(TokenManager::UNDERSCORE)
     @tree.close_scope(em)
   end
 
   def code_multiline()
-    code = Code.new()
+    code = Code.new
     @tree.openScope()
     consume_token(TokenManager::BACKTICK)
     code_text()
@@ -1058,27 +1036,28 @@ class Parser
     quoteLevel = 0
 
     if (get_next_token_kind() == TokenManager::TokenManager::EOL)
-      #            Token t
       i = 2
       quoteLevel = 0
-      #            do {
-      #                quoteLevel = 0
-      #                do {
-      #                    t = getToken(i++)
-      #                    if (t.kind == TokenManager::GT) {
-      #                        if (t.beginColumn == 1 && currentBlockLevel > 0 && currentQuoteLevel == 0) {
-      #                            return false
-      #                        }
-      #                        quoteLevel++
-      #                    }
-      #                } while (t.kind == TokenManager::GT || t.kind == TokenManager::SPACE || t.kind == TokenManager::TAB)
-      #                if (quoteLevel > currentQuoteLevel) {
-      #                    return true
-      #                }
-      #                if (quoteLevel < currentQuoteLevel) {
-      #                    return false
-      #                }
-      #            } while (t.kind == TokenManager::TokenManager::EOL)
+      loop do
+        quoteLevel = 0
+        loop do
+          t = get_token(i+=1)
+          if (t.kind == TokenManager::GT)
+            if (t.beginColumn == 1 && currentBlockLevel > 0 && currentQuoteLevel == 0)
+              return false
+            end
+            quoteLevel+=1
+          end
+          break if t.kind != TokenManager::GT || t.kind != TokenManager::SPACE || t.kind != TokenManager::TAB
+        end
+        if (quoteLevel > @currentQuoteLevel)
+          return true
+        end
+        if (quoteLevel < @currentQuoteLevel)
+          return false
+        end
+        break if t.kind != TokenManager::EOL
+      end
       return t.kind != TokenManager::EOF && (@current_block_level == 0 || t.begin_column >= block_begin_bolumn + 2)
     end
     return false
@@ -1089,26 +1068,25 @@ class Parser
 
       loop do
         t = get_token(i)
-        #                if (t.kind == token) {
-        #                    return true
-        #                } else if (t.kind == TokenManager::TokenManager::EOL) {
-        #                    i = skip(i + 1, TokenManager::SPACE, TokenManager::TAB)
-        #                    int quoteLevel = newQuoteLevel(i)
-        #                    if (quoteLevel == currentQuoteLevel) {
-        #                        i = skip(i, TokenManager::SPACE, TokenManager::TAB, TokenManager::GT)
-        #                        if (getToken(i).kind == token || getToken(i).kind == TokenManager::TokenManager::EOL || getToken(i).kind == TokenManager::DASH
-        #                                || (getToken(i).kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT)
-        #                                || (getToken(i).kind == TokenManager::BACKTICK && getToken(i + 1).kind == TokenManager::BACKTICK
-        #                                        && getToken(i + 2).kind == TokenManager::BACKTICK)
-        #                                || headingAhead(i)) {
-        #                            return false
-        #                        }
-        #                    } else {
-        #                        return false
-        #                    }
-        #                } else if (t.kind == EOF) {
-        #                    return false
-        #                }
+        if (t.kind == token)
+          return true
+        elsif (t.kind == TokenManager::TokenManager::EOL)
+          i = skip(i + 1, TokenManager::SPACE, TokenManager::TAB)
+          quoteLevel = new_quote_level(i)
+          if (quoteLevel == @currentQuoteLevel)
+            i = skip(i, TokenManager::SPACE, TokenManager::TAB, TokenManager::GT)
+            if (getToken(i).kind == token || getToken(i).kind == TokenManager::TokenManager::EOL || getToken(i).kind == TokenManager::DASH \
+            || (getToken(i).kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT) \
+            || (getToken(i).kind == TokenManager::BACKTICK && getToken(i + 1).kind == TokenManager::BACKTICK && getToken(i + 2).kind == TokenManager::BACKTICK) \
+            || headingAhead(i))
+              return false
+            end
+          else
+            return false
+          end
+        elsif (t.kind == EOF)
+          return false
+        end
       end
     end
     return false
@@ -1126,32 +1104,37 @@ class Parser
   def heading_ahead(offset)
     if (get_token(offset).kind == TokenManager::EQ)
       heading = 1
-      #            for (int i = (offset + 1) i++) {
-      #                if (getToken(i).kind != TokenManager::EQ) {
-      #                    return true
-      #                }
-      #                if (++heading > 6) {
-      #                    return false
-      #                }
-      #            }
+
+      i = offset + 1
+      loop do
+        if (get_token(i).kind != TokenManager::EQ)
+          return true
+        end
+        if (heading+=1 > 6)
+          return false
+        end
+        i+= 1
+      end
     end
     return false
   end
 
-  def list_item_ahead(listBeginColumn, ordered)
+  def list_item_ahead(list_begin_column, ordered)
     if (get_next_token_kind() == TokenManager::EOL)
-      #            for (int i = 2, TokenManager::TokenManager::EOL = 1 i++) {
-      #                Token t = getToken(i)
-      #
-      #                if (t.kind == TokenManager::TokenManager::EOL && ++TokenManager::TokenManager::EOL > 2) {
-      #                    return false
-      #                } else if (t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB && t.kind != TokenManager::GT && t.kind != TokenManager::TokenManager::EOL) {
-      #                    if (ordered) {
-      #                        return (t.kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT && t.beginColumn >= listBeginColumn)
-      #                    }
-      #                    return t.kind == TokenManager::DASH && t.beginColumn >= listBeginColumn
-      #                }
-      #            }
+      i=2
+      eol=1
+      loop do
+        Token t = getToken(i)
+        if (t.kind == TokenManager::EOL && eol+=1 > 2)
+          return false
+        elsif (t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB && t.kind != TokenManager::GT && t.kind != TokenManager::EOL)
+          if (ordered)
+            return (t.kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT && t.beginColumn >= list_begin_column)
+          end
+          return t.kind == TokenManager::DASH && t.beginColumn >= list_begin_column
+        end
+        i+=1
+      end
     end
     return false
   end
@@ -1164,11 +1147,11 @@ class Parser
         i = skip(i, TokenManager::SPACE, TokenManager::TAB, TokenManager::GT)
 
         t = get_token(i)
-        return get_token(i).kind != TokenManager::EOL && !(@modules.includes?("lists") && t.kind == TokenManager::DASH)
-        #                        && !(@modules.includes?("lists") && t.kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT)
-        #                        && !(getToken(i).kind == TokenManager::BACKTICK && getToken(i + 1).kind == TokenManager::BACKTICK
-        #                                && getToken(i + 2).kind == TokenManager::BACKTICK)
-        #                        && !(modules.contains("headings") && headingAhead(i))
+        return get_token(i).kind != TokenManager::EOL && !(@modules.includes?("lists") && t.kind == TokenManager::DASH) \
+        && !(@modules.includes?("lists") && t.kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT) \
+        && !(getToken(i).kind == TokenManager::BACKTICK && getToken(i + 1).kind == TokenManager::BACKTICK \
+        && getToken(i + 2).kind == TokenManager::BACKTICK) \
+        && !(modules.contains("headings") && headingAhead(i))
       end
     end
     return false
@@ -1180,408 +1163,410 @@ class Parser
   end
 
   def new_quote_level(offset)
-    quoteLevel = 0
-    #        for (int i = offset i++) {
-    #            Token t = getToken(i)
-    #            if (t.kind == TokenManager::GT) {
-    #                quoteLevel++
-    #            } else if (t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB) {
-    #                return quoteLevel
-    #            }
-    #
-    #        }
+    quote_level = 0
+    i = offset
+    loop do
+      t = get_token(i)
+      if (t.kind == TokenManager::GT)
+        quoteLevel+=1
+      elsif (t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB)
+        return quote_level
+      end
+      i+=1
+    end
   end
 
   def skip(offset, tokens)
-    #      List<Integer> tokenList = Arrays.asList(tokens)
-    #        for (int i = offset i++) {
-    #            Token t = getToken(i)
-    #            if (!tokenList.contains(t.kind)) {
-    #                return i
-    #            }
-    #        }
+    i = offset
+    loop do
+      t = get_token(i)
+      if (!tokens.includes?(t.kind))
+        return i
+      end
+      i+=1
+    end
   end
 
   def has_ordered_list_ahead()
     @lookAhead = 2
     @lastPosition = @scanPosition = @token
-    #        try {
-    #            return !scanToken(TokenManager::DIGITS) && !scanToken(TokenManager::DOT)
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_token(TokenManager::DIGITS) && !scan_token(TokenManager::DOT)
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_fenced_code_block_ahead()
     @lookAhead = 3
     @lastPosition = @scanPosition = @token
-    #        try {
-    #            return !scanFencedCodeBlock()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_fenced_code_block()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def heading_has_inline_elements_ahead()
     @look_ahead = 1
     @last_position = @scan_position = @token
-    #        try {
-    xsp = @scan_position
-    if (scan_text_tokens())
-      @scan_position = xsp
-      if (scan_image())
+    begin
+      xsp = @scan_position
+      if (scan_text_tokens())
         @scan_position = xsp
-        if (scan_link())
+        if (scan_image())
           @scan_position = xsp
-          if (scan_strong())
+          if (scan_link())
             @scan_position = xsp
-            if (scan_em())
+            if (scan_strong())
               @scan_position = xsp
-              if (scan_code())
+              if (scan_em())
                 @scan_position = xsp
-                if (scan_loose_char())
-                  return false
+                if (scan_code())
+                  @scan_position = xsp
+                  if (scan_loose_char())
+                    return false
+                  end
                 end
               end
             end
           end
         end
       end
+      return true
+    rescue LookaheadSuccess
+      return true
     end
-    return true
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
   end
 
   def has_text_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_text_tokens()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_text_tokens()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_image_ahead()
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_image()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_image()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def block_quote_has_empty_line_ahead()
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_block_quote_empty_line()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_block_quote_empty_line()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_strong_ahead()
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_strong()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_strong()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_em_ahead()
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_em()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_em()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_code_ahead()
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_code()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_code()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def block_quote_has_any_block_elementse_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_more_block_elements()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_more_block_elements()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_block_quote_empty_lines_ahead()
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_block_quote_empty_lines()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_block_quote_empty_lines()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def list_item_has_inline_elements()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_more_block_elements()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_more_block_elements()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_inline_text_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_text_tokens()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_text_tokens()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_inline_element_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_inline_element()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_inline_element()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def image_has_any_elements()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_image_element()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_image_element()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_resource_text_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_resource_elements()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_resource_elements()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def link_has_any_elements()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_link_element()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_link_element()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_resource_url_ahead()
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_resource_url()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_resource_url()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def resource_has_element_ahead()
     @lookAhead = 2
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_resource_element()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_resource_element()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def resource_text_has_elements_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_resource_text_element()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_resource_text_element()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_em_within_strong_multiline()
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_em_within_strong_multiline()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_em_within_strong_multiline()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def strong_multiline_has_elements_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_strong_multiline_elements()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_strong_multiline_elements()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def strong_within_em_multiline_has_elements_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_strong_within_em_multiline_elements()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_strong_within_em_multiline_elements()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_image()
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_image()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_image()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_link_ahead()
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_link()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_link()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def strong_em_within_strong_ahead()
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_em_within_strong()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_em_within_strong()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def strong_has_elements()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_strong_elements()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_strong_elements()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def strong_within_em_has_elements_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_strong_within_em_elements()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_strong_within_em_elements()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def has_strong_within_em_multiline_ahead()
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_strong_within_em_multiline()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_strong_within_em_multiline()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def em_multiline_content_has_elements_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_em_multiline_content_elements()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_em_multiline_content_elements()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def em_within_strong_multiline_content_has_elements_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_em_within_strong_multilineContent()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_em_within_strong_multilineContent()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def em_has_strong_within_em()
     @lookAhead = 2147483647
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_strong_within_em()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_strong_within_em()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def em_has_elements()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_em_elements()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_em_elements()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def em_within_strong_has_elements_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    #            return !scanEmWithinStrongElements()
-    #        } catch (LookaheadSuccess ls) {
-    #            return true
-    #        }
+    begin
+      return !scan_em_within_strong_elements()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def code_text_has_any_token_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_code_text_tokens()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_code_text_tokens()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def text_has_tokens_ahead()
     @lookAhead = 1
     @lastPosition = @scanPosition = @token
-    #        try {
-    return !scan_text()
-    #        } catch (LookaheadSuccess ls) {
-    return true
-    #        }
+    begin
+      return !scan_text()
+    rescue LookaheadSuccess
+      return true
+    end
   end
 
   def scan_loose_char()
@@ -1653,7 +1638,6 @@ class Parser
     if (scan_text())
       return true
     end
-    #       Token xsp
     while (true)
       xsp = @scan_position
       if (scan_text())
@@ -1732,7 +1716,6 @@ class Parser
     if (scan_token(TokenManager::BACKTICK) || scan_code_text_tokens_ahead())
       return true
     end
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (has_code_text_on_next_line_ahead())
@@ -1747,7 +1730,6 @@ class Parser
     if (scanCodeTextTokens())
       return true
     end
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scan_code_text_tokens())
@@ -1762,7 +1744,6 @@ class Parser
     if (scan_whitespace_token_before_TokenManager::TokenManager::EOL())
       return true
     end
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scan_token(TokenManager::GT))
@@ -1774,7 +1755,6 @@ class Parser
   end
 
   def scan_with_space_tokens()
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scan_white_space_token())
@@ -1817,7 +1797,6 @@ class Parser
     if (scan_token(TokenManager::UNDERSCORE) || scan_em_within_strong_elements())
       return true
     end
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scan_em_within_strong_elements())
@@ -1859,7 +1838,6 @@ class Parser
     if (scanToken(TokenManager::UNDERSCORE) || scanEmElements())
       return true
     end
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scan_em_elements())
@@ -1898,7 +1876,6 @@ class Parser
     if (scan_em_within_strong_multilineContent())
       return true
     end
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scan_em_within_strong_multilineContent())
@@ -1913,7 +1890,6 @@ class Parser
     if (scan_token(TokenManager::UNDERSCORE) || has_no_em_within_strong_multiline_content_ahead())
       return true
     end
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scan_whitespace_token_before_eol() || has_no_em_within_strong_multiline_content_ahead())
@@ -1982,7 +1958,6 @@ class Parser
     if (scan_token(TokenManager::ASTERISK) || scan_strong_within_em_elements())
       return true
     end
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scan_strong_within_em_elements())
@@ -2027,7 +2002,6 @@ class Parser
     if (scan_token(TokenManager::ASTERISK) || scan_strong_elements())
       return true
     end
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scan_strong_elements())
@@ -2066,14 +2040,13 @@ class Parser
     if (scanStrongWithinEmMultilineElements())
       return true
     end
-    #        Token xsp
-    #        while (true) {
-    #            xsp = scanPosition
-    #            if (scanStrongWithinEmMultilineElements()) {
-    #                scanPosition = xsp
-    #                break
-    #            }
-    #        }
+    loop do
+      xsp = @scan_position
+      if (scan_strong_within_em_multiline_elements())
+        @scan_position = xsp
+        break
+      end
+    end
     return false
   end
 
@@ -2081,7 +2054,6 @@ class Parser
     if (scan_token(TokenManager::ASTERISK) || scan_for_more_strong_within_em_multiline_elements())
       return true
     end
-    #        Token xsp
     while (true)
       xsp = scanPosition
       if (scan_whitespace_token_before_eol() || scan_for_more_strong_within_em_multiline_elements())
@@ -2191,7 +2163,6 @@ class Parser
   end
 
   def scan_resource_text_elements()
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scan_resource_text_element())
@@ -2279,8 +2250,7 @@ class Parser
     if (scan_resource_element())
       return true
     end
-    #        Token xsp
-    while (true)
+    loop do
       xsp = @scan_position
       if (scan_resource_element())
         @scan_position = xsp
@@ -2294,7 +2264,6 @@ class Parser
     if (scan_token(TokenManager::LBRACK) || scan_whitspace_tokens() || scan_link_element())
       return true
     end
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scan_link_element())
@@ -2316,7 +2285,6 @@ class Parser
     if (scan_token(TokenManager::LBRACK) || scan_whitspace_tokens() || scan_token(TokenManager::IMAGE_LABEL) || scan_image_element())
       return true
     end
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scanImageElement())
@@ -2368,7 +2336,6 @@ class Parser
   end
 
   def scan_paragraph()
-    #        Token xsp
     if (scan_inline_element())
       return true
     end
@@ -2383,7 +2350,7 @@ class Parser
   end
 
   def scan_whitspace_token()
-    #        Token xsp = scanPosition
+    xsp = @scan_position
     if (scan_token(TokenManager::SPACE))
       @scan_position = xsp
       if (scan_token(TokenManager::TAB))
@@ -2405,7 +2372,6 @@ class Parser
     if (scan_token(TokenManager::TokenManager::EOL) || scan_whitspace_tokens() || scan_token(TokenManager::GT) || scan_whitspace_tokens())
       return true
     end
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scan_token(TokenManager::GT) || scan_white_space_tokens())
@@ -2420,7 +2386,6 @@ class Parser
     if (scan_token(TokenManager::EQ))
       return true
     end
-    #        Token xsp
     while (true)
       xsp = @scan_position
       if (scan_token(TokenManager::EQ))
@@ -2502,7 +2467,6 @@ class Parser
 
   def get_token(index)
     t = @looking_ahead ? @scan_position : @token
-
     0.upto(index - 1) do |i|
       if(!t.next.nil?)
         t = t.next
@@ -2513,8 +2477,8 @@ class Parser
     return t
   end
 
-  def setModules(modules)
-    this.modules = Arrays.asList(modules)
+  def modules=(*modules)
+    @modules = modules.to_a
   end
 
 end

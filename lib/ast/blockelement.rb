@@ -1,23 +1,24 @@
+require_relative 'node'
+
 class BlockElement < Node
   
-  def hasChildren()
+  def has_children()
     self.children && self.children.length > 0
   end
   
-  def isFirstChild()
-   # return getParent().getChildren()[0] == this
+  def is_first_child()
+    get_parent().children[0] == self
   end
   
-  def isLastChild()
-    #   Node[] children = getParent().getChildren()
-    #   return children[children.length - 1] == this
+  def is_last_child()
+    return get_parent().children.last == self
   end
   
-  def isNested()
+  def is_nested()
     #        return !(getParent() instanceof Document)
   end
   
-  def isSingleChild()
+  def is_single_child()
     #        return ((Node) this.getParent()).getChildren().length == 1
   end
   

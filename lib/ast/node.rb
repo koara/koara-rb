@@ -7,7 +7,7 @@ class Node
     @children[i] = n
   end
 
-  def childrenAccept(renderer)
+  def children_accept(renderer)
     @children[]
 
     i = 0
