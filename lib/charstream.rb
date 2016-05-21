@@ -1,24 +1,25 @@
 class CharStream
   def initialize(reader)
     @available = 4096
-    @bufsize = 4096
-    @bufcolumn = Array.new
-    @bufpos = -1
-    @bufline = Array.new
+    @buf_size = 4096
+    @buf_column = Array.new
+    @buf_pos = -1
+    @buf_line = Array.new
     @column = 0
     @line = 1
     @prev_char_is_lf = false
     @buffer = Array.new
     @max_next_char_ind = 0
     @reader = reader
-    @inBuf = 0
-    @tabSize = 4
+    @in_buf = 0
+    @tab_size = 4
+    @token_begin = 0
   end
 
   def begin_token()
     @token_begin = -1
     c = read_char()
-    @token_begin = @bufpos
+    @token_begin = @buf_pos
     return c
   end
 
@@ -31,54 +32,49 @@ class CharStream
       return @buffer[@bufpos]
     end
 
-    if ((@bufpos += 1) >= @max_next_char_ind)
-      fillBuff()
+    if ((@buf_pos += 1) >= @max_next_char_ind)
+      fill_buff()
     end
-    c = @buffer[@bufpos]
-    updateLineColumn(c)
+    c = @buffer[@buf_pos]
+    update_line_column(c)
     return c
   end
 
   def fill_buff()
     if (@max_next_char_ind == @available)
       if (@available == @bufsize)
-        @bufpos = 0
+        @buf_pos = 0
         @max_next_char_ind = 0
         if (@token_begin > 2048)
           @available = @token_begin
         else
-          @available = @bufsize
+          @available = @buf_size
         end
       end
     end
     i = 0
 
     begin
+      if ((i = @reader.read(@buffer, @max_next_char_ind, @available - @max_next_char_ind)) == -1)
+        raise IOException
+      else
+        @max_next_char_ind += i
+      end
     rescue => e
-      @bufpos -= 1
+      @buf_pos -= 1
       backup(0)
       if (@token_begin == -1)
-        @token_begin = bufpos
+        @token_begin = @buf_pos
       end
       raise e
     end
 
-    #        try {
-    #            if ((i = reader.read(buffer, maxNextCharInd, available - maxNextCharInd)) == -1) {
-    #              reader.close()
-    #                throw new IOException()
-    #            } else {
-    #                maxNextCharInd += i
-    #            }
-    #        } catch (IOException e) {
-    #
-    #        }
   end
 
   def backup(amount)
-    @inBuf += amount
-    if ((bufpos -= amount) < 0)
-      @bufpos += @bufsize
+    @in_buf += amount
+    if ((@buf_pos -= amount) < 0)
+      @buf_pos += @buf_size
     end
   end
 
@@ -96,34 +92,34 @@ class CharStream
       @prev_char_is_lf = true
     when '\t'
       @column -= 1
-      @column += (@tabSize - (@column % @tabSize))
+      @column += (@tabSize - (@column % @tab_size))
     end
 
-    @bufline[@bufpos] = @line
-    @bufcolumn[@bufpos] = @column
+    @buf_line[@buf_pos] = @line
+    @buf_column[@buf_pos] = @column
   end
 
-  def getImage()
-    if (bufpos >= tokenBegin)
-      #            return new String(buffer, tokenBegin, bufpos - tokenBegin + 1)
+  def get_image()
+    if (@buf_pos >= @token_begin)
+      return @buffer[@token_begin, (@buf_pos - @token_begin + 1)].join()
     end
     #        return new String(buffer, tokenBegin, bufsize - tokenBegin) + new String(buffer, 0, bufpos + 1)
   end
 
-  def getEndColumn()
-    return @bufcolumn[@bufpos]
+  def end_column()
+    return @buf_column[@buf_pos]
   end
 
-  def getEndLine()
-    return @bufline[@bufpos]
+  def end_line()
+    return @buf_line[@buf_pos]
   end
 
-  def getBeginColumn()
-    return @bufcolumn[@token_begin]
+  def begin_column()
+    return @buf_column[@token_begin]
   end
 
-  def getBeginLine()
-    return @bufline[@token_begin]
+  def begin_line()
+    return @buf_line[@token_begin]
   end
 
 end

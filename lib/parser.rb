@@ -1,4 +1,5 @@
 require_relative 'charstream'
+require_relative 'io/stringreader'
 require_relative 'lookahead_success'
 require_relative 'token'
 require_relative 'token_manager'
@@ -12,7 +13,7 @@ class Parser
   end
 
   def parse(text)
-    return parse_reader(text)
+    return parse_reader(StringReader.new(text))
   end
 
   def parse_file(file)
@@ -820,8 +821,8 @@ class Parser
             @tree.add_single_value(Text.new, consumeToken(TokenManager::UNDERSCORE))
           end
         end
-      end
       break if !strong_multiline_has_elements_ahead()
+      end
     end
   end
 
@@ -2466,6 +2467,7 @@ class Parser
   end
 
   def get_token(index)
+    
     t = @looking_ahead ? @scan_position : @token
     0.upto(index - 1) do |i|
       if(!t.next.nil?)

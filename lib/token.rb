@@ -7,10 +7,7 @@ class Token
   attr_accessor :image
   attr_accessor :next
   
-  def initiliaze()
-  end
-  
-  def initiliaze(kind, begin_line, begin_column, end_line, end_column, image)
+  def initialize(kind = nil, begin_line = nil, begin_column = nil, end_line = nil, end_column = nil, image = nil)
     @kind = kind
     @begin_line = begin_line
     @begin_column = begin_column

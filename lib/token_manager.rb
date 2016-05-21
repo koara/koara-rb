@@ -22,20 +22,21 @@ class TokenManager
   SPACE = 19
   TAB = 20
   UNDERSCORE = 21
-
   def initialize(stream)
-    @jjrounds = Array.new(8)
-    @jjstateSet = Array.new(16)
-    @jjnextStates = [ 2, 3, 5 ]
+    @jj_rounds = Array.new(8)
+    @jj_state_set = Array.new(16)
+    @jj_next_states = [ 2, 3, 5 ]
     @cs = stream
+    @round = 0
   end
 
   def get_next_token()
-    begin
+ #   begin
       cur_pos = 0
       while (true)
+
         begin
-          @cur_char = cs.begin_token()
+          @cur_char = @cs.begin_token()
         rescue => err
           @matched_kind = 0
           @matched_pos = -1
@@ -44,25 +45,26 @@ class TokenManager
 
         @matched_kind = 2147483647
         @matched_pos = 0
+        puts "----"
         @cur_pos = move_string_literal_dfa0()
-        if (matchedKind != 2147483647)
-          if (matchedPos + 1 < curPos)
-            @cs.backup(curPos - matchedPos - 1)
+        if (@matched_kind != 2147483647)
+          if ((@matched_pos + 1) < cur_pos)
+            @cs.backup(cur_pos - (matched_pos - 1))
           end
           return fill_token()
         end
       end
-    rescue => err
-      return nil
-    end
+#    rescue => err
+#      return nil
+#    end
   end
 
   def fill_token()
-    return Token.new(@matched_kind, @cs.get_begin_line(), @cs.get_begin_column(), @cs.get_end_line(), @cs.get_end_column(), @cs.get_image())
+    return Token.new(@matched_kind, @cs.begin_line(), @cs.begin_column(), @cs.end_line(), @cs.end_column(), @cs.get_image())
   end
 
   def move_string_literal_dfa0()
-    case curChar
+    case @cur_char
     when 9
       return start_nfa_with_states(0, TAB, 8)
     when 32
@@ -99,7 +101,7 @@ class TokenManager
       return stop_at_Pos(0, BACKTICK)
     when 105
       return move_string_literal_dfa1(0x2000)
-    else return moveNfa(6, 0)
+    else return move_nfa(6, 0)
     end
   end
 
@@ -164,13 +166,12 @@ class TokenManager
     return move_nfa(stop_string_literal_dfa(pos, active), pos + 1)
   end
 
-  def move_nfa(startState, curPos)
+  def move_nfa(start_state, cur_pos)
     starts_at = 0
     @jj_new_state_cnt = 8
     i = 1
     @jj_state_set[0] = start_state
     kind = 0x7fffffff
-
     while (true)
       if ((@round += 1) == 0x7fffffff)
         @round = 0x80000001
@@ -184,7 +185,7 @@ class TokenManager
               if (kind > 4)
                 kind = 4
               end
-              checkNAdd(0)
+              check_n_add(0)
             elsif ((0x3ff000000000000 & l) != 0)
               if (kind > 7)
                 kind = 7
@@ -195,7 +196,7 @@ class TokenManager
                 @kind = 9
               end
             elsif ((0x100000200 & l) != 0)
-              checkNAddStates(0, 2)
+              check_n_add_states(0, 2)
             end
             if (@cur_char == 13)
               @jj_state_set[@jj_new_state_cnt+=1] = 4
@@ -254,7 +255,7 @@ class TokenManager
             break
 
           end
-          break if(i == startsAt)
+          break if(i == starts_at)
         end
       elsif (@cur_char.to_i < 128)
         l = 1 << (@cur_char.to_i & 077)
@@ -266,7 +267,7 @@ class TokenManager
                 @kind = 4
               end
               check_n_add(0)
-            elsif (curChar == 92)
+            elsif (@cur_char == 92)
               @jj_state_set[jjnewStateCnt+=1] = 7
             end
             break
@@ -305,18 +306,17 @@ class TokenManager
       end
       if (@kind != 0x7fffffff)
         @matched_kind = kind
-        @matched_pos = curPos
+        @matched_pos = cur_pos
         @kind = 0x7fffffff
-      end
-      @cur_pos += 1
-
-      if ((i = @jj_new_state_cnt) == (@starts_at = 8 - (@jj_new_state_cnt = @starts_at)))
+      end      
+      cur_pos += 1
+      if ((i = @jj_new_state_cnt) == (@starts_at = 8 - (@jj_new_state_cnt = starts_at)))
         return @cur_pos
       end
       begin
         @cur_char = @cs.read_char()
       rescue => err
-        return curPos
+        return cur_pos
       end
     end
   end
@@ -330,7 +330,7 @@ class TokenManager
 
   def check_n_add(state)
     if (@jj_rounds[state] != @round)
-      @jj_state_set[@jj_new_stateCnt+=1] = state
+      @jj_state_set[@jj_new_state_cnt += 1] = state
       @jj_rounds[state] = @round
     end
   end

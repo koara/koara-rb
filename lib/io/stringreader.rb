@@ -12,6 +12,7 @@ class StringReader
       0.upto(length - 1) do |i|
         c = @text.slice(@index + i)
         if c
+
           buffer[offset + i] = c
           characters_read += 1
         end
