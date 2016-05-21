@@ -7,9 +7,10 @@ require_relative 'tree_state'
 
 class Parser
   attr_reader :modules
-  def initialize()
-    @lookAheadSuccess = LookaheadSuccess.new
-    @modules = ["paragraphs", "headings", "lists", "links", "images", "formatting", "blockquotes", "code"]
+
+  def initialize
+    @look_ahead_success = LookaheadSuccess.new
+    @modules = %w("paragraphs", "headings", "lists", "links", "images", "formatting", "blockquotes", "code")
   end
 
   def parse(text)
@@ -25,31 +26,31 @@ class Parser
   end
 
   def parse_reader(reader)
-    @cs =  CharStream.new(reader)
-    @tm =  TokenManager.new(@cs)
+    @cs = CharStream.new(reader)
+    @tm = TokenManager.new(@cs)
     @token =  Token.new
     @tree = TreeState.new
-    @nextTokenKind = -1
+    @next_token_kind = -1
     document = Document.new
-    @tree.open_scope()
+    @tree.open_scope
 
-    while(get_next_token_kind() == TokenManager::EOL)
+    while get_next_token_kind == TokenManager::EOL
       consume_token(TokenManager::EOL)
     end
-    white_space()
-    if (has_any_block_elements_ahead())
-      block_element()
-      while (block_ahead(0))
-        while (get_next_token_kind() == TokenManager::EOL)
+    white_space
+    if has_any_block_elements_ahead
+      block_element
+      while block_ahead(0)
+        while get_next_token_kind == TokenManager::EOL
           consume_token(TokenManager::EOL)
-          white_space()
+          white_space
         end
-        block_element()
+        block_element
       end
-      while (get_next_token_kind() == TokenManager::EOL)
+      while get_next_token_kind == TokenManager::EOL
         consume_token(TokenManager::EOL)
       end
-      white_space()
+      white_space
     end
     consume_token(TokenManager::EOF)
     @tree.close_scope(document)
@@ -58,9 +59,9 @@ class Parser
 
   def block_element()
     @current_block_level += 1
-    if (modules.include?("headings") && heading_ahead(1))
-      heading()
-    elsif (modules.include?("blockquotes") && get_next_token_kind() == TokenManager::GT)
+    if modules.include?('headings') && heading_ahead(1)
+      heading
+    elsif modules.include?('blockquotes') && get_next_token_kind == TokenManager::GT
       block_quote()
     elsif (modules.include?("lists") && get_next_token_kind() == TokenManager::DASH)
       unordered_list()
@@ -2400,11 +2401,11 @@ class Parser
   def scan_more_block_elements()
     xsp = @scanPosition
     @lookingAhead = true
-    @semanticLookAhead = heading_ahead(1)
+    @semantic_look_ahead = heading_ahead(1)
     @lookingAhead = false
-    if (!semantic_lookAhead || scan_for_headersigns())
+    if !@semantic_look_ahead || scan_for_headersigns
       @scan_position = xsp
-      if (scan_token(TokenManager::GT))
+      if scan_token(TokenManager::GT)
         @scan_position = xsp
         if (scan_token(TokenManager::DASH))
           @scan_position = xsp
