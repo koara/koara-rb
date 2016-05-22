@@ -22,7 +22,7 @@ class Parser
     #      if(!file.getName().toLowerCase().endsWith(".kd")) {
     #        throw new IllegalArgumentException("Can only parse files with extension .kd")
     #      }
-    return parse_reader(FileReader.new(file))
+    parse_reader(FileReader.new(file))
   end
 
   def parse_reader(reader)
@@ -54,199 +54,199 @@ class Parser
     end
     consume_token(TokenManager::EOF)
     @tree.close_scope(document)
-    return document
+    document
   end
 
-  def block_element()
+  def block_element
     @current_block_level += 1
     if modules.include?('headings') && heading_ahead(1)
       heading
     elsif modules.include?('blockquotes') && get_next_token_kind == TokenManager::GT
-      block_quote()
-    elsif (modules.include?("lists") && get_next_token_kind() == TokenManager::DASH)
-      unordered_list()
-    elsif (modules.include?("lists") && has_ordered_list_ahead())
-      ordered_list()
-    elsif (modules.contains("code") && has_fenced_code_block_ahead())
-      fenced_code_block()
+      block_quote
+    elsif modules.include?('lists') && get_next_token_kind == TokenManager::DASH
+      unordered_list
+    elsif modules.include?('lists') && has_ordered_list_ahead
+      ordered_list
+    elsif modules.include?('code') && has_fenced_code_block_ahead
+      fenced_code_block
     else
-      paragraph()
+      paragraph
     end
     @current_block_level -= 1
   end
 
-  def heading()
+  def heading
     heading =  Heading.new
-    @tree.open_scope()
+    @tree.open_scope
     heading_level = 0
 
-    while (get_next_token_kind() == TokenManager::EQ)
+    while get_next_token_kind == TokenManager::EQ
       consume_token(TokenManager::EQ)
       heading_level += 1
     end
-    white_space()
-    while (heading_has_inline_elementsAhead())
-      if (has_text_ahead())
-        text()
-      elsif (modules.contains("images") && has_image_ahead())
-        image()
-      elsif (modules.contains("links") && has_link_ahead())
-        link()
-      elsif (modules.contains("formatting") && has_strong_ahead())
-        strong()
-      elsif (modules.contains("formatting") && has_em_ahead())
-        em()
-      elsif (modules.contains("code") && has_code_ahead())
-        code()
+    white_space
+    while heading_has_inline_elements_ahead
+      if has_text_ahead
+        text
+      elsif modules.include?('images') && has_image_ahead
+        image
+      elsif modules.include?('links') && has_link_ahead
+        link
+      elsif modules.include?('formatting') && has_strong_ahead
+        strong
+      elsif modules.include?('formatting') && has_em_ahead
+        em
+      elsif modules.include?('code') && has_code_ahead
+        code
       else
-        loose_char()
+        loose_char
       end
     end
-    heading.value = headingLevel
+    heading.value = heading_level
     @tree.close_scope(heading)
   end
 
-  def block_quote()
+  def block_quote
     blockquote = BlockQuote.new
-    @tree.open_scope()
-    @current_quote_Level += 1
+    @tree.open_scope
+    @current_quote_level += 1
     consume_token(TokenManager::GT)
-    while (block_quote_has_empty_line_ahead())
-      block_quote_empty_line()
+    while block_quote_has_empty_line_ahead
+      block_quote_empty_line
     end
-    white_space()
-    if (block_quote_has_any_block_elements_ahead())
-      block_element()
-      while (block_ahead(0))
-        while (getNextTokenKind() == TokenManager::EOL)
+    white_space
+    if block_quote_has_any_block_elements_ahead
+      block_element
+      while block_ahead(0)
+        while get_next_token_kind == TokenManager::EOL
           consume_token(TokenManager::EOL)
-          white_space()
-          block_quote_prefix()
+          white_space
+          block_quote_prefix
         end
-        block_element()
+        block_element
       end
     end
-    while (hasBlockQuoteEmptyLinesAhead())
-      block_quote_empty_line()
+    while has_block_quote_empty_lines_ahead
+      block_quote_empty_line
     end
-    current_quote_level -= 1
+    @current_quote_level -= 1
     @tree.close_scope(blockquote)
   end
 
-  def block_quote_prefix()
+  def block_quote_prefix
     i = 0
     loop do
       consume_token(TokenManager::GT)
-      white_space()
+      white_space
       break if(i+1 >= @current_quote_level)
     end
   end
 
-  def block_quote_empty_line()
+  def block_quote_empty_line
     consume_token(TokenManager::TokenManager::EOL)
-    white_space()
+    white_space
     loop do
       consume_token(TokenManager::GT)
-      white_space()
-      break if(get_next_toen_kind() != TokenManager::GT)
+      white_space
+      break if(get_next_token_kind != TokenManager::GT)
     end
   end
 
-  def unordered_list()
+  def unordered_list
     list =  ListBlock.new(false)
-    @tree.open_scope()
-    listBeginColumn = unordered_list_item()
-    while (list_item_ahead(list_begin_column, false))
-      while (get_next_token_kind() == TokenManager::EOL)
+    @tree.open_scope
+    list_begin_column = unordered_list_item
+    while list_item_ahead(list_begin_column, false)
+      while get_next_token_kind == TokenManager::EOL
         consume_token(TokenManager::EOL)
       end
-      white_space()
-      if (currentQuoteLevel > 0)
-        block_quote_prefix()
+      white_space
+      if @current_quote_level > 0
+        block_quote_prefix
       end
-      unordered_list_item()
+      unordered_list_item
     end
     @tree.close_scope(list)
   end
 
-  def unordered_list_item()
-    listItem = ListItem.new
-    @tree.open_scope()
-
-    t = consumeToken(TokenManager::DASH)
-    white_space()
-    if (list_item_has_inline_elements())
-      block_element()
-      while (block_ahead(t.beginColumn))
-        while (get_next_token_kind() == TokenManager::EOL)
-          consume_token(TTokenManager::EOL)
-          white_space()
-          if (currentQuoteLevel > 0)
-            block_quote_prefix()
-          end
-        end
-        block_element()
-      end
-    end
-    @tree.close_scope(list_item)
-    return t.beginColumn
-  end
-
-  def ordered_list()
-    list = ListBlock.new(true)
-    @tree.open_scope()
-    listBeginColumn = ordered_list_item()
-    while (listItemAhead(listBeginColumn, true))
-      while (get_next_token_kind() == TokenManager::EOL)
-        consume_token(TokenManager::EOL)
-      end
-      white_space()
-      if (currentQuoteLevel > 0)
-        block_quote_prefix()
-      end
-      ordered_list_item()
-    end
-    @tree.closeScope(list)
-  end
-
-  def ordered_list_item()
+  def unordered_list_item
     list_item = ListItem.new
-    @tree.open_scope()
-    t = consume_token(TokenManager::DIGITS)
-    consume_token(TokenManager::DOT)
-    white_space()
-    if (list_item_has_inline_elements())
-      block_element()
-      while (block_ahead(t.begin_column))
-        while (get_next_token_kind() == TokenManager::EOL)
+    @tree.open_scope
+
+    t = consume_token(TokenManager::DASH)
+    white_space
+    if list_item_has_inline_elements
+      block_element
+      while block_ahead(t.beginColumn)
+        while get_next_token_kind == TokenManager::EOL
           consume_token(TokenManager::EOL)
-          white_space()
-          if (current_quote_level > 0)
-            block_quote_prefix()
+          white_space
+          if @current_quote_level > 0
+            block_quote_prefix
           end
         end
-        block_element()
+        block_element
       end
     end
-    list_item.number = t.image
     @tree.close_scope(list_item)
     return t.begin_column
   end
 
-  def fenced_code_block()
+  def ordered_list
+    list = ListBlock.new(true)
+    @tree.open_scope
+    list_begin_column = ordered_list_item
+    while list_item_ahead(list_begin_column, true)
+      while get_next_token_kind == TokenManager::EOL
+        consume_token(TokenManager::EOL)
+      end
+      white_space
+      if @current_quote_level > 0
+        block_quote_prefix
+      end
+      ordered_list_item
+    end
+    @tree.close_scope(list)
+  end
+
+  def ordered_list_item
+    list_item = ListItem.new
+    @tree.open_scope
+    t = consume_token(TokenManager::DIGITS)
+    consume_token(TokenManager::DOT)
+    white_space
+    if list_item_has_inline_elements
+      block_element
+      while block_ahead(t.begin_column)
+        while get_next_token_kind == TokenManager::EOL
+          consume_token(TokenManager::EOL)
+          white_space
+          if @current_quote_level > 0
+            block_quote_prefix
+          end
+        end
+        block_element
+      end
+    end
+    list_item.number = t.image
+    @tree.close_scope(list_item)
+    t.begin_column
+  end
+
+  def fenced_code_block
     code_block = CodeBlock.new
-    @tree.open_scope()
+    @tree.open_scope
     s = StringIO.new
     begin_column = consume_token(TokenManager::BACKTICK).begin_column
     loop do
       consume_token(TokenManager::BACKTICK)
-      break if (get_next_token_kind() != TokenManager::BACKTICK)
+      break if (get_next_token_kind != TokenManager::BACKTICK)
     end
-    white_space()
-    if (get_next_token_kind() == TokenManager::CHAR_SEQUENCE)
-      code_block.language = code_language()
+    white_space
+    if get_next_token_kind == TokenManager::CHAR_SEQUENCE
+      code_block.language = code_language
     end
-    if (get_next_token_kind() != TokenManager::EOF && !fences_ahead())
+    if get_next_token_kind != TokenManager::EOF && !fences_ahead
       consume_token(TokenManager::EOL)
       level_white_space(begin_column)
     end
@@ -292,93 +292,93 @@ class Parser
       when TokenManager::BACKTICK
         s << consume_token(TokenManager::BACKTICK).image
       else
-        if (!next_after_space(TokenManager::EOL, TokenManager::EOF))
+        if !next_after_space(TokenManager::EOL, TokenManager::EOF)
           case kind
           when TokenManager::SPACE
             s << consume_token(TokenManager::SPACE).image
           when TokenManager::TAB
             consume_token(TokenManager::TAB)
-            s << consume_token("    ")
+            s << consume_token('    ')
           end
-        elsif (!fences_ahead())
+        elsif !fences_ahead
           consume_token(TokenManager::EOL)
           s << "\n"
           level_white_space(begin_column)
         end
       end
-      kind = get_next_token_kind()
+      kind = get_next_token_kind
     end
-    if (fences_ahead())
-      consume_token(TokenManager::TokenManager::EOL)
-      white_space()
-      while (get_next_token_kind() == TokenManager::BACKTICK)
+    if fences_ahead
+      consume_token(TokenManager::EOL)
+      white_space
+      while get_next_token_kind == TokenManager::BACKTICK
         consume_token(TokenManager::BACKTICK)
       end
     end
-    codeBlock.value = s
+    code_block.value = s
     @tree.close_scope(code_block)
   end
 
-  def paragraph()
-    paragraph = modules.includes?("paragraphs") ? Paragraph.new : BlockElement.new
-    @tree.open_scope()
-    inline()
-    while (textAhead())
-      line_break()
-      white_space()
-      if (modules.includes?("blockquotes"))
-        while (get_next_token_kind() == TokenManager::GT)
+  def paragraph
+    paragraph = modules.include?'paragraphs' ? Paragraph.new : BlockElement.new
+    @tree.open_scope
+    inline
+    while textAhead
+      line_break
+      white_space
+      if modules.include?('blockquotes')
+        while get_next_token_kind == TokenManager::GT
           consume_token(TokenManager::GT)
-          white_space()
+          white_space
         end
       end
-      inline()
+      inline
     end
     @tree.close_scope(paragraph)
   end
 
   def text()
     text = Text.new
-    @tree.open_scope()
+    @tree.open_scope
     s = StringIO.new
-    while (text_has_tokens_ahead())
-      case get_next_token_kind()
+    while text_has_tokens_ahead
+      case get_next_token_kind
       when TokenManager::CHAR_SEQUENCE
-        s << consumeToken(TokenManager::CHAR_SEQUENCE).image
+        s << consume_token(TokenManager::CHAR_SEQUENCE).image
       when TokenManager::BACKSLASH
-        s << consumeToken(TokenManager::BACKSLASH).image
+        s << consume_token(TokenManager::BACKSLASH).image
       when TokenManager::COLON
-        s << consumeToken(TokenManager::COLON).image
+        s << consume_token(TokenManager::COLON).image
       when TokenManager::DASH
-        s << consumeToken(TokenManager::DASH).image
+        s << consume_token(TokenManager::DASH).image
       when TokenManager::DIGITS
-        s << consumeToken(TokenManager::DIGITS).image
+        s << consume_token(TokenManager::DIGITS).image
       when TokenManager::DOT
-        s << consumeToken(TokenManager::DOT).image
+        s << consume_token(TokenManager::DOT).image
       when TokenManager::EQ
-        s << consumeToken(TokenManager::EQ).image
+        s << consume_token(TokenManager::EQ).image
       when TokenManager::ESCAPED_CHAR
-        s << consumeToken(TokenManager::ESCAPED_CHAR).image[1..-1]
+        s << consume_token(TokenManager::ESCAPED_CHAR).image[1..-1]
       when TokenManager::GT
-        s << consumeToken(TokenManager::GT).image
+        s << consume_token(TokenManager::GT).image
       when TokenManager::IMAGE_LABEL
-        s << consumeToken(TokenManager::IMAGE_LABEL).image
+        s << consume_token(TokenManager::IMAGE_LABEL).image
       when TokenManager::LPAREN
-        s << consumeToken(TokenManager::LPAREN).image
+        s << consume_token(TokenManager::LPAREN).image
       when TokenManager::LT
-        s << consumeToken(TokenManager::LT).image
+        s << consume_token(TokenManager::LT).image
       when TokenManager::RBRACK
-        s << consumeToken(TokenManager::RBRACK).image
+        s << consume_token(TokenManager::RBRACK).image
       when TokenManager::RPAREN
-        s << consumeToken(TokenManager::RPAREN).image
+        s << consume_token(TokenManager::RPAREN).image
       else
-        if (!next_after_space(TokenManager::EOL, TokenManager::EOF))
-          case get_next_token_kind()
+        if !next_after_space(TokenManager::EOL, TokenManager::EOF)
+          case get_next_token_kind
           when TokenManager::SPACE
             s << consume_token(TokenManager::SPACE).image
           when TokenManager::TAB
             consume_token(TokenManager::TAB)
-            s << "    "
+            s << '    '
           end
         end
       end
@@ -389,23 +389,23 @@ class Parser
 
   def image()
     image = Image.new
-    @tree.open_scope()
-    ref = ""
+    @tree.open_scope
+    ref = ''
     consume_token(TokenManager::LBRACK)
-    white_space()
+    white_space
     consume_token(TokenManager::IMAGE_LABEL)
-    white_space()
-    while (imageHasAnyElements())
-      if (hasTextAhead())
-        resource_text()
+    white_space
+    while image_has_any_elements
+      if has_text_ahead
+        resource_text
       else
-        loose_char()
+        loose_char
       end
     end
-    white_space()
+    white_space
     consume_token(TokenManager::RBRACK)
-    if (has_resource_url_ahead())
-      ref = resource_url()
+    if has_resource_url_ahead
+      ref = resource_url
     end
     image.value = ref
     @tree.close_scope(image)
@@ -413,51 +413,51 @@ class Parser
 
   def link()
     link = Link.new
-    @tree.open_scope()
-    ref = ""
+    @tree.open_scope
+    ref = ''
     consume_token(TokenManager::LBRACK)
-    white_space()
-    while (link_has_any_elements())
-      if (modules.includes?("images") && has_Image_ahead())
-        image()
-      elsif (modules.includes?("formatting") && has_strong_ahead())
-        strong()
-      elsif (modules.includes?("formatting") && has_em_ahead())
-        em()
-      elsif (modules.includes?("code") && has_code_ahead())
-        code()
-      elsif(has_resource_text_ahead())
-        resource_text()
+    white_space
+    while link_has_any_elements
+      if (modules.include?('images') && has_image_ahead
+        image
+      elsif modules.include?('formatting') && has_strong_ahead
+        strong
+      elsif modules.includes?("formatting") && has_em_ahead
+        em
+      elsif modules.includes?("code") && has_code_ahead
+        code
+      elsif has_resource_text_ahead
+        resource_text
       else
-        looseChar()
+        loose_char
       end
     end
-    white_space()
+    white_space
     consume_token(TokenManager::RBRACK)
-    if (hasResourceUrlAhead())
-      ref = resource_url()
+    if has_resource_url_ahead
+      ref = resource_url
     end
     link.value = ref
     @tree.close_scope(link)
   end
 
-  def strong()
+  def strong
     strong = Strong.new
-    @tree.open_scope()
+    @tree.open_scope
     consume_token(TokenManager::ASTERISK)
-    while (strong_has_elements())
-      if (has_text_ahead())
-        text()
-      elsif (modules.includes?("images") && has_image())
-        image()
-      elsif (modules.includes?("links") && has_link_ahead())
+    while strong_has_elements
+      if has_text_ahead
+        text
+      elsif modules.include?('images') && has_image
+        image
+      elsif modules.include?('links') && has_link_ahead
         link()
-      elsif (modules.includes?("code") && multiline_ahead(TokenManager::BACKTICK))
-        code_multiline()
-      elsif (strongEmWithinStrongAhead())
-        em_within_strong()
+      elsif modules.include?('code') && multiline_ahead(TokenManager::BACKTICK
+        code_multiline
+      elsif strong_em_within_strong_ahead
+        em_within_strong
       else
-        case get_next_token_kind()
+        case get_next_token_kind
         when TokenManager::BACKTICK
           @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
         when TokenManager::LBRACK
@@ -473,12 +473,12 @@ class Parser
 
   def em()
     em = Em.new
-    @tree.open_scope()
+    @tree.open_scope
     consume_Token(TokenManager::UNDERSCORE)
-    while (em_has_elements())
-      if (has_text_ahead())
-        text()
-      elsif (modules.includes?("images") && has_image())
+    while em_has_elements
+      if has_text_ahead
+        text
+      elsif modules.include?('images') && has_image
         image()
       elsif (modules.includes?("links") && has_link_ahead())
         link()
@@ -594,7 +594,7 @@ class Parser
     tree.close_scope(linebreak)
   end
 
-  def level_white_space()
+  def level_white_space(threshold)
     current_pos = 1
     while (get_next_token_kind() == TokenManager::GT)
       consume_token(get_next_token_kind())
@@ -1159,7 +1159,7 @@ class Parser
     return false
   end
 
-  def next_after_space(tokens)
+  def next_after_space(*tokens)
     i = skip(1, TokenManager::SPACE, TokenManager::TAB)
     return tokens.includes?(get_token(i).kind)
   end
@@ -1178,7 +1178,7 @@ class Parser
     end
   end
 
-  def skip(offset, tokens)
+  def skip(offset, *tokens)
     i = offset
     loop do
       t = get_token(i)
