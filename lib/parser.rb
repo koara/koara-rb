@@ -940,29 +940,29 @@ class Parser
 
   def em_within_strong_multiline()
     em = Em.new
-    tree.open_scope()
+    tree.open_scope
     consume_token(TokenManager::UNDERSCORE)
-    em_within_strong_multiline_content()
-    while (text_ahead())
-      line_break()
-      em_within_strong_multiline_content()
+    em_within_strong_multiline_content
+    while text_ahead
+      line_break
+      em_within_strong_multiline_content
     end
     consume_token(TokenManager::UNDERSCORE)
     tree.close_scope(em)
   end
 
-  def em_within_strong_multiline_content()
+  def em_within_strong_multiline_content
     loop do
-      if (has_text_ahead())
-        text()
-      elsif (modules.includes?("images") && has_image_ahead())
-        image()
-      elsif (modules.includes?("links") && has_link_ahead())
-        link()
-      elsif (modules.includes("code") && has_code_ahead())
-        code()
+      if has_text_ahead
+        text
+      elsif modules.include?('images') && has_image_ahead
+        image
+      elsif modules.include?('links') && has_link_ahead
+        link
+      elsif modules.include?('code') && has_code_ahead
+        code
       else
-        case get_next_token_kind()
+        case get_next_token_kind
           when TokenManager::ASTERISK
             @tree.add_single_value(Text.new, consume_token(TokenManager::ASTERISK))
           when TokenManager::BACKTICK
@@ -971,25 +971,27 @@ class Parser
             @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
         end
       end
-      break if em_within_strong_multiline_content_has_elements_ahead()
+      if em_within_strong_multiline_content_has_elements_ahead
+        break
+      end
     end
   end
 
-  def em_within_strong()
+  def em_within_strong
     em = Em.new
-    @tree.open_scope()
+    @tree.open_scope
     consume_token(TokenManager::UNDERSCORE)
     loop do
-      if (has_text_ahead())
-        text()
-      elsif (modules.includes?("images") && has_image_ahead())
-        image()
-      elsif (modules.includes?("links") && has_link_ahead())
-        link()
-      elsif (modules.includes?("code") && has_code_ahead())
+      if has_text_ahead
+        text
+      elsif modules.include?('images') && has_image_ahead
+        image
+      elsif modules.include?('links') && has_link_ahead
+        link
+      elsif modules.include?('code') && has_code_ahead
         code()
       else
-        case get_next_token_kind()
+        case get_next_token_kind
           when TokenManager::ASTERISK
             @tree.add_single_value(Text.new, consume_token(TokenManager::ASTERISK))
           when TokenManager::BACKTICK
@@ -998,68 +1000,67 @@ class Parser
             @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
         end
       end
-      break if !em_within_strong_has_elements_ahead()
+      break unless em_within_strong_has_elements_ahead
     end
     consume_token(TokenManager::UNDERSCORE)
     @tree.close_scope(em)
   end
 
-  def code_multiline()
+  def code_multiline
     code = Code.new
-    @tree.openScope()
+    @tree.open_scope
     consume_token(TokenManager::BACKTICK)
-    code_text()
-    while (text_ahead())
-      line_break()
-      white_space()
-      while (get_next_token_kind() == TokenManager::GT)
+    code_text
+    while text_ahead
+      line_break
+      white_space
+      while get_next_token_kind == TokenManager::GT
         consume_token(TokenManager::GT)
-        white_space()
+        white_space
       end
-      code_text()
+      code_text
     end
     consume_token(TokenManager::BACKTICK)
     @tree.close_scope(code)
   end
 
-  def white_space()
-    while (get_next_token_kind() == TokenManager::SPACE || get_next_token_kind() == TokenManager::TAB)
-      consume_token(get_next_token_kind())
+  def white_space
+    while get_next_token_kind == TokenManager::SPACE || get_next_token_kind == TokenManager::TAB
+      consume_token(get_next_token_kind)
     end
   end
 
-  def has_any_block_elements_ahead()
+  def has_any_block_elements_ahead
     begin
       @look_ahead = 1
       @last_position = @scan_position = @token
-      return !scan_more_block_elements()
+      return !scan_more_block_elements
     rescue LookaheadSuccess
       return true
     end
   end
 
   def block_ahead(block_begin_bolumn)
-    quoteLevel = 0
+    quote_level = 0
 
-    if (get_next_token_kind() == TokenManager::TokenManager::EOL)
+    if get_next_token_kind() == TokenManager::EOL
       i = 2
-      quoteLevel = 0
       loop do
-        quoteLevel = 0
+        quote_level = 0
         loop do
           t = get_token(i+=1)
           if (t.kind == TokenManager::GT)
-            if (t.beginColumn == 1 && currentBlockLevel > 0 && currentQuoteLevel == 0)
+            if (t.begin_column == 1 && @current_block_level > 0 && @current_quote_level == 0)
               return false
             end
-            quoteLevel+=1
+            quote_level+=1
           end
           break if t.kind != TokenManager::GT || t.kind != TokenManager::SPACE || t.kind != TokenManager::TAB
         end
-        if (quoteLevel > @currentQuoteLevel)
+        if (quote_level > @current_quote_level)
           return true
         end
-        if (quoteLevel < @currentQuoteLevel)
+        if (quote_level < @current_quote_level)
           return false
         end
         break if t.kind != TokenManager::EOL
@@ -1070,23 +1071,23 @@ class Parser
   end
 
   def multiline_ahead(token)
-    if (get_next_token_kind() == token && get_token(2).kind != token && get_token(2).kind != TokenManager::EOL)
+    if get_next_token_kind == token && get_token(2).kind != token && get_token(2).kind != TokenManager::EOL
 
       loop do
         t = get_token(i)
-        if (t.kind == token)
+        if t.kind == token
           return true
-        elsif (t.kind == TokenManager::TokenManager::EOL)
+        elsif t.kind == TokenManager::EOL
           i = skip(i + 1, TokenManager::SPACE, TokenManager::TAB)
-          quoteLevel = new_quote_level(i)
-          if (quoteLevel == @currentQuoteLevel)
+          quote_level = new_quote_level(i)
+          if (quote_level == @currentQuoteLevel)
             i = skip(i, TokenManager::SPACE, TokenManager::TAB, TokenManager::GT)
-            if (getToken(i).kind == token || getToken(i).kind == TokenManager::TokenManager::EOL || getToken(i).kind == TokenManager::DASH \
-            || (getToken(i).kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT) \
-            || (getToken(i).kind == TokenManager::BACKTICK && getToken(i + 1).kind == TokenManager::BACKTICK && getToken(i + 2).kind == TokenManager::BACKTICK) \
-            || headingAhead(i))
-              return false
+            if (get_token(i).kind == token || get_token(i).kind == TokenManager::EOL || get_token(i).kind == TokenManager::DASH \
+            || (get_token(i).kind == TokenManager::DIGITS && get_token(i + 1).kind == TokenManager::DOT) \
+            || (get_token(i).kind == TokenManager::BACKTICK && get_token(i + 1).kind == TokenManager::BACKTICK && get_token(i + 2).kind == TokenManager::BACKTICK) \
+            || heading_ahead(i))
             end
+            return false
           else
             return false
           end
@@ -1098,7 +1099,7 @@ class Parser
     return false
   end
 
-  def fences_ahead()
+  def fences_ahead
     i = skip(2, TokenManager::SPACE, TokenManager::TAB, TokenManager::GT)
     if (get_token(i).kind == TokenManager::BACKTICK && get_token(i + 1).kind == TokenManager::BACKTICK && get_token(i + 2).kind == TokenManager::BACKTICK)
       i = skip(i + 3, TokenManager::SPACE, TokenManager::TAB)
@@ -1108,12 +1109,12 @@ class Parser
   end
 
   def heading_ahead(offset)
-    if (get_token(offset).kind == TokenManager::EQ)
+    if get_token(offset).kind == TokenManager::EQ
       heading = 1
 
       i = offset + 1
       loop do
-        if (get_token(i).kind != TokenManager::EQ)
+        if get_token(i).kind != TokenManager::EQ
           return true
         end
         if (heading+=1 > 6)
@@ -1126,16 +1127,16 @@ class Parser
   end
 
   def list_item_ahead(list_begin_column, ordered)
-    if (get_next_token_kind() == TokenManager::EOL)
-      i=2
-      eol=1
+    if get_next_token_kind == TokenManager::EOL
+      i = 2
+      eol = 1
       loop do
         Token t = getToken(i)
-        if (t.kind == TokenManager::EOL && eol+=1 > 2)
+        if t.kind == TokenManager::EOL && eol+=1 > 2
           return false
-        elsif (t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB && t.kind != TokenManager::GT && t.kind != TokenManager::EOL)
-          if (ordered)
-            return (t.kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT && t.beginColumn >= list_begin_column)
+        elsif t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB && t.kind != TokenManager::GT && t.kind != TokenManager::EOL
+          if ordered
+            return t.kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT && t.beginColumn >= list_begin_column
           end
           return t.kind == TokenManager::DASH && t.beginColumn >= list_begin_column
         end
@@ -1145,19 +1146,19 @@ class Parser
     return false
   end
 
-  def text_ahead()
-    if (get_next_token_kind() == TokenManager::EOL && get_token(2).kind != TokenManager::EOL)
+  def text_ahead
+    if get_next_token_kind == TokenManager::EOL && get_token(2).kind != TokenManager::EOL
       i = skip(2, TokenManager::SPACE, TokenManager::TAB)
-      quote_level = new_quoteLevel(i)
-      if (quote_level == @current_quote_level || !@modules.includes?("blockquotes"))
+      quote_level = new_quote_level(i)
+      if (quote_level == @current_quote_level || !@modules.include?('blockquotes'))
         i = skip(i, TokenManager::SPACE, TokenManager::TAB, TokenManager::GT)
 
         t = get_token(i)
-        return get_token(i).kind != TokenManager::EOL && !(@modules.includes?("lists") && t.kind == TokenManager::DASH) \
-        && !(@modules.includes?("lists") && t.kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT) \
-        && !(getToken(i).kind == TokenManager::BACKTICK && getToken(i + 1).kind == TokenManager::BACKTICK \
+        return get_token(i).kind != TokenManager::EOL && !(@modules.include?('lists') && t.kind == TokenManager::DASH) \
+        && !(@modules.include?('lists') && t.kind == TokenManager::DIGITS && get_token(i + 1).kind == TokenManager::DOT) \
+        && !(get_token(i).kind == TokenManager::BACKTICK && get_token(i + 1).kind == TokenManager::BACKTICK \
         && getToken(i + 2).kind == TokenManager::BACKTICK) \
-        && !(modules.contains("headings") && headingAhead(i))
+        && !(modules.iinclude?('headings') && heading_ahead(i))
       end
     end
     return false
