@@ -1,7 +1,7 @@
-def CodeBlock < BlockElement
+class CodeBlock < BlockElement
   attr_accessor :language
   
   def accept(renderer)
-      renderer.visit(this)
+      renderer.visit(self)
   end
 end

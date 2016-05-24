@@ -1123,14 +1123,14 @@ class Parser
       i = 2
       eol = 1
       loop do
-        Token t = getToken(i)
+        Token t = get_token(i)
         if t.kind == TokenManager::EOL && eol+=1 > 2
           return false
         elsif t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB && t.kind != TokenManager::GT && t.kind != TokenManager::EOL
           if ordered
             return t.kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT && t.beginColumn >= list_begin_column
           end
-          return t.kind == TokenManager::DASH && t.beginColumn >= list_begin_column
+          return t.kind == TokenManager::DASH && t.begin_column >= list_begin_column
         end
         i+=1
       end

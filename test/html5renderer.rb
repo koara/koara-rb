@@ -156,7 +156,7 @@ class Html5Renderer
   #      return new String(buf)
   #    }
   #
-  def getOutput
+  def output
   #          return out.toString().trim()
   end
 

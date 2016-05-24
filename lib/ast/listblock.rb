@@ -1,4 +1,4 @@
-def ListBlock < BlockElement
+class ListBlock < BlockElement
   attr_accessor :ordered
   
   def initialize(ordered)
@@ -6,6 +6,6 @@ def ListBlock < BlockElement
   end
   
   def accept(renderer)
-    renderer.visit(this)
+    renderer.visit(self)
   end
 end

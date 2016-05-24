@@ -1,5 +1,5 @@
-def Paragraph < BlockElement
+class Paragraph < BlockElement
   def accept(renderer)
-    renderer.visit(this)
+    renderer.visit(self)
   end
 end

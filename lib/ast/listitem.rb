@@ -1,7 +1,7 @@
-def ListItem < BlockElement
+class ListItem < BlockElement
   attr_accessor :number
   
   def accept(renderer)
-    renderer.visit(this)
+    renderer.visit(self)
   end
 end

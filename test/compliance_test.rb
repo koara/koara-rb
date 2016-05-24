@@ -13,7 +13,7 @@ class ComplianceTest < Test::Unit::TestCase
     document = parser.parse(kd)
     renderer = Html5Renderer.new
     document.accept(renderer)
-    assert_equal(html, renderer.getOutput())
+    assert_equal(html, renderer.output)
   end
 
 

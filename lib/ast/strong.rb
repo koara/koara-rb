@@ -1,5 +1,5 @@
-def Strong < Node
+class Strong < Node
   def accept(renderer)
-    renderer.visit(this)
+    renderer.visit(self)
   end
 end

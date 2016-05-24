@@ -1,5 +1,5 @@
-def Heading
+class Heading < BlockElement
   def accept(renderer)
-    renderer.visit(this)
+    renderer.visit(self)
   end
 end

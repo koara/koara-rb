@@ -1,5 +1,5 @@
 class Node
-  def initialize()
+  def initialize
     @children = Array.new
   end
 
@@ -11,7 +11,7 @@ class Node
     @children[]
 
     i = 0
-    while(i < @children.length)
+    while i < @children.length
       @children[i].accept(renderer)
       i += 1
     end

@@ -16,36 +16,36 @@ class CharStream
     @token_begin = 0
   end
 
-  def begin_token()
+  def begin_token
     @token_begin = -1
-    c = read_char()
+    c = read_char
     @token_begin = @buf_pos
-    return c
+    c
   end
 
-  def read_char()
-    if (@in_buf > 0)
+  def read_char
+    if @in_buf > 0
       @in_buf -= 1
-      if ((@bufpos += 1) == @bufsize)
+      if (@bufpos += 1) == @buf_size
         @bufpos = 0
       end
-      return @buffer[@bufpos]
+      return @buffer[@buf_pos]
     end
 
-    if ((@buf_pos += 1) >= @max_next_char_ind)
-      fill_buff()
+    if (@buf_pos += 1) >= @max_next_char_ind
+      fill_buff
     end
     c = @buffer[@buf_pos]
     update_line_column(c)
-    return c
+    c
   end
 
-  def fill_buff()
-    if (@max_next_char_ind == @available)
-      if (@available == @bufsize)
+  def fill_buff
+    if @max_next_char_ind == @available
+      if @available == @buf_size
         @buf_pos = 0
         @max_next_char_ind = 0
-        if (@token_begin > 2048)
+        if @token_begin > 2048
           @available = @token_begin
         else
           @available = @buf_size
@@ -55,15 +55,15 @@ class CharStream
     i = 0
 
     begin
-      if ((i = @reader.read(@buffer, @max_next_char_ind, @available - @max_next_char_ind)) == -1)
-        raise IOException
+      if (i = @reader.read(@buffer, @max_next_char_ind, @available - @max_next_char_ind)) == -1
+        raise IOError
       else
         @max_next_char_ind += i
       end
     rescue => e
       @buf_pos -= 1
       backup(0)
-      if (@token_begin == -1)
+      if @token_begin == -1
         @token_begin = @buf_pos
       end
       raise e
@@ -73,7 +73,7 @@ class CharStream
 
   def backup(amount)
     @in_buf += amount
-    if ((@buf_pos -= amount) < 0)
+    if (@buf_pos -= amount) < 0
       @buf_pos += @buf_size
     end
   end
@@ -81,7 +81,7 @@ class CharStream
   def update_line_column(c)
     @column += 1
 
-    if (@prev_char_is_lf)
+    if @prev_char_is_lf
       @prev_char_is_lf = false
       @column = 1
       @line += @column
@@ -92,34 +92,34 @@ class CharStream
       @prev_char_is_lf = true
     when '\t'
       @column -= 1
-      @column += (@tabSize - (@column % @tab_size))
+      @column += (@tab_size - (@column % @tab_size))
     end
 
     @buf_line[@buf_pos] = @line
     @buf_column[@buf_pos] = @column
   end
 
-  def get_image()
-    if (@buf_pos >= @token_begin)
+  def get_image
+    if @buf_pos >= @token_begin
       return @buffer[@token_begin, (@buf_pos - @token_begin + 1)].join()
     end
     #        return new String(buffer, tokenBegin, bufsize - tokenBegin) + new String(buffer, 0, bufpos + 1)
   end
 
-  def end_column()
-    return @buf_column[@buf_pos]
+  def end_column
+    @buf_column[@buf_pos]
   end
 
-  def end_line()
-    return @buf_line[@buf_pos]
+  def end_line
+    @buf_line[@buf_pos]
   end
 
-  def begin_column()
-    return @buf_column[@token_begin]
+  def begin_column
+    @buf_column[@token_begin]
   end
 
-  def begin_line()
-    return @buf_line[@token_begin]
+  def begin_line
+    @buf_line[@token_begin]
   end
 
 end
