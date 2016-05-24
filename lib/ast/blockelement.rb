@@ -1,3 +1,5 @@
+require_relative 'node'
+
 class BlockElement < Node
   
   def has_children

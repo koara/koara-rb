@@ -1,19 +1,20 @@
+
 class Html5Renderer
   #    private StringBuffer out
   #    private int level
   #    private Stack<Integer> listSequence = new Stack<Integer>()
   #
-  def visit(node)
-    #      out = new StringBuffer()
-    #      node.childrenAccept(this)
+  def visit_document(node)
+          @out = StringIO.new
+          node.children_accept(self)
   end
-  #
-  #    public void visit(Heading node) {
+
+ def visit_heading(node)
   #      out.append(indent() + "<h" + node.getValue() + ">")
   #      node.childrenAccept(this)
   #      out.append("</h" + node.getValue() + ">\n")
   #      if(!node.isNested()) { out.append("\n") }
-  #    }
+  end
   #
   #    public void visit(BlockQuote node) {
   #      out.append(indent() + "<blockquote>")
@@ -68,16 +69,16 @@ class Html5Renderer
   #      if(!node.isNested()) { out.append("\n") }
   #    }
   #
-  #    public void visit(Paragraph node) {
+  def visit_paragraph(node)
   #      if(node.isNested() && (node.getParent() instanceof ListItem) && node.isSingleChild()) {
   #        node.childrenAccept(this)
   #      } else {
-  #        out.append(indent() + "<p>")
+          @out << indent + '<p>'
   #        node.childrenAccept(this)
   #        out.append("</p>\n")
   #        if(!node.isNested()) { out.append("\n") }
   #      }
-  #    }
+  end
   #
   #    @Override
   #    public void visit(BlockElement node) {
@@ -147,17 +148,17 @@ class Html5Renderer
   #          .replaceAll("\\\\", "%5C")
   #    }
   #
-  #    public String indent() {
+  def indent
   #      int repeat = level * 2
   #        final char[] buf = new char[repeat]
   #      for (int i = repeat - 1 i >= 0 i--) {
   #       buf[i] = ' '
   #      }
   #      return new String(buf)
-  #    }
-  #
+  end
+
   def output
-  #          return out.toString().trim()
+       @out.string.strip
   end
 
 end

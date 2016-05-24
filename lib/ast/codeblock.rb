@@ -1,3 +1,5 @@
+require_relative 'blockelement'
+
 class CodeBlock < BlockElement
   attr_accessor :language
   

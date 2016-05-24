@@ -1,14 +1,19 @@
 require_relative 'charstream'
+require_relative 'ast/blockelement'
+require_relative 'ast/paragraph'
+require_relative 'ast/text'
 require_relative 'io/stringreader'
 require_relative 'lookahead_success'
 require_relative 'token'
 require_relative 'token_manager'
 require_relative 'tree_state'
+require 'stringio'
 
 class Parser
   attr_reader :modules
 
   def initialize
+    @current_block_level = 0
     @look_ahead_success = LookaheadSuccess.new
     @modules = %w("paragraphs", "headings", "lists", "links", "images", "formatting", "blockquotes", "code")
   end
@@ -320,7 +325,7 @@ class Parser
   end
 
   def paragraph
-    paragraph = modules.include? 'paragraphs' ? Paragraph.new : BlockElement.new
+    paragraph = @modules.include?('paragraphs') ? Paragraph.new : BlockElement.new
     @tree.open_scope
     inline
     while text_ahead
@@ -1300,7 +1305,7 @@ class Parser
     @look_ahead = 1
     @last_position = @scan_position = @token
     begin
-      return !scan_more_blockelements
+      return !scan_more_block_elements
     rescue LookaheadSuccess
       return true
     end
@@ -1644,7 +1649,7 @@ class Parser
   end
 
   def scan_code_text_tokens
-    xsp = @scanPosition
+    xsp = @scan_position
     if scan_token(TokenManager::ASTERISK)
       @scan_position = xsp
       if scan_token(TokenManager::BACKSLASH)
@@ -1884,7 +1889,7 @@ class Parser
   end
 
   def scan_em_multiline_content_elements
-    xsp = @scanPosition
+    xsp = @scan_position
     if scan_text_tokens
       @scan_position = xsp
       if scan_image
@@ -1992,7 +1997,7 @@ class Parser
   end
 
   def scan_strong_within_em_multiline_elements
-    xsp = @scanPosition
+    xsp = @scan_position
     if scan_text_tokens
       @scan_position = xsp
       if scan_image
@@ -2041,7 +2046,7 @@ class Parser
   end
 
   def scan_strong_multiline_elements
-    xsp = @scanPosition
+    xsp = @scan_position
     if scan_text_tokens
       @scan_position = xsp
       if scan_image
@@ -2068,7 +2073,7 @@ class Parser
   end
 
   def scan_resource_text_element
-    xsp = @scanPosition
+    xsp = @scan_position
     if scan_token(TokenManager::ASTERISK)
       @scan_position = xsp
       if scan_token(TokenManager::BACKSLASH)
@@ -2189,7 +2194,7 @@ class Parser
                 if scan_token(TokenManager::EQ)
                   @scan_position = xsp
                   if scan_token(TokenManager::ESCAPED_CHAR)
-                    @scanPosition = xsp
+                    @scan_position = xsp
                     if scan_token(TokenManager::IMAGE_LABEL)
                       @scan_position = xsp
                       if scan_token(TokenManager::GT)
@@ -2275,7 +2280,7 @@ class Parser
   end
 
   def scan_inline_element
-    xsp = @scanPosition
+    xsp = @scan_position
     if scan_text_tokens
       @scan_position = xsp
       if scan_image
@@ -2400,7 +2405,10 @@ class Parser
     if @scan_position.kind != kind
       return true
     end
-    raise @look_ahead_success if @look_ahead == 0 && @scan_position == @last_position
+
+    if (@look_ahead == 0) && (@scan_position == @last_position)
+        raise @look_ahead_success
+    end
     false
   end
 
@@ -2422,7 +2430,7 @@ class Parser
       @token = @token.next = @tm.get_next_token
     end
     @next_token_kind = -1
-    return token if @token.kind == kind
+    return @token if @token.kind == kind
     @token = old
     @token
   end

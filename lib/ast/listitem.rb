@@ -1,3 +1,5 @@
+require_relative 'blockelement'
+
 class ListItem < BlockElement
   attr_accessor :number
   

@@ -1,6 +1,8 @@
+require_relative 'node'
+
 class Document < Node
   def accept(renderer)
-    renderer.visit(self)
+    renderer.visit_document(self)
   end
 
 end

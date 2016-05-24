@@ -1,3 +1,5 @@
+require_relative 'blockelement'
+
 class ListBlock < BlockElement
   attr_accessor :ordered
   

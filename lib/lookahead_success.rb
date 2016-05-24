@@ -1,4 +1,4 @@
-class LookaheadSuccess
+class LookaheadSuccess < StandardError
 
 
 end

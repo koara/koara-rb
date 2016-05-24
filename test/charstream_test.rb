@@ -21,16 +21,15 @@ class CharStreamTest < Test::Unit::TestCase
     assert_equal('d', cs.read_char())
   end
 
-  #    /**
-  #     * @expectedException Exception
-  #     */
   def test_read_char_till_eof
-    #      $this->cs = new CharStream(new StringReader('abcd'))
-    #      $this->cs->readChar()
-    #      $this->cs->readChar()
-    #      $this->cs->readChar()
-    #      $this->cs->readChar()
-    #      $this->cs->readChar()
+    assert_raise IOError do
+      cs =  CharStream.new(StringReader.new('abcd'))
+      cs.read_char
+      cs.read_char
+      cs.read_char
+      cs.read_char
+      cs.read_char
+    end
   end
 
   def test_get_image
@@ -57,17 +56,15 @@ class CharStreamTest < Test::Unit::TestCase
     assert_equal('æ', cs.read_char)
   end
 
-  #
-  #    /**
-  #     * @expectedException Exception
-  #     */
   def test_read_char_till_eof_with_unicode
-    #      $this->cs = new CharStream(new StringReader('ðinæ'))
-    #      $this->cs->readChar()
-    #      $this->cs->readChar()
-    #      $this->cs->readChar()
-    #      $this->cs->readChar()
-    #      $this->cs->readChar()
+    assert_raise IOError do
+      cs =  CharStream.new(StringReader.new('ðinæ'))
+      cs.read_char
+      cs.read_char
+      cs.read_char
+      cs.read_char
+      cs.read_char
+    end
   end
 
   def test_get_image_with_unicode
