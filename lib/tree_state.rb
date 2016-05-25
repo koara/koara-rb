@@ -14,7 +14,8 @@ class TreeState
   def close_scope(n)
     a = node_arity
     @current_mark = @marks.delete_at(@marks.size - 1)
-    while (a -= 1) > 0
+    while a > 0
+      a -= 1
       c = pop_node
       c.parent = n
       n.add(c, a)

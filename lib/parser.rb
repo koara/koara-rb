@@ -325,9 +325,6 @@ class Parser
   end
 
   def paragraph
-
-    puts "---A" + @modules.include?('paragraphs').to_s
-
     paragraph = @modules.include?('paragraphs') ? Paragraph.new : BlockElement.new
     @tree.open_scope
     inline

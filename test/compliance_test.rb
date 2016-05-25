@@ -10,7 +10,7 @@ class ComplianceTest < Test::Unit::TestCase
     html = File.read('/Users/andy/git/koara/testsuite/output/html5/paragraphs/paragraphs-001-simple.htm')
    
     parser = Parser.new
-    document = parser.parse('a')
+    document = parser.parse(kd)
     renderer = Html5Renderer.new
     document.accept(renderer)
     assert_equal(html, renderer.output)

@@ -1,20 +1,20 @@
-
 class Html5Renderer
   #    private StringBuffer out
   #    private int level
   #    private Stack<Integer> listSequence = new Stack<Integer>()
   #
   def visit_document(node)
-          @out = StringIO.new
-          node.children_accept(self)
+    @out = StringIO.new
+    node.children_accept(self)
   end
 
- def visit_heading(node)
-  #      out.append(indent() + "<h" + node.getValue() + ">")
-  #      node.childrenAccept(this)
-  #      out.append("</h" + node.getValue() + ">\n")
-  #      if(!node.isNested()) { out.append("\n") }
+  def visit_heading(node)
+    #      out.append(indent() + "<h" + node.getValue() + ">")
+    #      node.childrenAccept(this)
+    #      out.append("</h" + node.getValue() + ">\n")
+    #      if(!node.isNested()) { out.append("\n") }
   end
+
   #
   #    public void visit(BlockQuote node) {
   #      out.append(indent() + "<blockquote>")
@@ -70,15 +70,17 @@ class Html5Renderer
   #    }
   #
   def visit_paragraph(node)
-  #      if(node.isNested() && (node.getParent() instanceof ListItem) && node.isSingleChild()) {
-  #        node.childrenAccept(this)
-  #      } else {
-          @out << indent + '<p>'
-  #        node.childrenAccept(this)
-  #        out.append("</p>\n")
-  #        if(!node.isNested()) { out.append("\n") }
-  #      }
+    #      if(node.isNested() && (node.getParent() instanceof ListItem) && node.isSingleChild()) {
+    #        node.childrenAccept(this)
+    #      } else {
+    @out << indent + '<p>'
+    node.children_accept(self)
+    @out << "</p>\n"
+    #        out.append("</p>\n")
+    #        if(!node.isNested()) { out.append("\n") }
+    #      }
   end
+
   #
   #    @Override
   #    public void visit(BlockElement node) {
@@ -121,16 +123,17 @@ class Html5Renderer
   #      out.append("</code>")
   #    }
   #
-  #    public void visit(Text node) {
-  #      out.append(escape(node.getValue().toString()))
-  #    }
+  def visit_text(node)
+    @out << escape(node.value.to_s)
+  end
   #
-  #    public String escape(String text) {
+  def escape(text)
   #      return text.replaceAll("&", "&amp")
   #          .replaceAll("<", "&lt")
   #          .replaceAll(">", "&gt")
   #          .replaceAll("\"", "&quot")
-  #    }
+    text
+  end
   #
   #    public void visit(LineBreak node) {
   #      out.append("<br>\n" + indent())
@@ -149,16 +152,17 @@ class Html5Renderer
   #    }
   #
   def indent
-  #      int repeat = level * 2
-  #        final char[] buf = new char[repeat]
-  #      for (int i = repeat - 1 i >= 0 i--) {
-  #       buf[i] = ' '
-  #      }
-  #      return new String(buf)
+    #      int repeat = level * 2
+    #        final char[] buf = new char[repeat]
+    #      for (int i = repeat - 1 i >= 0 i--) {
+    #       buf[i] = ' '
+    #      }
+    #      return new String(buf)
+    ""
   end
 
   def output
-       @out.string.strip
+    @out.string.strip
   end
 
 end
