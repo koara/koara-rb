@@ -15,7 +15,7 @@ class Parser
   def initialize
     @current_block_level = 0
     @look_ahead_success = LookaheadSuccess.new
-    @modules = %w("paragraphs", "headings", "lists", "links", "images", "formatting", "blockquotes", "code")
+    @modules = %w(paragraphs headings lists links images formatting blockquotes code)
   end
 
   def parse(text)
@@ -325,6 +325,9 @@ class Parser
   end
 
   def paragraph
+
+    puts "---A" + @modules.include?('paragraphs').to_s
+
     paragraph = @modules.include?('paragraphs') ? Paragraph.new : BlockElement.new
     @tree.open_scope
     inline
@@ -386,7 +389,7 @@ class Parser
           end unless next_after_space(TokenManager::EOL, TokenManager::EOF)
       end
     end
-    text.value = s
+    text.value = s.string
     @tree.close_scope(text)
   end
 
@@ -2424,11 +2427,13 @@ class Parser
 
   def consume_token(kind)
     old = @token
-    if @token.next.nil?
+
+    if !@token.next.nil?
       @token = @token.next
     else
       @token = @token.next = @tm.get_next_token
     end
+
     @next_token_kind = -1
     return @token if @token.kind == kind
     @token = old
