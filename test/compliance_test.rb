@@ -11,18 +11,19 @@ class ComplianceTest < Test::Unit::TestCase
 
 
   @tests.each do |test|
-    define_method("test_#{test}") do
+    path = Pathname.new(test)
+    folder =  File.expand_path("..", path).split('/')[-1].to_s
+    testcase = path.basename.to_s[0..-4]
 
+    define_method("test_#{testcase}") do
+      kd = File.read("/Users/andy/git/koara/testsuite/input/#{folder}/#{testcase}.kd")
+      html = File.read("/Users/andy/git/koara/testsuite/output/html5/#{folder}/#{testcase}.htm")
 
-      puts "//" + Pathname.new(test).basename
-      #kd = File.read("/Users/andy/git/koara/testsuite/input/paragraphs/#{test}.kd")
-      #html = File.read("/Users/andy/git/koara/testsuite/output/html5/paragraphs/#{test}.htm")
-
-      #parser = Parser.new
-      #document = parser.parse(kd)
-      #renderer = Html5Renderer.new
-      #document.accept(renderer)
-      #assert_equal(html, renderer.output)
+      parser = Parser.new
+      document = parser.parse(kd)
+      renderer = Html5Renderer.new
+      document.accept(renderer)
+      assert_equal(html, renderer.output)
     end
   end
 end
