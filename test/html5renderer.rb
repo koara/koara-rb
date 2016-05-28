@@ -1,5 +1,5 @@
 class Html5Renderer
-  #    private StringBuffer out
+
   #    private int level
   #    private Stack<Integer> listSequence = new Stack<Integer>()
   #
@@ -9,24 +9,29 @@ class Html5Renderer
   end
 
   def visit_heading(node)
-    #      out.append(indent() + "<h" + node.getValue() + ">")
-    #      node.childrenAccept(this)
-    #      out.append("</h" + node.getValue() + ">\n")
-    #      if(!node.isNested()) { out.append("\n") }
+    @out << indent + '<h' + node.value + '>'
+    node.children_accept(self)
+    @out << '</h' + node.value + ">\n"
+    unless node.nested
+      @out << "\n"
+    end
   end
 
-  #
-  #    public void visit(BlockQuote node) {
-  #      out.append(indent() + "<blockquote>")
-  #      if(node.getChildren() != null && node.getChildren().length > 0) { out.append("\n") }
-  #      level++
-  #      node.childrenAccept(this)
-  #      level--
-  #      out.append(indent() + "</blockquote>\n")
-  #      if(!node.isNested()) { out.append("\n") }
-  #    }
-  #
-  #    public void visit(ListBlock node) {
+  def visit_blockquote(node)
+    @out << indent + '<blockquote>'
+    if !node.children.nil? && !node.children.empty
+      @out << "\n"
+    end
+    @level += 1
+    node.children_accept(slef)
+    @level-=1
+    @out << indent + "</blockquote>\n"
+    if !node.nested
+    @out << "\n"
+    end
+  end
+
+  def visit_list(node)
   #      listSequence.push(0)
   #      String tag = node.isOrdered() ? "ol" : "ul"
   #      out.append(indent() + "<" + tag + ">\n")
@@ -36,9 +41,9 @@ class Html5Renderer
   #      out.append(indent() + "</" + tag + ">\n")
   #      if(!node.isNested()) { out.append("\n") }
   #      listSequence.pop()
-  #    }
-  #
-  #    public void visit(ListItem node) {
+  end
+
+  def visit_list_item(node) {
   #      Integer seq = listSequence.peek() + 1
   #      listSequence.set(listSequence.size() - 1, seq)
   #      out.append(indent() + "<li")
@@ -78,12 +83,9 @@ class Html5Renderer
     @out << "</p>\n"
     #        out.append("</p>\n")
     #        if(!node.isNested()) { out.append("\n") }
-    #      }
   end
 
-  #
-  #    @Override
-  #    public void visit(BlockElement node) {
+  def visit(node)
   #      if(node.isNested() && (node.getParent() instanceof ListItem) && node.isSingleChild()) {
   #        node.childrenAccept(this)
   #      } else {
@@ -91,7 +93,7 @@ class Html5Renderer
   #        node.childrenAccept(this)
   #        if(!node.isNested()) { out.append("\n") }
   #      }
-  #    }
+  end
   #
   #    public void visit(Image node) {
   #      out.append("<img src=\"" + escapeUrl(node.getValue().toString()) + "\" alt=\"")
@@ -126,20 +128,21 @@ class Html5Renderer
   def visit_text(node)
     @out << escape(node.value.to_s)
   end
+
   #
   def escape(text)
-  #      return text.replaceAll("&", "&amp")
-  #          .replaceAll("<", "&lt")
-  #          .replaceAll(">", "&gt")
-  #          .replaceAll("\"", "&quot")
+    #      return text.replaceAll("&", "&amp")
+    #          .replaceAll("<", "&lt")
+    #          .replaceAll(">", "&gt")
+    #          .replaceAll("\"", "&quot")
     text
   end
-  #
-  #    public void visit(LineBreak node) {
-  #      out.append("<br>\n" + indent())
-  #      node.childrenAccept(this)
-  #    }
-  #
+
+  def visit(node)
+    @out << "<br>\n" + indent
+    node.children_accept(self)
+  end
+
   #    public String escapeUrl(String text) {
   #      return text.replaceAll(" ", "%20")
   #          .replaceAll("\"", "%22")
