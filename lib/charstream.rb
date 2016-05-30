@@ -101,7 +101,7 @@ class CharStream
 
   def image
     if @buf_pos >= @token_begin
-      return @buffer[@token_begin, (@buf_pos - @token_begin + 1)].join()
+      return @buffer[@token_begin, (@buf_pos - @token_begin + 1)].join
     end
     #        return new String(buffer, tokenBegin, bufsize - tokenBegin) + new String(buffer, 0, bufpos + 1)
   end
