@@ -99,7 +99,7 @@ class CharStream
     @buf_column[@buf_pos] = @column
   end
 
-  def get_image
+  def image
     if @buf_pos >= @token_begin
       return @buffer[@token_begin, (@buf_pos - @token_begin + 1)].join()
     end
