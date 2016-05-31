@@ -100,7 +100,7 @@ class TokenManager
       when 95
         return stop_at_pos(0, UNDERSCORE)
       when 96
-        return stop_at_Pos(0, BACKTICK)
+        return stop_at_pos(0, BACKTICK)
       when 105
         return move_string_literal_dfa1(0x2000)
       else
