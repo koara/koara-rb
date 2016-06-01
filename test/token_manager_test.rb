@@ -10,6 +10,7 @@ class TokenManagerTest < Test::Unit::TestCase
   #  token = TokenManager.new(CharStream.new(StringReader.new('')))::get_next_token
   #  assert_equal(TokenManager.EOF, token.kind)
   #end
+=begin
 
   def test_asterisk
     token = TokenManager.new(CharStream.new(StringReader.new('*'))).get_next_token
@@ -138,9 +139,17 @@ class TokenManagerTest < Test::Unit::TestCase
   end
 
   def test_underscore
-    token = TokenManager.new(CharStream.new(StringReader.new("_"))).get_next_token
+    token = TokenManager.new(CharStream.new(StringReader.new('_'))).get_next_token
     assert_equal(TokenManager::UNDERSCORE, token.kind)
-    assert_equal("_", token.image)
+    assert_equal('_', token.image)
   end
+=end
+
+  def test_space_after_char_sequence
+    tm = TokenManager.new(CharStream.new(StringReader.new('a ')))
+    assert_equal('a', tm.get_next_token.image)
+    assert_equal(' ', tm.get_next_token.image)
+  end
+
 
 end

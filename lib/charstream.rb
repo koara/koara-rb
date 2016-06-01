@@ -26,8 +26,8 @@ class CharStream
   def read_char
     if @in_buf > 0
       @in_buf -= 1
-      if (@bufpos += 1) == @buf_size
-        @bufpos = 0
+      if (@buf_pos += 1) == @buf_size
+        @buf_pos = 0
       end
       return @buffer[@buf_pos]
     end
@@ -68,7 +68,6 @@ class CharStream
       end
       raise e
     end
-
   end
 
   def backup(amount)
@@ -88,13 +87,12 @@ class CharStream
     end
 
     case c
-    when '\n'
-      @prev_char_is_lf = true
-    when '\t'
-      @column -= 1
-      @column += (@tab_size - (@column % @tab_size))
+      when '\n'
+        @prev_char_is_lf = true
+      when '\t'
+        @column -= 1
+        @column += (@tab_size - (@column % @tab_size))
     end
-
     @buf_line[@buf_pos] = @line
     @buf_column[@buf_pos] = @column
   end
@@ -103,7 +101,7 @@ class CharStream
     if @buf_pos >= @token_begin
       return @buffer[@token_begin, (@buf_pos - @token_begin + 1)].join
     end
-    #        return new String(buffer, tokenBegin, bufsize - tokenBegin) + new String(buffer, 0, bufpos + 1)
+    #        return new String(buffer, tokenBegin, bufsize - tokenBegin) + new String(buffer, 0, buf_pos + 1)
   end
 
   def end_column

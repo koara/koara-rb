@@ -36,11 +36,10 @@ class TokenManager
 
   def get_next_token
     #   begin
-    cur_pos = 0
     while true
       begin
         @cur_char = @cs.begin_token
-      rescue
+      rescuegit
         @matched_kind = 0
         @matched_pos = -1
         return fill_token
@@ -48,10 +47,12 @@ class TokenManager
 
       @matched_kind = 2147483647
       @matched_pos = 0
-      @cur_pos = move_string_literal_dfa0
+      cur_pos = move_string_literal_dfa0
+
+
       if @matched_kind != 2147483647
         if (@matched_pos + 1) < cur_pos
-          @cs.backup(cur_pos - (@matched_pos - 1))
+          @cs.backup(cur_pos - @matched_pos - 1)
         end
         return fill_token
       end
@@ -199,7 +200,6 @@ class TokenManager
               if @cur_char.ord == 13
                 @jj_state_set[@jj_new_state_cnt+=1] = 4
               end
-              break
             when 8
               if ((0x2400 & l) != 0)
                 kind = 9 if kind > 9
@@ -209,79 +209,67 @@ class TokenManager
               if @cur_char.ord == 13
                 @jj_state_set[@jj_new_state_cnt+=1] = 4
               end
-              break
             when 0
               if (0x880098feffffd9ff & l) != 0
                 kind = 4
                 check_n_add(0)
               end
-              break
             when nil
               if (0x880098feffffd9ff & l) != 0
                 kind = 4
                 check_n_add(0)
               end
-              break
             when 1
               if (0x3ff000000000000 & l) != 0
                 kind = 7 if kind > 7
                 check_n_add(1)
               end
-              break
             when 2
               if (0x100000200 & l) != 0
                 check_n_add_states(0, 2)
               end
-              break
             when 3
               if (0x2400 & l) != 0 && kind > 9
                 kind = 9
               end
-              break
             when 4
               if @cur_char.ord == 10 && kind > 9
                 kind = 9
               end
-              break
             when 5
               if @cur_char.ord == 13
                 @jj_state_set[@jj_new_state_cnt+=1] = 4
               end
-              break
             when 7
               if (0x77ff670000000000 & l) != 0 && kind > 11
                 kind = 11
               end
-              break
-
           end
           break if (i == starts_at)
         end
       elsif @cur_char.ord < 128
         l = 1 << (@cur_char.ord & 077)
         loop do
-          case @jj_state_set[i-=1]
+          i -= 1
+          case @jj_state_set[i]
             when 6
               if l != 0
                 kind = 4 if kind > 4
                 check_n_add(0)
               elsif @cur_char == 92
-                @jj_state_set[jjnewStateCnt+=1] = 7
+                @jj_state_set[@jj_new_state_cnt+=1] = 7
               end
-              break
             when 0
               if (0xfffffffe47ffffff & l) != 0
                 kind = 4
                 check_n_add(0)
               end
-              break
             when 7
               if (0x1b8000000 & l) != 0 && kind > 11
                 kind = 11
               end
-              break
           end
-          break if (i == @starts_at)
+          break if (i == starts_at)
         end
       else
         loop do
@@ -289,13 +277,11 @@ class TokenManager
             when 6
               @kind = 4 if kind > 4
               check_n_add(0)
-              break
             when 0
               @kind = 4 if kind > 4
               check_n_add(0)
-              break
           end
-          break if (i == @starts_at)
+          break if (i == starts_at)
         end
       end
       if kind != 0x7fffffff
@@ -304,9 +290,12 @@ class TokenManager
         kind = 0x7fffffff
       end
       cur_pos += 1
-      if (i = @jj_new_state_cnt) == (@starts_at = 8 - (@jj_new_state_cnt = starts_at))
-        return @cur_pos
+
+
+      if (i = @jj_new_state_cnt) == (starts_at = 8 - (@jj_new_state_cnt = starts_at))
+        return cur_pos
       end
+
       begin
         @cur_char = @cs.read_char
       rescue
