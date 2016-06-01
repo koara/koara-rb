@@ -1048,6 +1048,7 @@ class Parser
   def block_ahead(block_begin_bolumn)
     if get_next_token_kind == TokenManager::EOL
       i = 2
+      t = nil
       loop do
         quote_level = 0
         loop do
