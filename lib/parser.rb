@@ -1,6 +1,7 @@
 require_relative 'charstream'
 require_relative 'ast/blockelement'
 require_relative 'ast/paragraph'
+require_relative 'ast/linebreak'
 require_relative 'ast/text'
 require_relative 'io/stringreader'
 require_relative 'lookahead_success'
@@ -14,6 +15,7 @@ class Parser
 
   def initialize
     @current_block_level = 0
+    @current_quote_level = 0
     @look_ahead_success = LookaheadSuccess.new
     @modules = %w(paragraphs headings lists links images formatting blockquotes code)
   end
@@ -505,7 +507,7 @@ class Parser
       end
     end
     consume_token(TokenManager::UNDERSCORE)
-    tree.close_scope(em)
+    @tree.close_scope(em)
   end
 
   def code
@@ -593,12 +595,12 @@ class Parser
 
   def line_break
     linebreak = LineBreak.new
-    tree.open_scope
+    @tree.open_scope
     while get_next_token_kind == TokenManager::SPACE || get_next_token_kind == TokenManager::TAB
       consume_token(get_next_token_kind)
     end
     consume_token(TokenManager::EOL)
-    tree.close_scope(linebreak)
+    @tree.close_scope(linebreak)
   end
 
   def level_white_space(threshold)
@@ -902,7 +904,7 @@ class Parser
 
   def em_multiline
     em = Em.new
-    tree.open_scope
+    @tree.open_scope
     consume_token(TokenManager::UNDERSCORE)
     em_multiline_content
     while text_ahead
@@ -911,7 +913,7 @@ class Parser
       em_multiline_content
     end
     consume_token(TokenManager::UNDERSCORE)
-    tree.close_scope(em)
+    @tree.close_scope(em)
   end
 
   def em_multiline_content
@@ -943,7 +945,7 @@ class Parser
 
   def em_within_strong_multiline
     em = Em.new
-    tree.open_scope
+    @tree.open_scope
     consume_token(TokenManager::UNDERSCORE)
     em_within_strong_multiline_content
     while text_ahead
@@ -951,7 +953,7 @@ class Parser
       em_within_strong_multiline_content
     end
     consume_token(TokenManager::UNDERSCORE)
-    tree.close_scope(em)
+    @tree.close_scope(em)
   end
 
   def em_within_strong_multiline_content
@@ -1058,6 +1060,7 @@ class Parser
           end
           break if t.kind != TokenManager::GT || t.kind != TokenManager::SPACE || t.kind != TokenManager::TAB
         end
+
         return true if quote_level > @current_quote_level
         return false if quote_level < @current_quote_level
         break if t.kind != TokenManager::EOL

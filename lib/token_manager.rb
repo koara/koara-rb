@@ -39,7 +39,7 @@ class TokenManager
     while true
       begin
         @cur_char = @cs.begin_token
-      rescuegit
+      rescue
         @matched_kind = 0
         @matched_pos = -1
         return fill_token
