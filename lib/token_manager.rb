@@ -49,7 +49,6 @@ class TokenManager
       @matched_pos = 0
       cur_pos = move_string_literal_dfa0
 
-
       if @matched_kind != 2147483647
         if (@matched_pos + 1) < cur_pos
           @cs.backup(cur_pos - @matched_pos - 1)
@@ -229,6 +228,7 @@ class TokenManager
                 check_n_add_states(0, 2)
               end
             when 3
+              puts ":::XXX".to_s
               if (0x2400 & l) != 0 && kind > 9
                 kind = 9
               end
@@ -291,6 +291,8 @@ class TokenManager
       end
       cur_pos += 1
 
+
+      puts "// #{@jj_new_state_cnt}"
 
       if (i = @jj_new_state_cnt) == (starts_at = 8 - (@jj_new_state_cnt = starts_at))
         return cur_pos
