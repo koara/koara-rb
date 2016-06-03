@@ -1045,7 +1045,7 @@ class Parser
     end
   end
 
-  def block_ahead(block_begin_bolumn)
+  def block_ahead(block_begin_column)
     if get_next_token_kind == TokenManager::EOL
       i = 2
       t = nil
@@ -1059,14 +1059,14 @@ class Parser
             end
             quote_level+=1
           end
-          break if t.kind != TokenManager::GT || t.kind != TokenManager::SPACE || t.kind != TokenManager::TAB
+          break if t.kind != TokenManager::GT && t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB
         end
 
         return true if quote_level > @current_quote_level
         return false if quote_level < @current_quote_level
         break if t.kind != TokenManager::EOL
       end
-      return t.kind != TokenManager::EOF && (@current_block_level == 0 || t.begin_column >= block_begin_bolumn + 2)
+      return t.kind != TokenManager::EOF && (@current_block_level == 0 || t.begin_column >= block_begin_column + 2)
     end
     false
   end

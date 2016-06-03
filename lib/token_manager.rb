@@ -228,7 +228,6 @@ class TokenManager
                 check_n_add_states(0, 2)
               end
             when 3
-              puts ":::XXX".to_s
               if (0x2400 & l) != 0 && kind > 9
                 kind = 9
               end
@@ -291,9 +290,6 @@ class TokenManager
       end
       cur_pos += 1
 
-
-      puts "// #{@jj_new_state_cnt}"
-
       if (i = @jj_new_state_cnt) == (starts_at = 8 - (@jj_new_state_cnt = starts_at))
         return cur_pos
       end
@@ -309,7 +305,8 @@ class TokenManager
   def check_n_add_states(start, ending)
     loop do
       check_n_add(@jj_next_states[start])
-      break if ((start += 1) == ending)
+      break if start == ending
+      start += 1
     end
   end
 
