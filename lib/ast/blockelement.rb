@@ -14,8 +14,8 @@ class BlockElement < Node
     get_parent.children.last == self
   end
   
-  def is_nested
-    #        return !(getParent() instanceof Document)
+  def nested
+    !parent.instance_of? Document
   end
   
   def is_single_child

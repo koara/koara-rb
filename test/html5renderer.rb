@@ -81,8 +81,9 @@ class Html5Renderer
     @out << indent + '<p>'
     node.children_accept(self)
     @out << "</p>\n"
-    #        out.append("</p>\n")
-    #        if(!node.isNested()) { out.append("\n") }
+    unless node.nested
+      @out << "\n"
+    end
   end
 
   def visit_block_element(node)
