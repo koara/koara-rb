@@ -2,13 +2,13 @@ class CharStream
   def initialize(reader)
     @available = 4096
     @buf_size = 4096
-    @buf_column = Array.new
+    @buf_column = Array.new(4096,0)
     @buf_pos = -1
-    @buf_line = Array.new
+    @buf_line = Array.new(4096,0)
     @column = 0
     @line = 1
     @prev_char_is_lf = false
-    @buffer = Array.new
+    @buffer = Array.new(4096,'')
     @max_next_char_ind = 0
     @reader = reader
     @in_buf = 0
@@ -99,8 +99,9 @@ class CharStream
 
   def image
     if @buf_pos >= @token_begin
-      return @buffer[@token_begin, (@buf_pos - @token_begin + 1)].join
+      return @buffer[@token_begin, @buf_pos - @token_begin + 1].join
     end
+    "X"
     #        return new String(buffer, tokenBegin, bufsize - tokenBegin) + new String(buffer, 0, buf_pos + 1)
   end
 
