@@ -3,6 +3,7 @@ require_relative 'ast/blockelement'
 require_relative 'ast/paragraph'
 require_relative 'ast/linebreak'
 require_relative 'ast/text'
+require_relative 'ast/image'
 require_relative 'io/stringreader'
 require_relative 'lookahead_success'
 require_relative 'token'
@@ -1340,7 +1341,7 @@ class Parser
     @last_position = @scan_position = @token
     begin
       return !scan_text_tokens
-    rescue LookaheadSuccess
+    rescue LookaheadSuccess => e
       return true
     end
   end

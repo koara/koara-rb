@@ -27,8 +27,8 @@ class TokenManager
   UNDERSCORE = 21
 
   def initialize(stream)
-    @jj_rounds = Array.new(8,0)
-    @jj_state_set = Array.new(16,0)
+    @jj_rounds = Array.new(8, 0)
+    @jj_state_set = Array.new(16, 0)
     @jj_next_states = [2, 3, 5]
     @cs = stream
     @round = 0
@@ -175,6 +175,7 @@ class TokenManager
     i = 1
     @jj_state_set[0] = start_state
     kind = 0x7fffffff
+
     while true
       if (@round += 1) == 0x7fffffff
         @round = 0x80000001
@@ -183,6 +184,7 @@ class TokenManager
         l = 1 << @cur_char.ord
         loop do
           i-=1
+
           case @jj_state_set[i]
             when 6
               if (0x880098feffffd9ff & l) != 0
@@ -276,13 +278,12 @@ class TokenManager
               kind = 4 if kind > 4
               check_n_add(0)
           end
-          break if (i == starts_at)
+          break if i == starts_at
         end
       end
       if kind != 0x7fffffff
         @matched_kind = kind
         @matched_pos = cur_pos
-
         kind = 0x7fffffff
       end
       cur_pos += 1
@@ -309,7 +310,8 @@ class TokenManager
 
   def check_n_add(state)
     if @jj_rounds[state] != @round
-      @jj_state_set[@jj_new_state_cnt += 1] = state
+      @jj_state_set[@jj_new_state_cnt] = state
+      @jj_new_state_cnt += 1
       @jj_rounds[state] = @round
     end
   end
@@ -343,4 +345,5 @@ class TokenManager
     end
     -1
   end
+
 end
