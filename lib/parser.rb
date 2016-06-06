@@ -1075,6 +1075,7 @@ class Parser
   def multiline_ahead(token)
     if get_next_token_kind == token && get_token(2).kind != token && get_token(2).kind != TokenManager::EOL
 
+      i=2
       loop do
         t = get_token(i)
         if t.kind == token
@@ -1093,9 +1094,10 @@ class Parser
           else
             return false
           end
-        elsif t.kind == EOF
+        elsif t.kind == TokenManager::EOF
           return false
         end
+        i += 1
       end
     end
     false

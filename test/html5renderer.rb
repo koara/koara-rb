@@ -132,11 +132,10 @@ class Html5Renderer
 
   #
   def escape(text)
-    #      return text.replaceAll("&", "&amp")
-    #          .replaceAll("<", "&lt")
-    #          .replaceAll(">", "&gt")
-    #          .replaceAll("\"", "&quot")
-    text
+    return text.gsub(/&/, '&amp;')
+               .gsub(/</, '&lt;')
+               .gsub(/>/, '&gt;')
+               .gsub(/"/, '&quot;')
   end
 
   def visit(node)
