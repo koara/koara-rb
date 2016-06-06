@@ -9,9 +9,9 @@ class Html5Renderer
   end
 
   def visit_heading(node)
-    @out << indent + '<h' + node.value + '>'
+    @out << indent + '<h' + node.value.to_s + '>'
     node.children_accept(self)
-    @out << '</h' + node.value + ">\n"
+    @out << '</h' + node.value.to_s + ">\n"
     unless node.nested
       @out << "\n"
     end

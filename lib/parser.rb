@@ -1,5 +1,6 @@
 require_relative 'charstream'
 require_relative 'ast/blockelement'
+require_relative 'ast/heading'
 require_relative 'ast/paragraph'
 require_relative 'ast/linebreak'
 require_relative 'ast/text'
@@ -1121,7 +1122,7 @@ class Parser
         if get_token(i).kind != TokenManager::EQ
           return true
         end
-        if (heading+=1 > 6)
+        if (heading+=1) > 6
           return false
         end
         i+= 1

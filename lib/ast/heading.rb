@@ -2,6 +2,6 @@ require_relative 'heading'
 
 class Heading < BlockElement
   def accept(renderer)
-    renderer.visit(self)
+    renderer.visit_heading(self)
   end
 end
