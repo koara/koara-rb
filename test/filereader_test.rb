@@ -1,7 +1,7 @@
 require_relative '../lib/io/filereader'
-require "test/unit"
+require 'minitest/autorun'
 
-class FileReaderTest < Test::Unit::TestCase
+class FileReaderTest < MiniTest::Unit::TestCase
   def setup
     @buffer = Array.new
   end

@@ -1,9 +1,9 @@
 require_relative '../lib/charstream'
 require_relative '../lib/io/stringreader'
-require "test/unit"
+require 'minitest/autorun'
 require "stringio"
 
-class CharStreamTest < Test::Unit::TestCase
+class CharStreamTest < MiniTest::Unit::TestCase
   def test_begin_token
     cs = CharStream.new(StringReader.new('abcd'))
     assert_equal('a', cs.begin_token)
@@ -22,7 +22,7 @@ class CharStreamTest < Test::Unit::TestCase
   end
 
   def test_read_char_till_eof
-    assert_raise IOError do
+    assert_raises IOError do
       cs =  CharStream.new(StringReader.new('abcd'))
       cs.read_char
       cs.read_char
@@ -36,7 +36,7 @@ class CharStreamTest < Test::Unit::TestCase
     cs = CharStream.new(StringReader.new('abcd'))
     cs.read_char
     cs.read_char
-    assert_equal('ab', cs.get_image)
+    assert_equal('ab', cs.image)
   end
 
   def test_begin_token_with_unicode
@@ -57,7 +57,7 @@ class CharStreamTest < Test::Unit::TestCase
   end
 
   def test_read_char_till_eof_with_unicode
-    assert_raise IOError do
+    assert_raises IOError do
       cs =  CharStream.new(StringReader.new('ðinæ'))
       cs.read_char
       cs.read_char
@@ -71,7 +71,7 @@ class CharStreamTest < Test::Unit::TestCase
     cs = CharStream.new(StringReader.new('ðinæ'))
     cs.read_char
     cs.read_char
-    assert_equal('ði', cs.get_image)
+    assert_equal('ði', cs.image)
   end
 
 end

@@ -1,10 +1,10 @@
 require_relative '../lib/parser'
 require_relative '../lib/ast/document'
 require_relative 'html5renderer'
-require "test/unit"
+require 'minitest/autorun'
 require 'pathname'
 
-class ComplianceTest < Test::Unit::TestCase
+class ComplianceTest < MiniTest::Unit::TestCase
 
   TEST_DIR = '/Users/andy/git/koara/koara-rb/testsuite'
 
@@ -16,13 +16,15 @@ class ComplianceTest < Test::Unit::TestCase
 
         define_method("test_#{testcase}") do
           kd = File.read("#{TEST_DIR}/input/#{folder}/#{testcase}.kd")
-          html = File.read("/Users/andy/git/koara/testsuite/output/html5/#{folder}/#{testcase}.htm")
+          html = File.read("#{TEST_DIR}/output/html5/#{folder}/#{testcase}.htm")
 
           parser = Parser.new
           document = parser.parse(kd)
           renderer = Html5Renderer.new
           document.accept(renderer)
+
           assert_equal(html, renderer.output)
+
         end
       end
     end

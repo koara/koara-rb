@@ -1,8 +1,12 @@
+require_relative '../lib/ast/document'
+require_relative '../lib/ast/blockelement'
+require_relative '../lib/ast/listitem'
 class Html5Renderer
 
   #    private int level
 
   def visit_document(node)
+    @level = 0
     @list_sequence = Array.new
     @out = StringIO.new
     node.children_accept(self)
@@ -31,37 +35,42 @@ class Html5Renderer
     end
   end
 
-  def visit_list(node)
+  def visit_list_block(node)
     @list_sequence.push(0)
     tag = node.ordered ? 'ol' : 'ul'
     @out << "#{indent}<#{tag}>\n"
     @level += 1
     node.children_accept(self)
     @level -= 1
-    #      out.append(indent() + "</" + tag + ">\n")
-    #      if(!node.isNested()) { out.append("\n") }
+    @out << "#{indent}</#{tag}>\n"
+    if !node.nested
+      @out << "\n"
+    end
     @list_sequence.pop
   end
 
   def visit_list_item(node)
     #      Integer seq = listSequence.peek() + 1
     #      listSequence.set(listSequence.size() - 1, seq)
-    #      out.append(indent() + "<li")
+    @out << "#{indent}<li"
     #      if(node.getNumber() != null && (!seq.equals(node.getNumber()))) {
     #        out.append(" value=\"" + node.getNumber() + "\"")
     #        listSequence.push(node.getNumber())
     #      }
-    #      out.append(">")
-    #      if(node.getChildren() != null) {
-    #        boolean block = (node.getChildren()[0].getClass() == Paragraph.class || node.getChildren()[0].getClass() == BlockElement.class)
-    #
-    #        if(node.getChildren().length > 1 || !block) { out.append("\n") }
-    #        level++
-    #        node.childrenAccept(this)
-    #        level--
-    #        if(node.getChildren().length > 1 || !block) { out.append(indent()) }
-    #      }
-    #      out.append("</li>\n")
+    @out << '>'
+    if !node.children.nil?
+      block = node.children[0].instance_of?(Paragraph) || node.children[0].instance_of?(BlockElement)
+      if (node.children.length > 1 || !block)
+        @out << "\n"
+      end
+      @level += 1
+      node.children_accept(self)
+      @level -= 1
+      if (node.children.length > 1 || !block)
+        @out << indent
+      end
+    end
+    @out << "</li>\n"
   end
 
   def visit_code_block(node)
@@ -75,25 +84,26 @@ class Html5Renderer
   end
 
   def visit_paragraph(node)
-    #      if(node.isNested() && (node.getParent() instanceof ListItem) && node.isSingleChild()) {
-    #        node.childrenAccept(this)
-    #      } else {
-    @out << indent + '<p>'
-    node.children_accept(self)
-    @out << "</p>\n"
-    unless node.nested
-      @out << "\n"
+    if node.nested && node.parent.instance_of?(ListItem) && node.is_single_child
+      node.children_accept(self)
+    else
+      @out << indent + '<p>'
+      node.children_accept(self)
+      @out << "</p>\n"
+      unless node.nested
+        @out << "\n"
+      end
     end
   end
 
   def visit_block_element(node)
-    #      if(node.isNested() && (node.getParent() instanceof ListItem) && node.isSingleChild()) {
-    #        node.childrenAccept(this)
-    #      } else {
-    #        out.append(indent())
-    #        node.childrenAccept(this)
-    #        if(!node.isNested()) { out.append("\n") }
-    #      }
+    if node.nested && node.parent.instance_of?(ListItem) && node.is_single_child
+      node.children_accept(self)
+    else
+      @out << indent
+      #        node.childrenAccept(this)
+      #        if(!node.isNested()) { out.append("\n") }
+    end
   end
 
   def visit_image(node)
@@ -155,13 +165,21 @@ class Html5Renderer
   end
 
   def indent
-    #      int repeat = level * 2
+    #5.times { send_sms_to("xxx") }
+
+    repeat = @level * 2
+    str = StringIO.new
+
+    repeat.times {
+      str << ' '
+    }
+
     #        final char[] buf = new char[repeat]
     #      for (int i = repeat - 1 i >= 0 i--) {
     #       buf[i] = ' '
     #      }
     #      return new String(buf)
-    ""
+    str.string
   end
 
   def output

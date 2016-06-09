@@ -1,7 +1,8 @@
 require_relative '../lib/io/stringreader'
-require "test/unit"
 
-class StringReaderTest < Test::Unit::TestCase
+require 'minitest/autorun'
+
+class StringReaderTest < MiniTest::Unit::TestCase
   def setup
     @buffer = Array.new
   end
