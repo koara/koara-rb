@@ -3,6 +3,8 @@ require_relative 'ast/blockelement'
 require_relative 'ast/heading'
 require_relative 'ast/paragraph'
 require_relative 'ast/linebreak'
+require_relative 'ast/listblock'
+require_relative 'ast/listitem'
 require_relative 'ast/text'
 require_relative 'ast/image'
 require_relative 'io/stringreader'
@@ -1054,13 +1056,16 @@ class Parser
       loop do
         quote_level = 0
         loop do
-          t = get_token(i+=1)
+          t = get_token(i)
+          i+=1
           if t.kind == TokenManager::GT
             if t.begin_column == 1 && @current_block_level > 0 && @current_quote_level == 0
               return false
             end
             quote_level+=1
           end
+
+
           break if t.kind != TokenManager::GT && t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB
         end
 
@@ -1068,7 +1073,9 @@ class Parser
         return false if quote_level < @current_quote_level
         break if t.kind != TokenManager::EOL
       end
-      return t.kind != TokenManager::EOF && (@current_block_level == 0 || t.begin_column >= block_begin_column + 2)
+
+
+      return t.kind != TokenManager::EOF && (@current_block_level == 0 || t.begin_column >= (block_begin_column + 2))
     end
     false
   end
@@ -1136,12 +1143,12 @@ class Parser
       i = 2
       eol = 1
       loop do
-        Token t = get_token(i)
+        t = get_token(i)
         if t.kind == TokenManager::EOL && eol+=1 > 2
           return false
         elsif t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB && t.kind != TokenManager::GT && t.kind != TokenManager::EOL
           if ordered
-            return t.kind == TokenManager::DIGITS && getToken(i + 1).kind == TokenManager::DOT && t.beginColumn >= list_begin_column
+            return t.kind == TokenManager::DIGITS && get_token(i + 1).kind == TokenManager::DOT && t.begin_column >= list_begin_column
           end
           return t.kind == TokenManager::DASH && t.begin_column >= list_begin_column
         end
@@ -1856,7 +1863,7 @@ class Parser
         @scan_position = xsp
         if scan_link
           @scan_position = xsp
-          if scan_code()
+          if scan_code
             @scan_position = xsp
             if scan_token(TokenManager::ASTERISK)
               @scan_position = xsp
@@ -2415,7 +2422,7 @@ class Parser
     end
 
     if (@look_ahead == 0) && (@scan_position == @last_position)
-        raise @look_ahead_success
+      raise @look_ahead_success
     end
     false
   end
@@ -2427,7 +2434,7 @@ class Parser
       @token.next = @tm.get_next_token
       return (@next_token_kind = @token.next.kind)
     end
-    (@next_token_kind = @next_token.kind)
+    return (@next_token_kind = @next_token.kind);
   end
 
   def consume_token(kind)

@@ -3,12 +3,12 @@ require_relative 'node'
 class Node
   attr_accessor :parent
   attr_accessor :value
-
-  def initialize
-    @children = Array.new
-  end
+  attr_accessor :children
 
   def add(n, i)
+    if@children.nil?
+      @children = Array.new
+    end
     @children[i] = n
   end
 

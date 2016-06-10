@@ -8,6 +8,6 @@ class ListBlock < BlockElement
   end
   
   def accept(renderer)
-    renderer.visit(self)
+    renderer.visit_list_block(self)
   end
 end

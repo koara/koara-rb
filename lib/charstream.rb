@@ -87,9 +87,9 @@ class CharStream
     end
 
     case c
-      when '\n'
+      when "\n"
         @prev_char_is_lf = true
-      when '\t'
+      when "\t"
         @column -= 1
         @column += (@tab_size - (@column % @tab_size))
     end

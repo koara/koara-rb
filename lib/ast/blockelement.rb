@@ -7,11 +7,11 @@ class BlockElement < Node
   end
   
   def is_first_child
-    get_parent.children[0] == self
+    parent.children[0] == self
   end
   
   def is_last_child
-    get_parent.children.last == self
+    parent.children.last == self
   end
   
   def nested
@@ -19,7 +19,7 @@ class BlockElement < Node
   end
   
   def is_single_child
-    #        return ((Node) this.getParent()).getChildren().length == 1
+    parent.children.length == 1
   end
   
   def next

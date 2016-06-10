@@ -24,7 +24,6 @@ class ComplianceTest < MiniTest::Unit::TestCase
           document.accept(renderer)
 
           assert_equal(html, renderer.output)
-
         end
       end
     end
