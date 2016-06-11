@@ -50,13 +50,14 @@ class Html5Renderer
   end
 
   def visit_list_item(node)
-    #      Integer seq = listSequence.peek() + 1
-    #      listSequence.set(listSequence.size() - 1, seq)
+    seq = @list_sequence.last.to_i + 1
+    @list_sequence[-1] = seq
     @out << "#{indent}<li"
-    #      if(node.getNumber() != null && (!seq.equals(node.getNumber()))) {
-    #        out.append(" value=\"" + node.getNumber() + "\"")
-    #        listSequence.push(node.getNumber())
-    #      }
+
+    if node.number && seq != node.number.to_i
+      @out << " value=\"#{node.number}\""
+      @list_sequence.push(node.number)
+    end
     @out << '>'
     if !node.children.nil?
       block = node.children[0].instance_of?(Paragraph) || node.children[0].instance_of?(BlockElement)

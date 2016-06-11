@@ -1144,7 +1144,7 @@ class Parser
       eol = 1
       loop do
         t = get_token(i)
-        if t.kind == TokenManager::EOL && eol+=1 > 2
+        if t.kind == TokenManager::EOL && (eol+=1) > 2
           return false
         elsif t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB && t.kind != TokenManager::GT && t.kind != TokenManager::EOL
           if ordered
