@@ -114,9 +114,9 @@ class Html5Renderer
   end
 
   def visit_link(node)
-    #      out.append("<a href=\"" + escapeUrl(node.getValue().toString()) + "\">")
-    #      node.childrenAccept(this)
-    #      out.append("</a>")
+    @out << "<a href=\"" + escape_url(node.value) + "\">"
+    node.children_accept(self)
+    @out << '</a>'
   end
 
   def visit_strong(node)
@@ -149,20 +149,20 @@ class Html5Renderer
                .gsub(/"/, '&quot;')
   end
 
-  def visit(node)
+  def visit_linebreak(node)
     @out << "<br>\n" + indent
     node.children_accept(self)
   end
 
   def escape_url(text)
-    #      return text.replaceAll(" ", "%20")
-    #          .replaceAll("\"", "%22")
-    #          .replaceAll("`", "%60")
-    #          .replaceAll("<", "%3C")
-    #          .replaceAll(">", "%3E")
-    #          .replaceAll("\\[", "%5B")
-    #          .replaceAll("\\]", "%5D")
-    #          .replaceAll("\\\\", "%5C")
+    text.gsub(/ /, '%20')
+        .gsub(/"/, '%22')
+        .gsub(/`/, '%60')
+        .gsub(/</, '%3C')
+        .gsub(/>/, '%3E')
+        .gsub(/\[/, '%5B')
+        .gsub(/\]/, '%5D')
+        .gsub(/\\/, '%5C')
   end
 
   def indent

@@ -2,6 +2,6 @@ require_relative 'node'
 
 class Link < Node
   def accept(renderer)
-    renderer.visit(self)
+    renderer.visit_link(self)
   end
 end

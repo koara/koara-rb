@@ -2,6 +2,6 @@ require_relative 'linebreak'
 
 class LineBreak < Node
   def accept(renderer)
-    renderer.visit(self)
+    renderer.visit_linebreak(self)
   end
 end

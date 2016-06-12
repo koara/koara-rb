@@ -5,6 +5,7 @@ require_relative 'ast/paragraph'
 require_relative 'ast/linebreak'
 require_relative 'ast/listblock'
 require_relative 'ast/listitem'
+require_relative 'ast/link'
 require_relative 'ast/text'
 require_relative 'ast/image'
 require_relative 'io/stringreader'
@@ -247,7 +248,7 @@ class Parser
   def fenced_code_block
     code_block = CodeBlock.new
     @tree.open_scope
-    s = StringIO.new
+    s = StringIO.new('')
     begin_column = consume_token(TokenManager::BACKTICK).begin_column
     loop do
       consume_token(TokenManager::BACKTICK)
@@ -351,7 +352,7 @@ class Parser
   def text
     text = Text.new
     @tree.open_scope
-    s = StringIO.new
+    s = StringIO.new('')
     while text_has_tokens_ahead
       case get_next_token_kind
         when TokenManager::CHAR_SEQUENCE
@@ -526,7 +527,7 @@ class Parser
   def code_text
     text = Text.new
     @tree.open_scope
-    s = StringIO.new
+    s = StringIO.new('')
     loop do
       case get_next_token_kind
         when TokenManager::CHAR_SEQUENCE
@@ -618,7 +619,7 @@ class Parser
   end
 
   def code_language
-    s = StringIO.new
+    s = StringIO.new('')
     loop do
       case get_next_token_kind
         when TokenManager::CHAR_SEQUENCE
@@ -692,7 +693,7 @@ class Parser
   def resource_text
     text = Text.new
     @tree.open_scope
-    s = StringIO.new
+    s = StringIO.new('')
     loop do
       case get_next_token_kind
         when TokenManager::CHAR_SEQUENCE
@@ -734,7 +735,7 @@ class Parser
       end
       break unless resource_has_element_ahead
     end
-    text.value = s
+    text.value = s.string
     @tree.close_scope(text)
   end
 
@@ -748,7 +749,7 @@ class Parser
   end
 
   def resource_url_text
-    s = StringIO.new
+    s = StringIO.new('')
     while resource_text_has_elements_ahead
       case get_next_token_kind
         when TokenManager::CHAR_SEQUENCE
@@ -796,7 +797,7 @@ class Parser
             end
           end
       end
-      return s
+      return s.string
     end
 
     def strong_multiline
