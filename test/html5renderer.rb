@@ -108,9 +108,9 @@ class Html5Renderer
   end
 
   def visit_image(node)
-    #      out.append("<img src=\"" + escapeUrl(node.getValue().toString()) + "\" alt=\"")
-    #      node.childrenAccept(this)
-    #      out.append("\" />")
+         @out << "<img src=\"" + escape_url(node.value) + "\" alt=\""
+          node.children_accept(self)
+          @out << "\" />"
   end
 
   def visit_link(node)
