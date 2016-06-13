@@ -30,7 +30,6 @@ class Parser
   end
 
   def parse_file(file)
-
     #      if(!file.getName().toLowerCase().endsWith(".kd")) {
     #        throw new IllegalArgumentException("Can only parse files with extension .kd")
     #      }
@@ -203,6 +202,7 @@ class Parser
     @tree.close_scope(list_item)
     t.begin_column
   end
+
 
   def ordered_list
     list = ListBlock.new(true)
@@ -797,47 +797,47 @@ class Parser
             end
           end
       end
-      return s.string
     end
+    return s.string
+  end
 
-    def strong_multiline
-      Strong strong = Strong.new
-      @tree.open_scope
-      consume_token(TokenManager::ASTERISK)
+  def strong_multiline
+    Strong strong = Strong.new
+    @tree.open_scope
+    consume_token(TokenManager::ASTERISK)
+    strong_multiline_content
+    while text_ahead
+      line_break
+      white_space
       strong_multiline_content
-      while text_ahead
-        line_break
-        white_space
-        strong_multiline_content
-      end
-      consume_token(TokenManager::ASTERISK)
-      @tree.close_scope(strong)
     end
+    consume_token(TokenManager::ASTERISK)
+    @tree.close_scope(strong)
+  end
 
-    def strong_multiline_content
-      loop do
-        if has_text_ahead
-          text
-        elsif modules.include?('images') && has_image_ahead
-          image
-        elsif modules.include?('links') && has_link_ahead
-          link
-        elsif modules.include?('code') && has_code_ahead
-          code
-        elsif has_em_within_strong_multiline
-          em_within_strong_multiline
-        else
-          case get_next_token_kind
-            when TokenManager::BACKTICK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
-            when TokenManager::LBRACK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
-            when TokenManager::UNDERSCORE
-              @tree.add_single_value(Text.new, consume_token(TokenManager::UNDERSCORE))
-          end
+  def strong_multiline_content
+    loop do
+      if has_text_ahead
+        text
+      elsif modules.include?('images') && has_image_ahead
+        image
+      elsif modules.include?('links') && has_link_ahead
+        link
+      elsif modules.include?('code') && has_code_ahead
+        code
+      elsif has_em_within_strong_multiline
+        em_within_strong_multiline
+      else
+        case get_next_token_kind
+          when TokenManager::BACKTICK
+            @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+          when TokenManager::LBRACK
+            @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+          when TokenManager::UNDERSCORE
+            @tree.add_single_value(Text.new, consume_token(TokenManager::UNDERSCORE))
         end
-        break unless strong_multiline_has_elements_ahead
       end
+      break unless strong_multiline_has_elements_ahead
     end
   end
 
@@ -943,7 +943,6 @@ class Parser
             @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
         end
       end
-
       break unless em_multiline_content_has_elements_ahead
     end
   end
@@ -1065,17 +1064,12 @@ class Parser
             end
             quote_level+=1
           end
-
-
           break if t.kind != TokenManager::GT && t.kind != TokenManager::SPACE && t.kind != TokenManager::TAB
         end
-
         return true if quote_level > @current_quote_level
         return false if quote_level < @current_quote_level
         break if t.kind != TokenManager::EOL
       end
-
-
       return t.kind != TokenManager::EOF && (@current_block_level == 0 || t.begin_column >= (block_begin_column + 2))
     end
     false
@@ -1095,9 +1089,9 @@ class Parser
           if quote_level == @current_quote_level
             i = skip(i, TokenManager::SPACE, TokenManager::TAB, TokenManager::GT)
             if get_token(i).kind == token || get_token(i).kind == TokenManager::EOL || get_token(i).kind == TokenManager::DASH \
-            || (get_token(i).kind == TokenManager::DIGITS && get_token(i + 1).kind == TokenManager::DOT) \
-            || (get_token(i).kind == TokenManager::BACKTICK && get_token(i + 1).kind == TokenManager::BACKTICK && get_token(i + 2).kind == TokenManager::BACKTICK) \
-            || heading_ahead(i)
+              || (get_token(i).kind == TokenManager::DIGITS && get_token(i + 1).kind == TokenManager::DOT) \
+              || (get_token(i).kind == TokenManager::BACKTICK && get_token(i + 1).kind == TokenManager::BACKTICK && get_token(i + 2).kind == TokenManager::BACKTICK) \
+              || heading_ahead(i)
             end
             return false
           else
@@ -1168,10 +1162,10 @@ class Parser
 
         t = get_token(i)
         return get_token(i).kind != TokenManager::EOL && !(@modules.include?('lists') && t.kind == TokenManager::DASH) \
-        && !(@modules.include?('lists') && t.kind == TokenManager::DIGITS && get_token(i + 1).kind == TokenManager::DOT) \
-        && !(get_token(i).kind == TokenManager::BACKTICK && get_token(i + 1).kind == TokenManager::BACKTICK \
-        && get_token(i + 2).kind == TokenManager::BACKTICK) \
-        && !(@modules.include?('headings') && heading_ahead(i))
+          && !(@modules.include?('lists') && t.kind == TokenManager::DIGITS && get_token(i + 1).kind == TokenManager::DOT) \
+          && !(get_token(i).kind == TokenManager::BACKTICK && get_token(i + 1).kind == TokenManager::BACKTICK \
+          && get_token(i + 2).kind == TokenManager::BACKTICK) \
+          && !(@modules.include?('headings') && heading_ahead(i))
       end
     end
     false
@@ -1739,7 +1733,7 @@ class Parser
         break
       end
     end
-    return scan_token(TokenManager::BACKTICK)
+    scan_token(TokenManager::BACKTICK)
   end
 
   def scan_code_text_tokens_ahead
@@ -1751,7 +1745,7 @@ class Parser
         break
       end
     end
-    return false
+    false
   end
 
   def has_code_text_on_next_line_ahead
@@ -1774,7 +1768,7 @@ class Parser
         break
       end
     end
-    return false
+    false
   end
 
   def scan_whitespace_token_before_eol
@@ -2036,7 +2030,6 @@ class Parser
     false
   end
 
-  # @return [Object]
   def scan_for_more_strong_within_em_multiline_elements
     return true if scan_strong_within_em_multiline_elements
     loop do
@@ -2127,7 +2120,7 @@ class Parser
                                       @looking_ahead = true
                                       @semantic_look_ahead = !next_after_space(TokenManager::RPAREN)
                                       @looking_ahead = false
-                                      return !@semantic_look_ahead || scan_whitspace_token
+                                      return !@semantic_look_ahead || scan_whitespace_token
                                     end
                                   end
                                 end
@@ -2165,11 +2158,11 @@ class Parser
         break
       end
     end
-    return false
+    false
   end
 
   def scan_resource_url
-    return scan_token(TokenManager::LPAREN) || scan_whitespace_tokens || scan_resource_text_elements || scan_whitespace_tokens || scan_token(TokenManager::RPAREN)
+    scan_token(TokenManager::LPAREN) || scan_whitespace_tokens || scan_resource_text_elements || scan_whitespace_tokens || scan_token(TokenManager::RPAREN)
   end
 
   def scan_link_element
@@ -2275,7 +2268,7 @@ class Parser
   end
 
   def scan_image
-    if scan_token(TokenManager::LBRACK) || scan_whitespace_tokens() || scan_token(TokenManager::IMAGE_LABEL) || scan_image_element
+    if scan_token(TokenManager::LBRACK) || scan_whitespace_tokens || scan_token(TokenManager::IMAGE_LABEL) || scan_image_element
       return true
     end
     while true
@@ -2468,5 +2461,6 @@ class Parser
   def modules=(*modules)
     @modules = modules.to_a
   end
+
 
 end
