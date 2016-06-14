@@ -6,8 +6,10 @@ require_relative 'ast/linebreak'
 require_relative 'ast/listblock'
 require_relative 'ast/listitem'
 require_relative 'ast/link'
+require_relative 'ast/em'
 require_relative 'ast/text'
 require_relative 'ast/image'
+require_relative 'ast/strong'
 require_relative 'io/stringreader'
 require_relative 'lookahead_success'
 require_relative 'token'
@@ -681,7 +683,7 @@ class Parser
         strong_multiline
       elsif @modules.include?('formatting') && multiline_ahead(TokenManager::UNDERSCORE)
         em_multiline
-      elsif modules.include?('code') && multiline_ahead(TokenManager::BACKTICK)
+      elsif @modules.include?('code') && multiline_ahead(TokenManager::BACKTICK)
         code_multiline
       else
         loose_char
@@ -798,11 +800,11 @@ class Parser
           end
       end
     end
-    return s.string
+    s.string
   end
 
   def strong_multiline
-    Strong strong = Strong.new
+    strong = Strong.new
     @tree.open_scope
     consume_token(TokenManager::ASTERISK)
     strong_multiline_content
@@ -1077,7 +1079,6 @@ class Parser
 
   def multiline_ahead(token)
     if get_next_token_kind == token && get_token(2).kind != token && get_token(2).kind != TokenManager::EOL
-
       i=2
       loop do
         t = get_token(i)
@@ -1089,11 +1090,11 @@ class Parser
           if quote_level == @current_quote_level
             i = skip(i, TokenManager::SPACE, TokenManager::TAB, TokenManager::GT)
             if get_token(i).kind == token || get_token(i).kind == TokenManager::EOL || get_token(i).kind == TokenManager::DASH \
-              || (get_token(i).kind == TokenManager::DIGITS && get_token(i + 1).kind == TokenManager::DOT) \
-              || (get_token(i).kind == TokenManager::BACKTICK && get_token(i + 1).kind == TokenManager::BACKTICK && get_token(i + 2).kind == TokenManager::BACKTICK) \
-              || heading_ahead(i)
+            || (get_token(i).kind == TokenManager::DIGITS && get_token(i + 1).kind == TokenManager::DOT) \
+            || (get_token(i).kind == TokenManager::BACKTICK && get_token(i + 1).kind == TokenManager::BACKTICK && get_token(i + 2).kind == TokenManager::BACKTICK) \
+            || heading_ahead(i)
+              return false
             end
-            return false
           else
             return false
           end
@@ -1163,8 +1164,7 @@ class Parser
         t = get_token(i)
         return get_token(i).kind != TokenManager::EOL && !(@modules.include?('lists') && t.kind == TokenManager::DASH) \
           && !(@modules.include?('lists') && t.kind == TokenManager::DIGITS && get_token(i + 1).kind == TokenManager::DOT) \
-          && !(get_token(i).kind == TokenManager::BACKTICK && get_token(i + 1).kind == TokenManager::BACKTICK \
-          && get_token(i + 2).kind == TokenManager::BACKTICK) \
+          && !(get_token(i).kind == TokenManager::BACKTICK && get_token(i + 1).kind == TokenManager::BACKTICK && get_token(i + 2).kind == TokenManager::BACKTICK) \
           && !(@modules.include?('headings') && heading_ahead(i))
       end
     end
@@ -1344,9 +1344,10 @@ class Parser
   def has_inline_text_ahead
     @look_ahead = 1
     @last_position = @scan_position = @token
+
     begin
       return !scan_text_tokens
-    rescue LookaheadSuccess => e
+    rescue LookaheadSuccess
       return true
     end
   end
@@ -1597,16 +1598,16 @@ class Parser
   end
 
   def scan_text
-    xsp = @scan_position
-    if scan_token(TokenManager::BACKSLASH)
-      @scan_position = xsp
-      if scan_token(TokenManager::CHAR_SEQUENCE)
-        @scan_position = xsp
-        if scan_token(TokenManager::COLON)
-          @scan_position = xsp
-          if scan_token(TokenManager::DASH)
-            @scan_position = xsp
-            if scan_token(TokenManager::DIGITS)
+     xsp = @scan_position
+     if scan_token(TokenManager::BACKSLASH)
+       @scan_position = xsp
+       if scan_token(TokenManager::CHAR_SEQUENCE)
+         @scan_position = xsp
+         if scan_token(TokenManager::COLON)
+           @scan_position = xsp
+           if scan_token(TokenManager::DASH)
+             @scan_position = xsp
+             if scan_token(TokenManager::DIGITS)
               @scan_position = xsp
               if scan_token(TokenManager::DOT)
                 @scan_position = xsp
@@ -1624,13 +1625,14 @@ class Parser
                             @scan_position = xsp
                             if scan_token(TokenManager::RBRACK)
                               @scan_position = xsp
-                              if scan_token(TokenManager::RPAREN)
-                                @scan_position = xsp
-                                @looking_ahead = true
-                                semantic_look_ahead = !next_after_space(TokenManager::EOL, TokenManager::EOF)
-                                return (!semantic_look_ahead || scan_whitespace_token)
-                              end
-                            end
+                               if scan_token(TokenManager::RPAREN)
+                                 @scan_position = xsp
+                                 @looking_ahead = true
+                                 semantic_look_ahead = !next_after_space(TokenManager::EOL, TokenManager::EOF)
+                                 @looking_ahead = false
+                                 return (!semantic_look_ahead || scan_whitespace_token)
+                               end
+                             end
                           end
                         end
                       end
@@ -1640,10 +1642,12 @@ class Parser
               end
             end
           end
-        end
-      end
-    end
-    false
+         end
+       end
+     end
+    # false
+
+    return true
   end
 
   def scan_text_tokens
@@ -2309,7 +2313,7 @@ class Parser
               @looking_ahead = true
               @semantic_look_ahead = multiline_ahead(TokenManager::BACKTICK)
               @looking_ahead = false
-              if !@semantic_look_ahead || scan_code_multiline()
+              if !@semantic_look_ahead || scan_code_multiline
                 @scan_position = xsp
                 return scan_loose_char
               end
@@ -2428,7 +2432,7 @@ class Parser
       @token.next = @tm.get_next_token
       return (@next_token_kind = @token.next.kind)
     end
-    return (@next_token_kind = @next_token.kind);
+    @next_token_kind = @next_token.kind
   end
 
   def consume_token(kind)
@@ -2448,7 +2452,7 @@ class Parser
 
   def get_token(index)
     t = @looking_ahead ? @scan_position : @token
-    0.upto(index - 1) do |i|
+    0.upto(index - 1) do
       if !t.next.nil?
         t = t.next
       else

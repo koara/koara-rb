@@ -154,7 +154,6 @@ class TokenManagerTest < MiniTest::Unit::TestCase
     assert_equal('ði', tm.get_next_token.image)
     assert_equal(' ', tm.get_next_token.image)
     assert_equal('ı', tm.get_next_token.image)
- end
-
+  end
 
 end
