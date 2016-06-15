@@ -156,7 +156,7 @@ class Parser
   end
 
   def block_quote_empty_line
-    consume_token(TokenManager::TokenManager::EOL)
+    consume_token(TokenManager::EOL)
     white_space
     loop do
       consume_token(TokenManager::GT)
@@ -844,7 +844,7 @@ class Parser
   end
 
   def strong_within_em_multiline
-    Strong strong = Strong.new
+    strong = Strong.new
     @tree.open_scope
     consume_token(TokenManager::ASTERISK)
     strong_within_em_multiline_content
@@ -982,9 +982,7 @@ class Parser
             @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
         end
       end
-      if em_within_strong_multiline_content_has_elements_ahead
-        break
-      end
+      break if !em_within_strong_multiline_content_has_elements_ahead
     end
   end
 
@@ -1256,9 +1254,9 @@ class Parser
     @last_position = @scan_position = @token
     begin
       return !scan_text_tokens
+    end
     rescue LookaheadSuccess
       return true
-    end
   end
 
   def has_image_ahead
@@ -1598,16 +1596,16 @@ class Parser
   end
 
   def scan_text
-     xsp = @scan_position
-     if scan_token(TokenManager::BACKSLASH)
-       @scan_position = xsp
-       if scan_token(TokenManager::CHAR_SEQUENCE)
-         @scan_position = xsp
-         if scan_token(TokenManager::COLON)
-           @scan_position = xsp
-           if scan_token(TokenManager::DASH)
-             @scan_position = xsp
-             if scan_token(TokenManager::DIGITS)
+    xsp = @scan_position
+    if scan_token(TokenManager::BACKSLASH)
+      @scan_position = xsp
+      if scan_token(TokenManager::CHAR_SEQUENCE)
+        @scan_position = xsp
+        if scan_token(TokenManager::COLON)
+          @scan_position = xsp
+          if scan_token(TokenManager::DASH)
+            @scan_position = xsp
+            if scan_token(TokenManager::DIGITS)
               @scan_position = xsp
               if scan_token(TokenManager::DOT)
                 @scan_position = xsp
@@ -1625,14 +1623,14 @@ class Parser
                             @scan_position = xsp
                             if scan_token(TokenManager::RBRACK)
                               @scan_position = xsp
-                               if scan_token(TokenManager::RPAREN)
-                                 @scan_position = xsp
-                                 @looking_ahead = true
-                                 semantic_look_ahead = !next_after_space(TokenManager::EOL, TokenManager::EOF)
-                                 @looking_ahead = false
-                                 return (!semantic_look_ahead || scan_whitespace_token)
-                               end
-                             end
+                              if scan_token(TokenManager::RPAREN)
+                                @scan_position = xsp
+                                @looking_ahead = true
+                                @semantic_look_ahead = !next_after_space(TokenManager::EOL, TokenManager::EOF)
+                                @looking_ahead = false
+                                return (!@semantic_look_ahead || scan_whitespace_token)
+                              end
+                            end
                           end
                         end
                       end
@@ -1642,12 +1640,10 @@ class Parser
               end
             end
           end
-         end
-       end
-     end
-    # false
-
-    return true
+        end
+      end
+    end
+    false
   end
 
   def scan_text_tokens
@@ -1776,7 +1772,7 @@ class Parser
   end
 
   def scan_whitespace_token_before_eol
-    return scan_whitespace_tokens || scan_token(TokenManager::TokenManager::EOL)
+    return scan_whitespace_tokens || scan_token(TokenManager::EOL)
   end
 
   def scan_em_within_strong_elements
@@ -1879,7 +1875,9 @@ class Parser
   end
 
   def has_no_em_within_strong_multiline_content_ahead
-    return true if scan_em_within_strong_multiline_content
+    if scan_em_within_strong_multiline_content
+      return true
+    end
     while true
       xsp = @scan_position
       if scan_em_within_strong_multiline_content
@@ -1891,7 +1889,9 @@ class Parser
   end
 
   def scan_em_within_strong_multiline
-    return true if scan_token(TokenManager::UNDERSCORE) || has_no_em_within_strong_multiline_content_ahead
+    if scan_token(TokenManager::UNDERSCORE) || has_no_em_within_strong_multiline_content_ahead
+      return true
+    end
     while true
       xsp = @scan_position
       if scan_whitespace_token_before_eol || has_no_em_within_strong_multiline_content_ahead
@@ -2353,11 +2353,11 @@ class Parser
   end
 
   def scan_block_quote_empty_lines
-    scan_block_quote_empty_line || scan_token(TokenManager::TokenManager::EOL)
+    scan_block_quote_empty_line || scan_token(TokenManager::EOL)
   end
 
   def scan_block_quote_empty_line
-    return true if scan_token(TokenManager::TokenManager::EOL) || scan_whitespace_tokens || scan_token(TokenManager::GT) || scan_whitespace_tokens
+    return true if scan_token(TokenManager::EOL) || scan_whitespace_tokens || scan_token(TokenManager::GT) || scan_whitespace_tokens
     while true
       xsp = @scan_position
       if scan_token(TokenManager::GT) || scan_whitespace_tokens
