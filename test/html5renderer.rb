@@ -23,11 +23,11 @@ class Html5Renderer
 
   def visit_blockquote(node)
     @out << indent + '<blockquote>'
-    if !node.children.nil? && !node.children.empty
+    if !node.children.nil? && node.children.any?
       @out << "\n"
     end
     @level += 1
-    node.children_accept(slef)
+    node.children_accept(self)
     @level-=1
     @out << indent + "</blockquote>\n"
     if !node.nested

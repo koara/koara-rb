@@ -1,7 +1,7 @@
-require_relative 'node'
+require_relative 'blockelement'
 
-class BlockQuote < Node
+class BlockQuote < BlockElement
   def accept(renderer)
-    renderer.visit(self)
+    renderer.visit_blockquote(self)
   end
 end

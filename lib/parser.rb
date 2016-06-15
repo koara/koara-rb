@@ -1,5 +1,6 @@
 require_relative 'charstream'
 require_relative 'ast/blockelement'
+require_relative 'ast/blockquote'
 require_relative 'ast/heading'
 require_relative 'ast/paragraph'
 require_relative 'ast/linebreak'
@@ -151,7 +152,8 @@ class Parser
     loop do
       consume_token(TokenManager::GT)
       white_space
-      break if (i+1 >= @current_quote_level)
+      i+=1
+      break if (i >= @current_quote_level)
     end
   end
 
