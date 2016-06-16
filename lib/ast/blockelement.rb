@@ -32,7 +32,7 @@ class BlockElement < Node
   end
   
   def accept(renderer)
-    renderer.visit(this)
+    renderer.visit_block_element(self)
   end
   
 end

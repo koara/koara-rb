@@ -102,8 +102,10 @@ class Html5Renderer
       node.children_accept(self)
     else
       @out << indent
-      #        node.childrenAccept(this)
-      #        if(!node.isNested()) { out.append("\n") }
+      node.children_accept(self)
+      if !node.nested
+        @out << "\n"
+      end
     end
   end
 
