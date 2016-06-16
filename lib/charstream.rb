@@ -47,9 +47,9 @@ class CharStream
         @max_next_char_ind = 0
         if @token_begin > 2048
           @available = @token_begin
-        else
-          @available = @buf_size
         end
+      else
+        @available = @buf_size
       end
     end
     i = 0
