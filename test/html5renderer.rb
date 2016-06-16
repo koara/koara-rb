@@ -74,14 +74,14 @@ class Html5Renderer
     @out << "</li>\n"
   end
 
-  def visit_code_block(node)
-    #      out.append(indent() + "<pre><code")
-    #      if(node.getLanguage() != null) {
-    #        out.append(" class=\"language-" + escape(node.getLanguage()) + "\"")
-    #      }
-    #      out.append(">")
-    #      out.append(escape(node.getValue().toString()) + "</code></pre>\n")
-    #      if(!node.isNested()) { out.append("\n") }
+  def visit_codeblock(node)
+    @out << indent + '<pre><code'
+    if node.language
+      @out << " class=\"language-" + escape(node.language) + "\""
+    end
+    @out << '>'
+    @out << escape(node.value) + "</code></pre>\n"
+    @out << ("\n") if !node.nested
   end
 
   def visit_paragraph(node)
@@ -108,9 +108,9 @@ class Html5Renderer
   end
 
   def visit_image(node)
-         @out << "<img src=\"" + escape_url(node.value) + "\" alt=\""
-          node.children_accept(self)
-          @out << "\" />"
+    @out << "<img src=\"" + escape_url(node.value) + "\" alt=\""
+    node.children_accept(self)
+    @out << "\" />"
   end
 
   def visit_link(node)
@@ -166,20 +166,11 @@ class Html5Renderer
   end
 
   def indent
-    #5.times { send_sms_to("xxx") }
-
     repeat = @level * 2
     str = StringIO.new
-
     repeat.times {
       str << ' '
     }
-
-    #        final char[] buf = new char[repeat]
-    #      for (int i = repeat - 1 i >= 0 i--) {
-    #       buf[i] = ' '
-    #      }
-    #      return new String(buf)
     str.string
   end
 

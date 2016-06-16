@@ -1,6 +1,8 @@
 require_relative 'charstream'
 require_relative 'ast/blockelement'
 require_relative 'ast/blockquote'
+require_relative 'ast/code'
+require_relative 'ast/codeblock'
 require_relative 'ast/heading'
 require_relative 'ast/paragraph'
 require_relative 'ast/linebreak'
@@ -207,7 +209,6 @@ class Parser
     t.begin_column
   end
 
-
   def ordered_list
     list = ListBlock.new(true)
     @tree.open_scope
@@ -314,7 +315,7 @@ class Parser
                 s << consume_token(TokenManager::SPACE).image
               when TokenManager::TAB
                 consume_token(TokenManager::TAB)
-                s << consume_token('    ')
+                s << '    '
             end
           elsif !fences_ahead
             consume_token(TokenManager::EOL)
@@ -331,7 +332,7 @@ class Parser
         consume_token(TokenManager::BACKTICK)
       end
     end
-    code_block.value = s
+    code_block.value = s.string
     @tree.close_scope(code_block)
   end
 
@@ -582,7 +583,7 @@ class Parser
 
       break unless code_text_has_any_token_ahead
     end
-    text.value = s
+    text.value = s.string
     @tree.close_scope(text)
   end
 
@@ -670,7 +671,7 @@ class Parser
       end
       break if get_next_token_kind == TokenManager::EOL || get_next_token_kind == TokenManager::EOF
     end
-    s
+    s.string
   end
 
   def inline

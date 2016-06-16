@@ -101,8 +101,7 @@ class CharStream
     if @buf_pos >= @token_begin
       return @buffer[@token_begin, @buf_pos - @token_begin + 1].join
     end
-    "X"
-    #        return new String(buffer, tokenBegin, bufsize - tokenBegin) + new String(buffer, 0, buf_pos + 1)
+    return @buffer[@token_begin, @buf_size - @token_begin].join + @buffer[0, @buf_pos + 1].join
   end
 
   def end_column
