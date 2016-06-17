@@ -1039,7 +1039,7 @@ class EndToEndTest < MiniTest::Unit::TestCase
 
     parser.modules = modules
 
-    document = parser.parse(kd)
+    document = parser.parse_file(File.new("#{TEST_DIR}/input/end2end.kd"))
     renderer = Html5Renderer.new
     document.accept(renderer)
 
