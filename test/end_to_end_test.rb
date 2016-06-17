@@ -5,7 +5,7 @@ require 'minitest/autorun'
 
 class EndToEndTest < MiniTest::Unit::TestCase
 
-  TEST_DIR = '/Users/andy/git/koara/koara-rb/testsuite'
+  TEST_DIR = 'testsuite'
 
   def setup
     @parser = Parser.new

@@ -6,7 +6,7 @@ require 'pathname'
 
 class ComplianceTest < MiniTest::Unit::TestCase
 
-  TEST_DIR = '/Users/andy/git/koara/koara-rb/testsuite'
+  TEST_DIR = 'testsuite'
 
   Dir.glob("#{TEST_DIR}/input/*").each do |f|
     if (File.directory?("#{f}"))
