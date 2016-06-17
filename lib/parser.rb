@@ -574,7 +574,7 @@ class Parser
             case get_next_token_kind
               when TokenManager::SPACE
                 s << consume_token(TokenManager::SPACE).image
-              when TokenManager::SPACE
+              when TokenManager::TAB
                 consume_token(TokenManager::TAB)
                 s << '    '
             end
@@ -2465,8 +2465,8 @@ class Parser
     t
   end
 
-  def modules=(*modules)
-    @modules = modules.to_a
+  def modules=(modules)
+    @modules = modules
   end
 
 
