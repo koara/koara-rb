@@ -36,9 +36,9 @@ class Parser
   end
 
   def parse_file(file)
-    #      if(!file.getName().toLowerCase().endsWith(".kd")) {
-    #        throw new IllegalArgumentException("Can only parse files with extension .kd")
-    #      }
+    if File.basename(file).downcase.reverse[0,3].reverse.to_s != '.kd'
+      raise(ArgumentError, "Can only parse files with extension .kd")
+    end
     parse_reader(FileReader.new(file))
   end
 
