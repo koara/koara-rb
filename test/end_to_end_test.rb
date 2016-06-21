@@ -1,6 +1,5 @@
-require_relative '../lib/parser'
-require_relative '../lib/ast/document'
-require_relative 'html5renderer'
+require 'koara'
+require 'html5renderer'
 require 'minitest/autorun'
 
 class EndToEndTest < MiniTest::Unit::TestCase

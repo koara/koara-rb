@@ -1,9 +1,4 @@
-require_relative '../lib/ast/document'
-require_relative '../lib/ast/blockelement'
-require_relative '../lib/ast/listitem'
 class Html5Renderer
-
-  #    private int level
 
   def visit_document(node)
     @level = 0
@@ -176,8 +171,5 @@ class Html5Renderer
     str.string
   end
 
-  def output
-    @out.string.strip
-  end
 
 end

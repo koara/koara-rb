@@ -1,5 +1,4 @@
-require_relative '../lib/charstream'
-require_relative '../lib/io/stringreader'
+require 'koara'
 require 'minitest/autorun'
 require "stringio"
 

@@ -1,6 +1,4 @@
-require_relative '../lib/token_manager'
-require_relative '../lib/charstream'
-require_relative '../lib/io/stringreader'
+require 'koara'
 require 'minitest/autorun'
 
 class TokenManagerTest < MiniTest::Unit::TestCase

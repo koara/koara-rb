@@ -1,5 +1,4 @@
-require_relative '../lib/io/stringreader'
-
+require 'koara'
 require 'minitest/autorun'
 
 class StringReaderTest < MiniTest::Unit::TestCase

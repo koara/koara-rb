@@ -1,4 +1,4 @@
-require_relative '../lib/io/filereader'
+require 'koara'
 require 'minitest/autorun'
 
 class FileReaderTest < MiniTest::Unit::TestCase
