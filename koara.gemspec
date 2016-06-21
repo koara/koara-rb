@@ -5,7 +5,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 Gem::Specification.new do |gem|
   gem.name          = "koara"
   gem.version       = "0.9.0"
-  gem.authors       = ["Andy VAn Den Heuvel"]
+  gem.authors       = ["Andy Van Den Heuvel"]
   gem.email         = ["andy.vandenheuvel@gmail.com"]
   gem.description   = "Koara parser written in Ruby"
   gem.summary       = "Koara parser written in Ruby"
@@ -15,4 +15,6 @@ Gem::Specification.new do |gem|
   gem.files         = `git ls-files`.split($/)
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
+
+  gem.add_development_dependency "rake"
 end
