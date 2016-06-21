@@ -23,12 +23,14 @@ class BlockElement < Node
   end
   
   def next
-    #     for(int i = 0 i < getParent().getChildren().length - 1 i++) {
-    #       if(getParent().getChildren()[i] == this) {
-    #         return getParent().getChildren()[i + 1]
-    #       }
-    #     }
-    #     return null
+    i = 0
+    while (i < parent.children.length - 1)
+      if(parent.children[i] == self)
+        return parent.children[i + 1]
+      end
+      i+=1
+    end
+    return nil
   end
   
   def accept(renderer)

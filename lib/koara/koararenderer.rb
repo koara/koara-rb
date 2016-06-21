@@ -7,11 +7,11 @@ class KoaraRenderer
   end
 
   def visit_heading(node)
-    if node.is_first_child
+    if !node.is_first_child
       indent
     end
     node.value.times {
-      @out << "="
+      @out << '='
     }
     if node.has_children
       @out << ' '
@@ -28,18 +28,17 @@ class KoaraRenderer
     if !node.is_first_child
       indent
     end
-
     if node.has_children
-# 			out.append("> ");
-# 			left.push("> ");
-# 			node.childrenAccept(this);
-# 			left.pop();
-# 		} else {
-# 			out.append(">\n");
+      @out << '> '
+      @left.push('> ')
+      node.children_accept(self)
+      @left.pop
+    else
+      @out << ">\n"
     end
-# 		if(!node.isNested()) {
-# 			out.append("\n");
-# 		}
+    if !node.nested
+      @out << "\n"
+    end
   end
 
   def visit_list_block(node)
@@ -73,30 +72,25 @@ class KoaraRenderer
     @left.pop
   end
 
-#
-# 	@Override
-# 	public void visit(CodeBlock node) {
-# 		StringBuilder indent = new StringBuilder();
-# 		for(String s : left) {
-# 			indent.append(s);
-# 		}
-#
-# 		out.append("```");
-# 		if(node.getLanguage() != null) {
-# 			out.append(node.getLanguage());
-# 		}
-# 		out.append("\n");
-# 		out.append(node.getValue().toString().replaceAll("(?m)^", indent.toString()));
-# 		out.append("\n");
-# 		indent();
-# 		out.append("```");
-# 		out.append("\n");
-# 		if(!node.isLastChild()) {
-# 			indent();
-# 			out.append("\n");
-# 		}
-# 	}
-#
+  def visit_codeblock(node)
+    str = StringIO.new
+    @left.each { |s| str << s }
+    @out << '```'
+    if node.language
+      @out << node.language
+    end
+    @out << "\n"
+    @out << node.value.gsub(/^/, str.string)
+    @out << "\n"
+    indent
+    @out << '```'
+    @out << "\n"
+    if !node.is_last_child
+      indent
+      @out << "\n"
+    end
+  end
+
   def visit_paragraph(node)
     if !node.is_first_child
       indent
@@ -104,7 +98,7 @@ class KoaraRenderer
 
     node.children_accept(self)
     @out << "\n"
-    if !node.nested || (node.parent.instance_of?(ListItem) && node.next.instance_of?(Paragraph)) && !node.is_last_child
+    if !node.nested || ((node.parent.instance_of?(ListItem) && node.next.instance_of?(Paragraph)) && !node.is_last_child)
       @out << "\n"
     elsif node.parent.instance_of?(BlockQuote) && node.next.instance_of?(Paragraph)
       indent
@@ -128,30 +122,28 @@ class KoaraRenderer
 # 		}
 # 	}
 #
-# 	@Override
-# 	public void visit(Image node) {
-# 		out.append("[image: ");
-# 		node.childrenAccept(this);
-# 		out.append("]");
-# 		if(node.getValue() != null && node.getValue().toString().trim().length() > 0) {
-# 			out.append("(");
-# 			out.append(escapeUrl(node.getValue().toString()));
-# 			out.append(")");
-# 		}
-# 	}
-#
-# 	@Override
-# 	public void visit(Link node) {
-# 		out.append("[");
-# 		node.childrenAccept(this);
-# 		out.append("]");
-# 		if(node.getValue() != null && node.getValue().toString().trim().length() > 0) {
-# 			out.append("(");
-# 			out.append(escapeUrl(node.getValue().toString()));
-# 			out.append(")");
-# 		}
-# 	}
-#
+  def visit_image(node)
+    @out << '[image: '
+    node.children_accept(self)
+    @out << ']'
+    if node.value && node.value.strip.length > 0
+      @out << '('
+      @out << escape_url(node.value)
+      @out << ')'
+    end
+  end
+
+  def visit_link(node)
+    @out << '['
+    node.children_accept(self)
+    @out << ']'
+    if node.value && node.value.strip.length > 0
+      @out << '('
+      @out << escape_url(node.value)
+      @out << ')'
+    end
+  end
+
   def visit_text(node)
     if node.parent.instance_of? Code
       @out << node.value.to_s;
@@ -160,25 +152,22 @@ class KoaraRenderer
     end
   end
 
-#
-# 	@Override
-# 	public void visit(Strong node) {
-# 		out.append("*");
-# 		node.childrenAccept(this);
-# 		out.append("*");
-# 	}
-#
-# 	@Override
-# 	public void visit(Em node) {
-# 		out.append("_");
-# 		node.childrenAccept(this);
-# 		out.append("_");
-# 	}
-#
+  def visit_strong(node)
+    @out << '*'
+    node.children_accept(self)
+    @out << '*'
+  end
+
+  def visit_em(node)
+    @out << '_'
+    node.children_accept(self)
+    @out << '_'
+  end
+
   def visit_code(node)
     @out << '`'
-# 		node.childrenAccept(this);
-# 		out.append("`");
+ 		node.children_accept(self)
+    @out << '`'
   end
 
   def visit_linebreak(node)
@@ -186,12 +175,11 @@ class KoaraRenderer
     indent
   end
 
-#
-# 	public String escapeUrl(String text) {
-# 		return text.replaceAll("\\(", "\\\\(")
-# 				.replaceAll("\\)", "\\\\)");
-# 	}
-#
+  def escape_url(text)
+    return text.gsub(/\(/, "\\\\(")
+               .gsub(/\)/, "\\\\)")
+  end
+
   def escape(text)
     return text.gsub(/\[/, "\\\\[")
                .gsub(/\]/, "\\\\]")
@@ -203,7 +191,6 @@ class KoaraRenderer
                .sub(/-/, "\\\\-")
                .sub(/(\d+)\./) { |m| "\\#{$1}." }
   end
-
 
   def indent
     @left.each { |s|
