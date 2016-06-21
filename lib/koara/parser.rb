@@ -1,3 +1,4 @@
+# encoding: utf-8
 require_relative 'charstream'
 require_relative 'ast/blockelement'
 require_relative 'ast/blockquote'

@@ -1,3 +1,4 @@
+# encoding: utf-8
 class FileReader
   def initialize(file_name)
     @text = File.read(file_name)

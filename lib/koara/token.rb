@@ -1,3 +1,4 @@
+# encoding: utf-8
 class Token
   attr_accessor :kind
   attr_accessor :begin_line

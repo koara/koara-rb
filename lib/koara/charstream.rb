@@ -1,3 +1,4 @@
+# encoding: utf-8
 class CharStream
   def initialize(reader)
     @available = 4096

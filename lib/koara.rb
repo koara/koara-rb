@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'koara/charstream'
 require 'koara/koararenderer'
 require 'koara/parser'

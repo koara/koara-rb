@@ -1,3 +1,4 @@
+# encoding: utf-8
 require 'koara'
 require 'html5renderer'
 require 'minitest/autorun'

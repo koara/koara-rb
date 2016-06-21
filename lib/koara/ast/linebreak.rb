@@ -1,3 +1,4 @@
+# encoding: utf-8
 require_relative 'linebreak'
 
 class LineBreak < Node
