@@ -106,22 +106,20 @@ class KoaraRenderer
     end
   end
 
-#
-# 	@Override
-# 	public void visit(BlockElement node) {
-# 		if(!node.isFirstChild()) {
-# 			indent();
-# 		}
-# 		node.childrenAccept(this);
-# 		out.append("\n");
-# 		if(!node.isNested() || (node.getParent() instanceof ListItem && (node.next() instanceof Paragraph) && !node.isLastChild())) {
-# 			out.append("\n");
-# 		} else if(node.getParent() instanceof BlockQuote && (node.next() instanceof Paragraph)) {
-# 			indent();
-# 			out.append("\n");
-# 		}
-# 	}
-#
+  def visit_blockelement(node)
+    if !node.is_first_child
+      indent
+    end
+    node.children_accept(self)
+    @out << "\n"
+    if !node.nested || (node.parent.instance_of? ListItem && (node.next.instance_of? Paragraph) && !node.is_last_child())
+      @out << "\n"
+    elsif node.parent.instance_of?(BlockQuote) && node.next.instance_of?(Paragraph)
+      indent
+      @out << "\n"
+    end
+  end
+
   def visit_image(node)
     @out << '[image: '
     node.children_accept(self)
@@ -166,7 +164,7 @@ class KoaraRenderer
 
   def visit_code(node)
     @out << '`'
- 		node.children_accept(self)
+    node.children_accept(self)
     @out << '`'
   end
 

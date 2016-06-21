@@ -171,5 +171,9 @@ class Html5Renderer
     str.string
   end
 
+  def output
+    @out.string.strip
+  end
+
 
 end

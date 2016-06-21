@@ -328,6 +328,7 @@ class Parser
     end
     if fences_ahead
       consume_token(TokenManager::EOL)
+      block_quote_prefix
       white_space
       while get_next_token_kind == TokenManager::BACKTICK
         consume_token(TokenManager::BACKTICK)
