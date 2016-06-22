@@ -1,9 +1,12 @@
 # encoding: utf-8
 require_relative 'heading'
 
-class Heading < BlockElement
-  def accept(renderer)
-    renderer.visit_heading(self)
+module Koara
+  module Ast
+    class Heading < BlockElement
+      def accept(renderer)
+        renderer.visit_heading(self)
+      end
+    end
   end
-
 end

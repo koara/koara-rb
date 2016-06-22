@@ -1,20 +1,21 @@
-# -*- encoding: utf-8 -*-
-lib = File.expand_path("../lib", __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+# encoding: utf-8
 
-Gem::Specification.new do |gem|
-  gem.name          = "koara"
-  gem.version       = "0.9.0"
-  gem.authors       = ["Andy Van Den Heuvel"]
-  gem.email         = ["andy.vandenheuvel@gmail.com"]
-  gem.description   = "Koara parser written in Ruby"
-  gem.summary       = "Koara parser written in Ruby"
-  gem.homepage      = "https://github.com/koara/koara-rb"
-  gem.license       = "Apache 2.0"
+$: << File.expand_path('../lib', __FILE__)
+require 'koara/version'
 
-  gem.files         = `git ls-files`.split($/)
-  gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
-  gem.require_paths = ["lib"]
+Gem::Specification.new do |s|
+  s.name         = 'koara'
+  s.version      = Koara::VERSION
+  s.authors      = ['Andy Van Den Heuvel']
+  s.email        = 'andy.vandenheuvel@gmail.com'
+  s.homepage     = 'http://github.com/koara/koara-rb'
+  s.summary      = 'Koara parser written in Ruby'
+  s.description  = 'Koara parser written in Ruby'
+  s.license      = 'Apache-2.0'
 
-  gem.add_development_dependency "rake"
+  s.files        = Dir.glob("{gemfiles,lib,test}/**/**") + %w(README.md LICENSE)
+  s.platform     = Gem::Platform::RUBY
+  s.require_path = 'lib'
+  s.required_rubygems_version = '>= 1.3.5'
+  s.required_ruby_version = '>= 1.9.3'
 end

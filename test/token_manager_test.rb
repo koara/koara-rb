@@ -6,102 +6,102 @@ class TokenManagerTest < MiniTest::Unit::TestCase
 
 
   def test_eof
-   token = TokenManager.new(CharStream.new(StringReader.new('')))::get_next_token
-   assert_equal(TokenManager::EOF, token.kind)
+   token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('')))::get_next_token
+   assert_equal(Koara::TokenManager::EOF, token.kind)
   end
 
   def test_asterisk
-    token = TokenManager.new(CharStream.new(StringReader.new('*'))).get_next_token
-    assert_equal(TokenManager::ASTERISK, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('*'))).get_next_token
+    assert_equal(Koara::TokenManager::ASTERISK, token.kind)
     assert_equal('*', token.image)
   end
 
   def test_backslash
-    token = TokenManager.new(CharStream.new(StringReader.new('\\'))).get_next_token
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('\\'))).get_next_token
     assert_equal(TokenManager::BACKSLASH, token.kind)
     assert_equal('\\', token.image)
   end
 
   def test_backtick
-    token = TokenManager.new(CharStream.new(StringReader.new('`'))).get_next_token
-    assert_equal(TokenManager::BACKTICK, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('`'))).get_next_token
+    assert_equal(Koara::TokenManager::BACKTICK, token.kind)
     assert_equal('`', token.image)
   end
 
   def test_char_sequence_lowercase
-    token = TokenManager.new(CharStream.new(StringReader.new('m'))).get_next_token
-    assert_equal(TokenManager::CHAR_SEQUENCE, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('m'))).get_next_token
+    assert_equal(Koara::TokenManager::CHAR_SEQUENCE, token.kind)
     assert_equal('m', token.image)
   end
 
   def test_char_sequence_uppercase
-    token = TokenManager.new(CharStream.new(StringReader.new('C'))).get_next_token
-    assert_equal(TokenManager::CHAR_SEQUENCE, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('C'))).get_next_token
+    assert_equal(Koara::TokenManager::CHAR_SEQUENCE, token.kind)
     assert_equal('C', token.image)
   end
 
   def test_colon
-    token = TokenManager.new(CharStream.new(StringReader.new(':'))).get_next_token
-    assert_equal(TokenManager::COLON, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new(':'))).get_next_token
+    assert_equal(Koara::TokenManager::COLON, token.kind)
     assert_equal(':', token.image)
   end
 
   def test_dash
-    token = TokenManager.new(CharStream.new(StringReader.new('-'))).get_next_token
-    assert_equal(TokenManager::DASH, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('-'))).get_next_token
+    assert_equal(Koara::TokenManager::DASH, token.kind)
     assert_equal('-', token.image)
   end
 
   def test_digits
-    token = TokenManager.new(CharStream.new(StringReader.new('4'))).get_next_token
-    assert_equal(TokenManager::DIGITS, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('4'))).get_next_token
+    assert_equal(Koara::TokenManager::DIGITS, token.kind)
     assert_equal('4', token.image)
   end
 
   def test_dot
-    token = TokenManager.new(CharStream.new(StringReader.new('.'))).get_next_token
-    assert_equal(TokenManager::DOT, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('.'))).get_next_token
+    assert_equal(Koara::TokenManager::DOT, token.kind)
     assert_equal('.', token.image)
   end
 
   def test_eol
-    token = TokenManager.new(CharStream.new(StringReader.new("\n"))).get_next_token
-    assert_equal(TokenManager::EOL, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new("\n"))).get_next_token
+    assert_equal(Koara::TokenManager::EOL, token.kind)
     assert_equal("\n", token.image)
   end
 
   def test_eq
-    token = TokenManager.new(CharStream.new(StringReader.new('='))).get_next_token
-    assert_equal(TokenManager::EQ, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('='))).get_next_token
+    assert_equal(Koara::TokenManager::EQ, token.kind)
     assert_equal('=', token.image)
   end
 
   def test_escaped_char
-    token = TokenManager.new(CharStream.new(StringReader.new("\\*"))).get_next_token
-    assert_equal(TokenManager::ESCAPED_CHAR, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new("\\*"))).get_next_token
+    assert_equal(Koara::TokenManager::ESCAPED_CHAR, token.kind)
     assert_equal("\\*", token.image)
   end
 
   def test_gt
-    token = TokenManager.new(CharStream.new(StringReader.new('>'))).get_next_token
-    assert_equal(TokenManager::GT, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('>'))).get_next_token
+    assert_equal(Koara::TokenManager::GT, token.kind)
     assert_equal('>', token.image)
   end
 
   def test_image_label
-    token = TokenManager.new(CharStream.new(StringReader.new('image:'))).get_next_token
-    assert_equal(TokenManager::IMAGE_LABEL, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('image:'))).get_next_token
+    assert_equal(Koara::TokenManager::IMAGE_LABEL, token.kind)
     assert_equal('image:', token.image)
   end
 
   def test_lbrack
-    token = TokenManager.new(CharStream.new(StringReader.new('['))).get_next_token
-    assert_equal(TokenManager::LBRACK, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('['))).get_next_token
+    assert_equal(Koara::TokenManager::LBRACK, token.kind)
     assert_equal('[', token.image)
   end
 
   def test_lparen
-    token = TokenManager.new(CharStream.new(StringReader.new('('))).get_next_token
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('('))).get_next_token
     assert_equal(TokenManager::LPAREN, token.kind)
     assert_equal('(', token.image)
   end

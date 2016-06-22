@@ -1,5 +1,5 @@
 # encoding: utf-8
-class LookaheadSuccess < StandardError
-
-
+module Koara
+  class LookaheadSuccess < StandardError
+  end
 end
