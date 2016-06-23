@@ -18,7 +18,7 @@ class TokenManagerTest < MiniTest::Unit::TestCase
 
   def test_backslash
     token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('\\'))).get_next_token
-    assert_equal(TokenManager::BACKSLASH, token.kind)
+    assert_equal(Koara::TokenManager::BACKSLASH, token.kind)
     assert_equal('\\', token.image)
   end
 
@@ -102,54 +102,54 @@ class TokenManagerTest < MiniTest::Unit::TestCase
 
   def test_lparen
     token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('('))).get_next_token
-    assert_equal(TokenManager::LPAREN, token.kind)
+    assert_equal(Koara::TokenManager::LPAREN, token.kind)
     assert_equal('(', token.image)
   end
 
   def test_lt
-    token = TokenManager.new(CharStream.new(StringReader.new('<'))).get_next_token
-    assert_equal(TokenManager::LT, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('<'))).get_next_token
+    assert_equal(Koara::TokenManager::LT, token.kind)
     assert_equal('<', token.image)
   end
 
   def test_rbrack
-    token = TokenManager.new(CharStream.new(StringReader.new(']'))).get_next_token
-    assert_equal(TokenManager::RBRACK, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new(']'))).get_next_token
+    assert_equal(Koara::TokenManager::RBRACK, token.kind)
     assert_equal(']', token.image)
   end
 
   def test_rparen
-    token = TokenManager.new(CharStream.new(StringReader.new(')'))).get_next_token
-    assert_equal(TokenManager::RPAREN, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new(')'))).get_next_token
+    assert_equal(Koara::TokenManager::RPAREN, token.kind)
     assert_equal(')', token.image)
   end
 
   def test_space
-    token = TokenManager.new(CharStream.new(StringReader.new(' '))).get_next_token
-    assert_equal(TokenManager::SPACE, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new(' '))).get_next_token
+    assert_equal(Koara::TokenManager::SPACE, token.kind)
     assert_equal(' ', token.image)
   end
 
   def test_tab
-    token = TokenManager.new(CharStream.new(StringReader.new("\t"))).get_next_token
-    assert_equal(TokenManager::TAB, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new("\t"))).get_next_token
+    assert_equal(Koara::TokenManager::TAB, token.kind)
     assert_equal("\t", token.image)
   end
 
   def test_underscore
-    token = TokenManager.new(CharStream.new(StringReader.new('_'))).get_next_token
-    assert_equal(TokenManager::UNDERSCORE, token.kind)
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('_'))).get_next_token
+    assert_equal(Koara::TokenManager::UNDERSCORE, token.kind)
     assert_equal('_', token.image)
   end
 
   def test_space_after_char_sequence
-    tm = TokenManager.new(CharStream.new(StringReader.new('a ')))
+    tm = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('a ')))
     assert_equal('a', tm.get_next_token.image)
     assert_equal(' ', tm.get_next_token.image)
   end
 
   def test_two_distinct_char_sequences
-    tm = TokenManager.new(CharStream.new(StringReader.new('ði ı')))
+    tm = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('ði ı')))
     assert_equal('ði', tm.get_next_token.image)
     assert_equal(' ', tm.get_next_token.image)
     assert_equal('ı', tm.get_next_token.image)

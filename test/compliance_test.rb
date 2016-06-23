@@ -18,9 +18,9 @@ class ComplianceTest < MiniTest::Unit::TestCase
           kd = File.read("#{TEST_DIR}/input/#{folder}/#{testcase}.kd")
           html = File.read("#{TEST_DIR}/output/html5/#{folder}/#{testcase}.htm")
 
-          parser = Parser.new
+          parser = Koara::Parser.new
           document = parser.parse(kd)
-          renderer = Html5Renderer.new
+          renderer = Koara::Html5Renderer.new
           document.accept(renderer)
 
           assert_equal(html, renderer.output)
@@ -30,9 +30,9 @@ class ComplianceTest < MiniTest::Unit::TestCase
              kd = File.read("#{TEST_DIR}/input/#{folder}/#{testcase}.kd")
              html = File.read("#{TEST_DIR}/output/koara/#{folder}/#{testcase}.kd")
 
-             parser = Parser.new
+             parser = Koara::Parser.new
              document = parser.parse(kd)
-             renderer = KoaraRenderer.new
+             renderer = Koara::KoaraRenderer.new
              document.accept(renderer)
 
              assert_equal(html, renderer.output)

@@ -1,3 +1,4 @@
 module Koara
-  VERSION = "0.9.0"
+  # Koara version number.
+  VERSION = '0.9.0'
 end

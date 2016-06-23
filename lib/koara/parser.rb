@@ -1,77 +1,58 @@
 # encoding: utf-8
-module Koara
-  require_relative 'charstream'
-  require_relative 'ast/blockelement'
-  require_relative 'ast/blockquote'
-  require_relative 'ast/code'
-  require_relative 'ast/codeblock'
-  require_relative 'ast/heading'
-  require_relative 'ast/paragraph'
-  require_relative 'ast/linebreak'
-  require_relative 'ast/listblock'
-  require_relative 'ast/listitem'
-  require_relative 'ast/link'
-  require_relative 'ast/em'
-  require_relative 'ast/text'
-  require_relative 'ast/image'
-  require_relative 'ast/strong'
-  require_relative 'io/stringreader'
-  require_relative 'io/filereader'
-  require_relative 'lookahead_success'
-  require_relative 'token'
-  require_relative 'token_manager'
-  require_relative 'tree_state'
-  require 'stringio'
+require 'stringio'
+require 'koara/lookahead_success'
+require 'koara/tree_state'
 
+module Koara
   class Parser
     attr_reader :modules
 
     def initialize
       @current_block_level = 0
       @current_quote_level = 0
-      @look_ahead_success = LookaheadSuccess.new
+      @look_ahead_success = Koara::LookaheadSuccess.new
       @modules = %w(paragraphs headings lists links images formatting blockquotes code)
     end
 
     def parse(text)
-      return parse_reader(StringReader.new(text))
+      return parse_reader(Koara::Io::StringReader.new(text))
     end
 
     def parse_file(file)
       if File.basename(file).downcase.reverse[0, 3].reverse.to_s != '.kd'
         raise(ArgumentError, "Can only parse files with extension .kd")
       end
-      parse_reader(FileReader.new(file))
+      parse_reader(Koara::Io::FileReader.new(file))
     end
 
     def parse_reader(reader)
-      @cs = CharStream.new(reader)
-      @tm = TokenManager.new(@cs)
-      @token = Token.new
-      @tree = TreeState.new
+      @cs = Koara::CharStream.new(reader)
+      @tm = Koara::TokenManager.new(@cs)
+      @token = Koara::Token.new
+      @tree = Koara::TreeState.new
       @next_token_kind = -1
-      document = Document.new
+      document = Koara::Ast::Document.new
       @tree.open_scope
 
-      while get_next_token_kind == TokenManager::EOL
-        consume_token(TokenManager::EOL)
+      while get_next_token_kind == Koara::TokenManager::EOL
+        consume_token(Koara::TokenManager::EOL)
       end
       white_space
       if has_any_block_elements_ahead
         block_element
         while block_ahead(0)
-          while get_next_token_kind == TokenManager::EOL
-            consume_token(TokenManager::EOL)
+          while get_next_token_kind == Koara::TokenManager::EOL
+            consume_token(Koara::TokenManager::EOL)
             white_space
           end
           block_element
         end
-        while get_next_token_kind == TokenManager::EOL
-          consume_token(TokenManager::EOL)
+        while get_next_token_kind == Koara::TokenManager::EOL
+          consume_token(Koara::TokenManager::EOL)
         end
         white_space
       end
-      consume_token(TokenManager::EOF)
+      consume_token(Koara::TokenManager::EOF)
       @tree.close_scope(document)
       document
     end

@@ -6,3 +6,7 @@ require 'koara/ast/document'
 require 'koara/io/stringreader'
 require 'koara/io/filereader'
 require 'koara/token_manager'
+
+module Koara
+
+end

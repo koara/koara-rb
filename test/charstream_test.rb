@@ -1,7 +1,7 @@
 # encoding: utf-8
-require 'koara'
+
 require 'minitest/autorun'
-require "stringio"
+require 'koara'
 
 class CharStreamTest < MiniTest::Unit::TestCase
   def test_begin_token
@@ -23,7 +23,7 @@ class CharStreamTest < MiniTest::Unit::TestCase
 
   def test_read_char_till_eof
     assert_raises IOError do
-      cs =  Koara::CharStream.new(Koara::Io::StringReader.new('abcd'))
+      cs = Koara::CharStream.new(Koara::Io::StringReader.new('abcd'))
       cs.read_char
       cs.read_char
       cs.read_char
@@ -58,7 +58,7 @@ class CharStreamTest < MiniTest::Unit::TestCase
 
   def test_read_char_till_eof_with_unicode
     assert_raises IOError do
-      cs =  Koara::CharStream.new(Koara::Io::StringReader.new('ðinæ'))
+      cs = Koara::CharStream.new(Koara::Io::StringReader.new('ðinæ'))
       cs.read_char
       cs.read_char
       cs.read_char
@@ -73,5 +73,4 @@ class CharStreamTest < MiniTest::Unit::TestCase
     cs.read_char
     assert_equal('ði', cs.image)
   end
-
 end
