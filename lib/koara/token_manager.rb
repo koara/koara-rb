@@ -1,6 +1,7 @@
 # encoding: utf-8
+require 'koara/token'
+
 module Koara
-  require_relative 'token'
 
   class TokenManager
 

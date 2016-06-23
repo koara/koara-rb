@@ -1,7 +1,25 @@
 # encoding: utf-8
 require 'stringio'
+require 'koara/charstream'
 require 'koara/lookahead_success'
+require 'koara/token_manager'
 require 'koara/tree_state'
+require 'koara/ast/blockelement'
+require 'koara/ast/blockquote'
+require 'koara/ast/code'
+require 'koara/ast/codeblock'
+require 'koara/ast/document'
+require 'koara/ast/em'
+require 'koara/ast/heading'
+require 'koara/ast/image'
+require 'koara/ast/paragraph'
+require 'koara/ast/text'
+require 'koara/ast/linebreak'
+require 'koara/ast/link'
+require 'koara/ast/listblock'
+require 'koara/ast/listitem'
+require 'koara/ast/strong'
+require 'koara/io/filereader'
 
 module Koara
   class Parser
@@ -22,33 +40,33 @@ module Koara
       if File.basename(file).downcase.reverse[0, 3].reverse.to_s != '.kd'
         raise(ArgumentError, "Can only parse files with extension .kd")
       end
-      parse_reader(Koara::Io::FileReader.new(file))
+      parse_reader(Io::FileReader.new(file))
     end
 
     def parse_reader(reader)
-      @cs = Koara::CharStream.new(reader)
-      @tm = Koara::TokenManager.new(@cs)
-      @token = Koara::Token.new
-      @tree = Koara::TreeState.new
+      @cs = CharStream.new(reader)
+      @tm = TokenManager.new(@cs)
+      @token = Token.new
+      @tree = TreeState.new
       @next_token_kind = -1
-      document = Koara::Ast::Document.new
+      document = Ast::Document.new
       @tree.open_scope
 
-      while get_next_token_kind == Koara::TokenManager::EOL
-        consume_token(Koara::TokenManager::EOL)
+      while get_next_token_kind == TokenManager::EOL
+        consume_token(TokenManager::EOL)
       end
       white_space
       if has_any_block_elements_ahead
         block_element
         while block_ahead(0)
-          while get_next_token_kind == Koara::TokenManager::EOL
-            consume_token(Koara::TokenManager::EOL)
+          while get_next_token_kind == TokenManager::EOL
+            consume_token(TokenManager::EOL)
             white_space
           end
           block_element
         end
-        while get_next_token_kind == Koara::TokenManager::EOL
-          consume_token(Koara::TokenManager::EOL)
+        while get_next_token_kind == TokenManager::EOL
+          consume_token(TokenManager::EOL)
         end
         white_space
       end
@@ -76,7 +94,7 @@ module Koara
     end
 
     def heading
-      heading = Heading.new
+      heading = Ast::Heading.new
       @tree.open_scope
       heading_level = 0
 
@@ -107,7 +125,7 @@ module Koara
     end
 
     def block_quote
-      blockquote = BlockQuote.new
+      blockquote = Ast::BlockQuote.new
       @tree.open_scope
       @current_quote_level += 1
       consume_token(TokenManager::GT)
@@ -154,7 +172,7 @@ module Koara
     end
 
     def unordered_list
-      list = ListBlock.new(false)
+      list = Ast::ListBlock.new(false)
       @tree.open_scope
       list_begin_column = unordered_list_item
       while list_item_ahead(list_begin_column, false)
@@ -171,7 +189,7 @@ module Koara
     end
 
     def unordered_list_item
-      list_item = ListItem.new
+      list_item = Ast::ListItem.new
       @tree.open_scope
 
       t = consume_token(TokenManager::DASH)
@@ -194,7 +212,7 @@ module Koara
     end
 
     def ordered_list
-      list = ListBlock.new(true)
+      list = Ast::ListBlock.new(true)
       @tree.open_scope
       list_begin_column = ordered_list_item
       while list_item_ahead(list_begin_column, true)
@@ -211,7 +229,7 @@ module Koara
     end
 
     def ordered_list_item
-      list_item = ListItem.new
+      list_item = Ast::ListItem.new
       @tree.open_scope
       t = consume_token(TokenManager::DIGITS)
       consume_token(TokenManager::DOT)
@@ -235,7 +253,7 @@ module Koara
     end
 
     def fenced_code_block
-      code_block = CodeBlock.new
+      code_block = Ast::CodeBlock.new
       @tree.open_scope
       s = StringIO.new('')
       begin_column = consume_token(TokenManager::BACKTICK).begin_column
@@ -322,7 +340,7 @@ module Koara
     end
 
     def paragraph
-      paragraph = @modules.include?('paragraphs') ? Paragraph.new : BlockElement.new
+      paragraph = @modules.include?('paragraphs') ? Ast::Paragraph.new : Ast::BlockElement.new
       @tree.open_scope
       inline
       while text_ahead
@@ -340,7 +358,7 @@ module Koara
     end
 
     def text
-      text = Text.new
+      text = Ast::Text.new
       @tree.open_scope
       s = StringIO.new('')
       while text_has_tokens_ahead
@@ -388,7 +406,7 @@ module Koara
     end
 
     def image
-      image = Image.new
+      image = Ast::Image.new
       @tree.open_scope
       ref = ''
       consume_token(TokenManager::LBRACK)
@@ -412,7 +430,7 @@ module Koara
     end
 
     def link
-      link = Link.new
+      link = Ast::Link.new
       @tree.open_scope
       ref = ''
       consume_token(TokenManager::LBRACK)
@@ -442,7 +460,7 @@ module Koara
     end
 
     def strong
-      strong = Strong.new
+      strong = Ast::Strong.new
       @tree.open_scope
       consume_token(TokenManager::ASTERISK)
       while strong_has_elements
@@ -459,11 +477,11 @@ module Koara
         else
           case get_next_token_kind
             when TokenManager::BACKTICK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::BACKTICK))
             when TokenManager::LBRACK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::LBRACK))
             when TokenManager::UNDERSCORE
-              @tree.add_single_value(Text.new, consume_token(TokenManager::UNDERSCORE))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::UNDERSCORE))
             else
               break
           end
@@ -474,7 +492,7 @@ module Koara
     end
 
     def em
-      em = Em.new
+      em = Ast::Em.new
       @tree.open_scope
       consume_token(TokenManager::UNDERSCORE)
       while em_has_elements
@@ -491,11 +509,11 @@ module Koara
         else
           case get_next_token_kind
             when TokenManager::ASTERISK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::ASTERISK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::ASTERISK))
             when TokenManager::BACKTICK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::BACKTICK))
             when TokenManager::LBRACK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::LBRACK))
             else
               break
           end
@@ -506,7 +524,7 @@ module Koara
     end
 
     def code
-      code = Code.new
+      code = Ast::Code.new
       @tree.open_scope
       consume_token(TokenManager::BACKTICK)
       code_text
@@ -515,7 +533,7 @@ module Koara
     end
 
     def code_text
-      text = Text.new
+      text = Ast::Text.new
       @tree.open_scope
       s = StringIO.new('')
       loop do
@@ -573,7 +591,7 @@ module Koara
     end
 
     def loose_char
-      text = Text.new
+      text = Ast::Text.new
       @tree.open_scope
       case get_next_token_kind
         when TokenManager::ASTERISK
@@ -589,7 +607,7 @@ module Koara
     end
 
     def line_break
-      linebreak = LineBreak.new
+      linebreak = Ast::LineBreak.new
       @tree.open_scope
       while get_next_token_kind == TokenManager::SPACE || get_next_token_kind == TokenManager::TAB
         consume_token(get_next_token_kind)
@@ -681,7 +699,7 @@ module Koara
     end
 
     def resource_text
-      text = Text.new
+      text = Ast::Text.new
       @tree.open_scope
       s = StringIO.new('')
       loop do
@@ -792,7 +810,7 @@ module Koara
     end
 
     def strong_multiline
-      strong = Strong.new
+      strong = Ast::Strong.new
       @tree.open_scope
       consume_token(TokenManager::ASTERISK)
       strong_multiline_content
@@ -820,11 +838,11 @@ module Koara
         else
           case get_next_token_kind
             when TokenManager::BACKTICK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::BACKTICK))
             when TokenManager::LBRACK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::LBRACK))
             when TokenManager::UNDERSCORE
-              @tree.add_single_value(Text.new, consume_token(TokenManager::UNDERSCORE))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::UNDERSCORE))
           end
         end
         break unless strong_multiline_has_elements_ahead
@@ -832,7 +850,7 @@ module Koara
     end
 
     def strong_within_em_multiline
-      strong = Strong.new
+      strong = Ast::Strong.new
       @tree.open_scope
       consume_token(TokenManager::ASTERISK)
       strong_within_em_multiline_content
@@ -857,11 +875,11 @@ module Koara
         else
           case get_next_token_kind
             when TokenManager::BACKTICK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::BACKTICK))
             when TokenManager::LBRACK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::LBRACK))
             when TokenManager::UNDERSCORE
-              @tree.add_single_value(Text.new, consume_token(TokenManager::UNDERSCORE))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::UNDERSCORE))
           end
         end
         break unless strong_within_em_multiline_has_elements_ahead
@@ -869,7 +887,7 @@ module Koara
     end
 
     def strong_within_em
-      strong = Strong.new
+      strong = Ast::Strong.new
       @tree.open_scope
       consume_token(TokenManager::ASTERISK)
       loop do
@@ -884,11 +902,11 @@ module Koara
         else
           case get_next_token_kind
             when TokenManager::BACKTICK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::BACKTICK))
             when TokenManager::LBRACK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::LBRACK))
             when TokenManager::UNDERSCORE
-              @tree.add_single_value(Text.new, consume_token(TokenManager::UNDERSCORE))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::UNDERSCORE))
           end
         end
         break unless strong_within_em_has_elements_ahead
@@ -898,7 +916,7 @@ module Koara
     end
 
     def em_multiline
-      em = Em.new
+      em = Ast::Em.new
       @tree.open_scope
       consume_token(TokenManager::UNDERSCORE)
       em_multiline_content
@@ -926,11 +944,11 @@ module Koara
         else
           case get_next_token_kind
             when TokenManager::ASTERISK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::ASTERISK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::ASTERISK))
             when TokenManager::BACKTICK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::BACKTICK))
             when TokenManager::LBRACK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::LBRACK))
           end
         end
         break unless em_multiline_content_has_elements_ahead
@@ -938,7 +956,7 @@ module Koara
     end
 
     def em_within_strong_multiline
-      em = Em.new
+      em = Ast::Em.new
       @tree.open_scope
       consume_token(TokenManager::UNDERSCORE)
       em_within_strong_multiline_content
@@ -963,11 +981,11 @@ module Koara
         else
           case get_next_token_kind
             when TokenManager::ASTERISK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::ASTERISK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::ASTERISK))
             when TokenManager::BACKTICK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::BACKTICK))
             when TokenManager::LBRACK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::LBRACK))
           end
         end
         break if !em_within_strong_multiline_content_has_elements_ahead
@@ -975,7 +993,7 @@ module Koara
     end
 
     def em_within_strong
-      em = Em.new
+      em = Ast::Em.new
       @tree.open_scope
       consume_token(TokenManager::UNDERSCORE)
       loop do
@@ -990,11 +1008,11 @@ module Koara
         else
           case get_next_token_kind
             when TokenManager::ASTERISK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::ASTERISK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::ASTERISK))
             when TokenManager::BACKTICK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::BACKTICK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::BACKTICK))
             when TokenManager::LBRACK
-              @tree.add_single_value(Text.new, consume_token(TokenManager::LBRACK))
+              @tree.add_single_value(Ast::Text.new, consume_token(TokenManager::LBRACK))
           end
         end
         break unless em_within_strong_has_elements_ahead
@@ -1004,7 +1022,7 @@ module Koara
     end
 
     def code_multiline
-      code = Code.new
+      code = Ast::Code.new
       @tree.open_scope
       consume_token(TokenManager::BACKTICK)
       code_text

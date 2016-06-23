@@ -1,5 +1,5 @@
 # encoding: utf-8
-require_relative 'heading'
+require 'koara/ast/blockelement'
 
 module Koara
   module Ast

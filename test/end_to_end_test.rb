@@ -1,14 +1,14 @@
 # encoding: utf-8
-require 'koara'
-require 'html5renderer'
+require 'koara/parser'
 require 'minitest/autorun'
+require_relative 'html5renderer'
 
 class EndToEndTest < MiniTest::Unit::TestCase
 
   TEST_DIR = 'testsuite'
 
   def setup
-    @parser = Parser.new
+    @parser = Koara::Parser.new
   end
 
   def test_000001
@@ -1035,7 +1035,7 @@ class EndToEndTest < MiniTest::Unit::TestCase
     kd = File.read("#{TEST_DIR}/input/end2end.kd")
     html = File.read("#{TEST_DIR}/output/html5/end2end/#{file}.htm")
 
-    parser = Parser.new
+    parser = Koara::Parser.new
 
     parser.modules = modules
 

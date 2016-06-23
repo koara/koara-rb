@@ -1,4 +1,9 @@
 # encoding: utf-8
+require 'koara/ast/blockquote'
+require 'koara/ast/code'
+require 'koara/ast/listitem'
+require 'koara/ast/paragraph'
+
 module Koara
   class KoaraRenderer
 
@@ -49,7 +54,7 @@ module Koara
         indent
         @out << "\n"
         next_node = node.next
-        if next_node.instance_of?(ListBlock) && next_node.ordered == node.ordered
+        if next_node.instance_of?(Ast::ListBlock) && next_node.ordered == node.ordered
           @out << "\n"
         end
       end
@@ -100,9 +105,9 @@ module Koara
 
       node.children_accept(self)
       @out << "\n"
-      if !node.nested || ((node.parent.instance_of?(ListItem) && node.next.instance_of?(Paragraph)) && !node.is_last_child)
+      if !node.nested || ((node.parent.instance_of?(Ast::ListItem) && node.next.instance_of?(Ast::Paragraph)) && !node.is_last_child)
         @out << "\n"
-      elsif node.parent.instance_of?(BlockQuote) && node.next.instance_of?(Paragraph)
+      elsif node.parent.instance_of?(Ast::BlockQuote) && node.next.instance_of?(Ast::Paragraph)
         indent
         @out << "\n"
       end
@@ -145,7 +150,7 @@ module Koara
     end
 
     def visit_text(node)
-      if node.parent.instance_of? Code
+      if node.parent.instance_of? Ast::Code
         @out << node.value.to_s;
       else
         @out << escape(node.value.to_s);
