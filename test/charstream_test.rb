@@ -1,7 +1,5 @@
 # encoding: utf-8
-
-require 'minitest/autorun'
-require 'koara'
+require 'test_helper'
 
 class CharStreamTest < MiniTest::Unit::TestCase
   def test_begin_token

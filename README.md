@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/koara/koara-rb/blob/master/LICENSE)
 
 # Koara-rb
-[Koara](http://www.koara.io) is a modular lightweight markup language. This project is the core koara parser written in Javascript.  
+[Koara](http://www.koara.io) is a modular lightweight markup language. This project is the core koara parser written in Ruby.
 If you are interested in converting koara to a specific outputFormat, please look the [Related Projects](#related-projects) section.
 
 ## Getting started
