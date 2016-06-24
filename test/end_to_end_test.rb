@@ -1,6 +1,5 @@
 # encoding: utf-8
 require 'test_helper'
-require 'minitest/autorun'
 require_relative 'html5renderer'
 
 class EndToEndTest < MiniTest::Unit::TestCase

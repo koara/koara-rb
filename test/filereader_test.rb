@@ -1,6 +1,5 @@
 # encoding: utf-8
-require 'koara'
-require 'minitest/autorun'
+require 'test_helper'
 
 class FileReaderTest < MiniTest::Unit::TestCase
   def setup
