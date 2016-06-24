@@ -18,6 +18,6 @@ Gem::Specification.new do |s|
   s.platform     = Gem::Platform::RUBY
   s.require_path = 'lib'
   s.required_rubygems_version = '>= 1.3.5'
-  s.required_ruby_version = '>= 1.8.7'
+  s.required_ruby_version = '>= 1.9.3'
   s.add_development_dependency "bundler", "~> 1.0"
 end
