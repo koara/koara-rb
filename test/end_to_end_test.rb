@@ -1,5 +1,5 @@
 # encoding: utf-8
-require 'koara/parser'
+require 'test_helper'
 require 'minitest/autorun'
 require_relative 'html5renderer'
 

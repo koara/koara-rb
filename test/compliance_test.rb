@@ -1,7 +1,6 @@
 # encoding: utf-8
-require 'koara'
+require 'test_helper'
 require 'html5renderer'
-require 'minitest/autorun'
 require 'pathname'
 
 class ComplianceTest < MiniTest::Unit::TestCase
