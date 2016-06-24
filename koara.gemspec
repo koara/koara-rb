@@ -12,8 +12,9 @@ Gem::Specification.new do |s|
   s.summary      = 'Koara parser written in Ruby'
   s.description  = 'Koara parser written in Ruby'
   s.license      = 'Apache-2.0'
+  s.has_rdoc    = false
 
-  s.files        = Dir.glob("{gemfiles,lib,test}/**/**") + %w(README.md LICENSE)
+  s.files        = Dir.glob("{lib,test}/**/**") + %w(README.md LICENSE)
   s.platform     = Gem::Platform::RUBY
   s.require_path = 'lib'
   s.required_rubygems_version = '>= 1.3.5'
