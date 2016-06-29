@@ -6,15 +6,15 @@ class FileReaderTest < MiniTest::Unit::TestCase
     @buffer = Array.new
   end
 
-  def test_read
-    @reader = Koara::Io::FileReader.new('test/filereader.kd')
-    assert_equal(4, @reader.read(@buffer, 0, 4))
-    assert_equal('a', @buffer[0])
-    assert_equal('b', @buffer[1])
-    assert_equal('c', @buffer[2])
-    assert_equal('d', @buffer[3])
-    assert_equal(4, @buffer.length)
-    assert_equal(-1, @reader.read(@buffer, 0, 4))
+   def test_read
+     @reader = Koara::Io::FileReader.new('test/filereader.kd')
+     assert_equal(4, @reader.read(@buffer, 0, 4))
+     assert_equal('a', @buffer[0])
+     assert_equal('b', @buffer[1])
+     assert_equal('c', @buffer[2])
+     assert_equal('d', @buffer[3])
+     assert_equal(4, @buffer.length)
+     assert_equal(-1, @reader.read(@buffer, 0, 4))
   end
 
   def test_read_part_of_string
@@ -95,6 +95,7 @@ class FileReaderTest < MiniTest::Unit::TestCase
     assert_equal(3, @reader.read(@buffer, 0, 3))
     assert_equal('ð', @buffer[0])
     assert_equal('i', @buffer[1])
+    assert_equal('n', @buffer[2])
     assert_equal(1, @reader.read(@buffer, 0, 3))
     assert_equal('æ', @buffer[0])
     assert_equal(-1, @reader.read(@buffer, 0, 2))
