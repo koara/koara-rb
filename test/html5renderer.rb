@@ -6,6 +6,7 @@ class Html5Renderer
     @level = 0
     @list_sequence = Array.new
     @out = StringIO.new
+    @hard_wrap = false
     node.children_accept(self)
   end
 
@@ -140,7 +141,6 @@ class Html5Renderer
     @out << escape(node.value.to_s)
   end
 
-  #
   def escape(text)
     return text.gsub(/&/, '&amp;')
                .gsub(/</, '&lt;')
@@ -149,7 +149,10 @@ class Html5Renderer
   end
 
   def visit_linebreak(node)
-    @out << "<br>\n" + indent
+    if @hard_wrap || node.explicit
+      @out << "<br>"
+    end
+    @out << "\n" + indent
     node.children_accept(self)
   end
 

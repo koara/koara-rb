@@ -612,7 +612,8 @@ module Koara
       while get_next_token_kind == TokenManager::SPACE || get_next_token_kind == TokenManager::TAB
         consume_token(get_next_token_kind)
       end
-      consume_token(TokenManager::EOL)
+      token = consume_token(TokenManager::EOL)
+      linebreak.explicit = token.image.start_with?("  ");
       @tree.close_scope(linebreak)
     end
 

@@ -10,6 +10,7 @@ module Koara
     def visit_document(node)
       @left = Array.new
       @out = StringIO.new
+      @hard_wrap = false
       node.children_accept(self)
     end
 
@@ -176,6 +177,9 @@ module Koara
     end
 
     def visit_linebreak(node)
+      if @hard_wrap || node.explicit
+        @out << "  "
+      end
       @out << "\n"
       indent
     end
