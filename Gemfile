@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
 gem 'rake', '>= 0.9'
-gem 'coveralls', require: false
+gem 'coveralls', '0.8.14', require: false
 
 gemspec
