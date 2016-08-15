@@ -178,7 +178,7 @@ module Koara
 
     def visit_linebreak(node)
       if @hard_wrap || node.explicit
-        @out << "  "
+        @out << '  '
       end
       @out << "\n"
       indent
