@@ -10,11 +10,10 @@
 If you are interested in converting koara to a specific outputFormat, please look the [Related Projects](#related-projects) section.
 
 ## Getting started
-- Gem
 
-  ```bash
-  gem install koara
-  ```
+```bash
+gem install koara
+```
 
 ## Usage
 ```ruby
