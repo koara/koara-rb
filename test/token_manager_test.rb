@@ -3,7 +3,6 @@ require 'test_helper'
 
 class TokenManagerTest < MiniTest::Unit::TestCase
 
-
   def test_eof
    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('')))::get_next_token
    assert_equal(Koara::TokenManager::EOF, token.kind)
@@ -67,6 +66,12 @@ class TokenManagerTest < MiniTest::Unit::TestCase
     token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new("\n"))).get_next_token
     assert_equal(Koara::TokenManager::EOL, token.kind)
     assert_equal("\n", token.image)
+  end
+  
+  def test_eol_with_spaces
+    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new("  \n"))).get_next_token
+    assert_equal(Koara::TokenManager::EOL, token.kind)
+    assert_equal("  \n", token.image)
   end
 
   def test_eq
@@ -141,17 +146,18 @@ class TokenManagerTest < MiniTest::Unit::TestCase
     assert_equal('_', token.image)
   end
 
-  def test_space_after_char_sequence
-    tm = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('a ')))
-    assert_equal('a', tm.get_next_token.image)
-    assert_equal(' ', tm.get_next_token.image)
+  def test_linebreak
+  	tm = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new("a\nb")))
+    token = tm.get_next_token
+    assert_equal(Koara::TokenManager::CHAR_SEQUENCE, token.kind)
+    assert_equal('a', token.image)
+    token = tm.get_next_token
+    assert_equal(Koara::TokenManager::EOL, token.kind)
+    assert_equal('\n', token.image)
+    token = tm.get_next_token
+    assert_equal(Koara::TokenManager::CHAR_SEQUENCE, token.kind)    
   end
-
-  def test_two_distinct_char_sequences
-    tm = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('ði ı')))
-    assert_equal('ði', tm.get_next_token.image)
-    assert_equal(' ', tm.get_next_token.image)
-    assert_equal('ı', tm.get_next_token.image)
-  end
+  
+  
 
 end
