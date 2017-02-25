@@ -15,7 +15,7 @@ module Koara
             buffer[offset + i] = c
             characters_read += 1
             @index += c.bytesize
-            return characters_read if characters_read >= length
+              return characters_read if characters_read >= length
           }
           return characters_read
 

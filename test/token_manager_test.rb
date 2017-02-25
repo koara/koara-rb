@@ -153,7 +153,7 @@ class TokenManagerTest < MiniTest::Unit::TestCase
     assert_equal('a', token.image)
     token = tm.get_next_token
     assert_equal(Koara::TokenManager::EOL, token.kind)
-    assert_equal('\n', token.image)
+    assert_equal("\n", token.image)
     token = tm.get_next_token
     assert_equal(Koara::TokenManager::CHAR_SEQUENCE, token.kind)    
   end
