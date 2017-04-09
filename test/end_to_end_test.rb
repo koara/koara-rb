@@ -8,6 +8,7 @@ class EndToEndTest < MiniTest::Unit::TestCase
 
   def setup
     @parser = Koara::Parser.new
+    @kd = File.read("#{TEST_DIR}/input/end2end.kd")
   end
 
   def test_000001
@@ -1031,14 +1032,12 @@ class EndToEndTest < MiniTest::Unit::TestCase
   end
 
   def assert_output(file, modules)
-    kd = File.read("#{TEST_DIR}/input/end2end.kd")
     html = File.read("#{TEST_DIR}/output/html5/end2end/#{file}.htm")
 
     parser = Koara::Parser.new
 
     parser.modules = modules
-
-    document = parser.parse_file(File.new("#{TEST_DIR}/input/end2end.kd"))
+    document = parser.parse_file(@kd)
     renderer = Html5Renderer.new
     document.accept(renderer)
 
