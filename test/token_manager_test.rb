@@ -1,7 +1,7 @@
 # encoding: utf-8
 require 'test_helper'
 
-class TokenManagerTest < MiniTest::Unit::TestCase
+class TokenManagerTest < Minitest::Test
 
   def test_eof
    token = Koara::TokenManager.new(Koara::CharStream.new(Koara::Io::StringReader.new('')))::get_next_token

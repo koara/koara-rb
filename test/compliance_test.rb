@@ -3,7 +3,7 @@ require 'test_helper'
 require 'html5renderer'
 require 'pathname'
 
-class ComplianceTest < MiniTest::Unit::TestCase
+class ComplianceTest < Minitest::Test
 
   TEST_DIR = 'testsuite'
 

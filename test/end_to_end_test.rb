@@ -2,7 +2,7 @@
 require 'test_helper'
 require_relative 'html5renderer'
 
-class EndToEndTest < MiniTest::Unit::TestCase
+class EndToEndTest < Minitest::Test
 
   TEST_DIR = 'testsuite'
 

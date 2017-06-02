@@ -1,7 +1,7 @@
 # encoding: utf-8
 require 'test_helper'
 
-class StringReaderTest < MiniTest::Unit::TestCase
+class StringReaderTest < Minitest::Test
   def setup
     @buffer = Array.new
   end

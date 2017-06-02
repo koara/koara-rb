@@ -1,7 +1,7 @@
 # encoding: utf-8
 require 'test_helper'
 
-class CharStreamTest < MiniTest::Unit::TestCase
+class CharStreamTest < Minitest::Test
   def test_begin_token
     cs = Koara::CharStream.new(Koara::Io::StringReader.new('abcd'))
     assert_equal('a', cs.begin_token)
