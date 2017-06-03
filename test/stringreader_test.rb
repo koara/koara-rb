@@ -28,8 +28,8 @@ class StringReaderTest < Minitest::Test
   def test_read_with_offset_part_of_string
     @reader = Koara::Io::StringReader.new('abcd')
     assert_equal(4, @reader.read(@buffer, 2, 4))
-    assert_equal(nil, @buffer[0])
-    assert_equal(nil, @buffer[1])
+    assert_nil(@buffer[0])
+    assert_nil(@buffer[1])
     assert_equal('a', @buffer[2])
     assert_equal('b', @buffer[3])
   end
@@ -37,10 +37,10 @@ class StringReaderTest < Minitest::Test
   def test_read_with_offset_too_large_part_of_string
     @reader = Koara::Io::StringReader.new('abcd')
     assert_equal(4, @reader.read(@buffer, 6, 4))
-    assert_equal(nil, @buffer[0])
-    assert_equal(nil, @buffer[1])
-    assert_equal(nil, @buffer[2])
-    assert_equal(nil, @buffer[3])
+    assert_nil(@buffer[0])
+    assert_nil(@buffer[1])
+    assert_nil(@buffer[2])
+    assert_nil(@buffer[3])
   end
 
   def test_read_until_eof
@@ -75,8 +75,8 @@ class StringReaderTest < Minitest::Test
   def test_Read_with_unicode_and_offset_part_of_string
     @reader = Koara::Io::StringReader.new('ðinæ')
     assert_equal(4, @reader.read(@buffer, 2, 4))
-    assert_equal(nil, @buffer[0])
-    assert_equal(nil, @buffer[1])
+    assert_nil(@buffer[0])
+    assert_nil(@buffer[1])
     assert_equal('ð', @buffer[2])
     assert_equal('i', @buffer[3])
   end
@@ -84,10 +84,10 @@ class StringReaderTest < Minitest::Test
   def test_read_with_unicode_and_offset_too_large_part_of_string
     @reader = Koara::Io::StringReader.new('ðinæ')
     assert_equal(4, @reader.read(@buffer, 6, 4))
-    assert_equal(nil, @buffer[0])
-    assert_equal(nil, @buffer[1])
-    assert_equal(nil, @buffer[2])
-    assert_equal(nil, @buffer[3])
+    assert_nil(@buffer[0])
+    assert_nil(@buffer[1])
+    assert_nil(@buffer[2])
+    assert_nil(@buffer[3])
   end
 
   def test_read_with_unicode_until_eof
