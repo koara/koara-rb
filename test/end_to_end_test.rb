@@ -1037,7 +1037,7 @@ class EndToEndTest < Minitest::Test
     parser = Koara::Parser.new
 
     parser.modules = modules
-    document = parser.parse_file(@kd)
+    document = parser.parse(@kd)
     renderer = Html5Renderer.new
     document.accept(renderer)
 

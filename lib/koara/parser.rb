@@ -37,6 +37,8 @@ module Koara
     end
 
     def parse_file(file)
+
+
       if File.basename(file).downcase.reverse[0, 3].reverse.to_s != '.kd'
         raise(ArgumentError, "Can only parse files with extension .kd")
       end
